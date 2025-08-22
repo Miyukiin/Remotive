@@ -1,5 +1,7 @@
+"use client";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { useEffect, useState } from "react";
 
 export const projectStatusColor = {
   Completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
@@ -42,6 +44,23 @@ export function capitalize(string: string): string {
 export function getTempId(): number {
   const tempId = -Math.floor(Math.random() * 1e9); // negative temp id to avoid collisions
   return tempId;
+}
+
+export function useScreenWidth() {
+  const [width, setWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    setWidth(window.innerWidth);
+
+    function handleResize() {
+      setWidth(window.innerWidth);
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return width;
 }
 
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.

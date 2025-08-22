@@ -1,11 +1,13 @@
 "use client";
 import { useProjects } from "@/hooks/use-projects";
-import { use } from "react";
+import { use, useState } from "react";
 import { KanbanBoard } from "@/components/kanban-board/kanban-board";
 import ProjectHeading from "@/components/projects/project-heading";
 import { useLists } from "@/hooks/use-lists";
 import { useTasks } from "@/hooks/use-tasks";
 import SkeletonKanbanBoardPage from "@/components/kanban-board/kanban-page-skeleton";
+import { useUIStore } from "@/stores/ui-store";
+import TaskDetailsModal from "@/components/modals/task-details-modal";
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -13,6 +15,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const { project, projectError } = useProjects(project_id);
   const { lists, loadingListError, updateListsPositions } = useLists(project_id);
   const { projectTasks, getProjectTasksError, updateTasksPositions } = useTasks({ project_id: project_id });
+  const { isTaskDetailsModalOpen, setTaskDetailsModalOpen } = useUIStore();
 
   if (!project || !lists || !projectTasks) {
     return <SkeletonKanbanBoardPage />;
@@ -29,18 +32,21 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Project Heading */}
-      <ProjectHeading project={project} />
+    <>
+      <TaskDetailsModal />
+      <div className="space-y-6">
+        {/* Project Heading */}
+        <ProjectHeading project={project} />
 
-      {/* Kanban Board */}
-      <KanbanBoard
-        tasks={projectTasks}
-        lists={lists}
-        projectId={project_id}
-        updateListsPositions={updateListsPositions}
-        updateTasksPositions={updateTasksPositions}
-      />
-    </div>
+        {/* Kanban Board */}
+        <KanbanBoard
+          tasks={projectTasks}
+          lists={lists}
+          projectId={project_id}
+          updateListsPositions={updateListsPositions}
+          updateTasksPositions={updateTasksPositions}
+        />
+      </div>
+    </>
   );
 }

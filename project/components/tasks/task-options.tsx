@@ -27,15 +27,34 @@ const TaskOptions: FC<TaskOptionsProps> = ({ task_id, list_id, project_id, class
           variant="ghost"
           size="sm"
           className="text-secondary-foreground/75 hover:bg-foreground/10 hover:text-foreground active:bg-foreground/10 active:text-foreground rounded-md "
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           <EllipsisVertical />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem variant="default" onClick={setEditModalOpen}>
+        <DropdownMenuItem
+          variant="default"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setEditModalOpen();
+          }}
+        >
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem disabled={isDeleteTaskLoading} variant="destructive" onClick={onClick}>
+        <DropdownMenuItem
+          disabled={isDeleteTaskLoading}
+          variant="destructive"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClick();
+          }}
+        >
           Delete Task
         </DropdownMenuItem>
       </DropdownMenuContent>

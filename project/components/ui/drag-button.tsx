@@ -11,6 +11,10 @@ type Props = {
 function DragButton({ listeners, attributes, iconSize }: Props) {
   return (
     <button
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       {...listeners}
       {...attributes}
       className="touch-none p-1 text-secondary-foreground/50 hover:bg-foreground/10 hover:text-foreground active:bg-foreground/10 active:text-foreground rounded-md cursor-grab transition-all"
