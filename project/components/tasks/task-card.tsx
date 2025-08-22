@@ -104,7 +104,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
           setIsModalOpen={setEditModalOpen}
         />
       )}
-      <Card ref={setNodeRef} style={style} className={`group p-0 gap-0  `}>
+      <Card ref={setNodeRef} style={style} className={` p-0 gap-0  `}>
         <CardHeader className="px-1 py-2 justify-between items-center flex flex-row border-b-2 border-secondary relative">
           {/* Drag Button, Options Button */}
           <DragButton listeners={listeners} attributes={attributes} />
@@ -113,7 +113,6 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
             project_id={project_id}
             list_id={list_id}
             setEditModalOpen={() => setEditModalOpen(true)}
-            className="opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300"
           />
         </CardHeader>
         <CardContent className="p-3">

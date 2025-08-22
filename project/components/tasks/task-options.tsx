@@ -9,7 +9,7 @@ type TaskOptionsProps = {
   task_id: number;
   list_id: number;
   project_id: number;
-  className: string;
+  className?: string;
   setEditModalOpen: () => void;
 };
 
