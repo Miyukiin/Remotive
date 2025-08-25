@@ -98,16 +98,16 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
     () =>
       debounce((listsPayload: ListPositionPayload[], project_id: number) => {
         updateListsPositions({ listsPayload, project_id });
-      }, 100),
-    [],
+      }, 300),
+    [updateListsPositions],
   );
 
   const debouncedTaskUpdate = useMemo(
     () =>
       debounce((tasksPayload: TaskPositionPayload[], project_id: number) => {
         updateTasksPositions({ tasksPayload, project_id });
-      }, 100),
-    [],
+      }, 300),
+    [updateTasksPositions],
   );
 
   function onDragStart(event: DragStartEvent) {

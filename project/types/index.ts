@@ -1,5 +1,5 @@
 import * as schema from "@/lib/db/schema";
-import { projectSchemaForm, projectSchemaUpdateForm, taskSchemaForm} from "@/lib/validations/validations";
+import { projectSchemaForm, projectSchemaUpdateForm, taskSchemaEditForm, taskSchemaForm} from "@/lib/validations/validations";
 import z from "zod";
 
 // For Project Creation and Update Form
@@ -12,6 +12,9 @@ export type ProjectFormOutputUpdate = z.output<typeof projectSchemaUpdateForm>;
 // for Task Creation and Update Form
 export type TaskFormInput = z.input<typeof taskSchemaForm>; // This is because our input for duedate field accepts string.
 export type TaskFormOutput = z.output<typeof taskSchemaForm>; // For after validation, dueDate output is a Date or null.
+
+export type TaskEditFormInput = z.input<typeof taskSchemaEditForm>; // All fields are optional, for updating task data piecemeal in the task drawer.
+export type TaskEditFormOutput = z.output<typeof taskSchemaEditForm>; 
 
 // Query Types
 export type QueryResponse<T> =

@@ -17,6 +17,7 @@ import { formatDate } from "../../lib/utils";
 import { DragButton } from "../ui/drag-button";
 import { useSortable } from "@dnd-kit/sortable";
 import { useUIStore } from "@/stores/ui-store";
+import { useTaskStore } from "@/stores/task-store";
 
 /*
 TODO: Implementation Notes for Interns:
@@ -72,6 +73,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   const { taskMembers, isTaskMembersLoading, getTaskMembersError } = useTasks({ task_id: task.id });
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const { setTaskDetailsModalOpen } = useUIStore();
+  const { setActiveTask } = useTaskStore();
 
   const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: task.id,
@@ -85,6 +87,11 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
     transition,
     transform: CSS.Translate.toString(transform),
   };
+
+  function onCardClick() {
+    setActiveTask(task);
+    setTaskDetailsModalOpen(true);
+  }
 
   if (isDragging) {
     return (
@@ -106,12 +113,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
           setIsModalOpen={setEditModalOpen}
         />
       )}
-      <Card
-        onClick={() => setTaskDetailsModalOpen(true)}
-        ref={setNodeRef}
-        style={style}
-        className={`p-0 gap-0 cursor-pointer  `}
-      >
+      <Card onClick={onCardClick} ref={setNodeRef} style={style} className={`p-0 gap-0 cursor-pointer  `}>
         <CardHeader className="px-1 py-2 justify-between items-center flex flex-row border-b-2 border-secondary relative">
           {/* Drag Button, Options Button */}
           <DragButton listeners={listeners} attributes={attributes} />
@@ -180,5 +182,3 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
 };
 
 export default TaskCard;
-
-

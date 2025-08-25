@@ -72,10 +72,12 @@ import {
   getTasksByListIdAction,
   getTasksByProjectAction,
   updateTaskAction,
+  updateTaskNewAction,
   updateTasksPositionsAction,
 } from "@/actions/task-actions";
 import { getTempId } from "@/lib/utils";
-import { taskSchemaForm } from "@/lib/validations/validations";
+import { taskSchemaEditForm, taskSchemaForm } from "@/lib/validations/validations";
+import { useTaskStore } from "@/stores/task-store";
 import { TaskPositionPayload, TaskSelect } from "@/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -91,6 +93,7 @@ export function useTasks({
   task_id?: number;
 }) {
   const queryClient = useQueryClient();
+  const { mergeActiveTask, setActiveTask } = useTaskStore.getState();
 
   const getTaskByProject = useQuery({
     queryKey: ["tasks", project_id],
@@ -286,6 +289,62 @@ export function useTasks({
     },
   });
 
+  const updateTaskNew = useMutation({
+    mutationFn: async ({
+      task_id,
+      project_id,
+      taskFormData,
+    }: {
+      task_id: number;
+      project_id: number;
+      taskFormData?: z.infer<typeof taskSchemaEditForm>;
+    }) => {
+      const res = await updateTaskNewAction(task_id, taskFormData);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+    onMutate: async ({ task_id, project_id, taskFormData }) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", list_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks", project_id] });
+
+      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", list_id]);
+      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", project_id]);
+      const previousActiveTask = useTaskStore.getState().activeTask;
+
+      // React Query optimistic update
+      const patch = (arr?: TaskSelect[]) =>
+        arr ? arr.map((t) => (t.id === task_id ? { ...t, ...(taskFormData ?? {}) } : t)) : arr;
+
+      // Optimistically update the task with the inputted taskFormData
+      queryClient.setQueryData<TaskSelect[]>(["tasks", list_id], patch);
+      queryClient.setQueryData<TaskSelect[]>(["tasks", project_id], patch);
+
+      // Zustand optimistic update
+      if (taskFormData && Object.keys(taskFormData).length > 0) {
+        mergeActiveTask(taskFormData as Partial<TaskSelect>);
+      }
+
+      return { previousListTasks, previousProjectTasks, previousActiveTask };
+    },
+    onSuccess: () => {
+      // toast.success("Success", { description: "Successfully updated the task." });
+    },
+    onError: (error, variables, context) => {
+      toast.error("Error", { description: error.message });
+      // React Query Rollback
+      queryClient.setQueryData(["tasks", list_id], context?.previousListTasks);
+      queryClient.setQueryData(["tasks", project_id], context?.previousProjectTasks);
+
+      // Zustand Rollback
+      if (context?.previousActiveTask) setActiveTask(context?.previousActiveTask);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", list_id] });
+      queryClient.invalidateQueries({ queryKey: ["task_members", task_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+    },
+  });
+
   const updateTasksPositions = useMutation({
     mutationFn: async ({ tasksPayload, project_id }: { tasksPayload: TaskPositionPayload[]; project_id: number }) => {
       const res = await updateTasksPositionsAction(tasksPayload, project_id);
@@ -375,10 +434,15 @@ export function useTasks({
     isDeleteTaskLoading: deleteTask.isPending,
     deleteTaskError: deleteTask.error,
 
-    // Update Task
+    // Update Task (Old Modal)
     updateTask: updateTask.mutate,
     isUpdateTaskLoading: updateTask.isPending,
     updateTaskError: updateTask.error,
+
+    // Update Task (Notion/Github Style)
+    updateTaskNew: updateTaskNew.mutateAsync,
+    isUpdateTaskNewLoading: updateTaskNew.isPending,
+    updateTaskNewError: updateTaskNew.error,
 
     // Update Task Positions
     updateTasksPositions: updateTasksPositions.mutate,

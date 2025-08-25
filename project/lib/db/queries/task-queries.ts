@@ -279,4 +279,22 @@ export const tasks = {
       return failResponse(`Unable to update task positions.`, e);
     }
   },
+  getProjectIdentifier: async (task_id: number): Promise<types.QueryResponse<number>> => {
+    try {
+      const res = await db
+        .select({ projectId: schema.projects.id })
+        .from(schema.projects)
+        .innerJoin(schema.lists, eq(schema.lists.projectId, schema.projects.id))
+        .innerJoin(schema.tasks, eq(schema.lists.id, schema.tasks.listId))
+        .where(eq(schema.tasks.id, task_id))
+        .limit(1);
+
+      const projectId = res[0]?.projectId;
+      if(projectId === null) throw new Error("Database returned no matches.")
+
+      return successResponse(`Task's project identifier retrieved successfully.`, projectId);
+    } catch (e) {
+      return failResponse(`Unable to task's project identifier.`, e);
+    }
+  },
 };

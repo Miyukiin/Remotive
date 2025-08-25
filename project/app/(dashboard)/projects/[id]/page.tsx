@@ -15,7 +15,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const { project, projectError } = useProjects(project_id);
   const { lists, loadingListError, updateListsPositions } = useLists(project_id);
   const { projectTasks, getProjectTasksError, updateTasksPositions } = useTasks({ project_id: project_id });
-  const { isTaskDetailsModalOpen, setTaskDetailsModalOpen } = useUIStore();
 
   if (!project || !lists || !projectTasks) {
     return <SkeletonKanbanBoardPage />;
@@ -33,7 +32,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
   return (
     <>
-      <TaskDetailsModal />
+      <TaskDetailsModal project_id={project_id} />
       <div className="space-y-6">
         {/* Project Heading */}
         <ProjectHeading project={project} />

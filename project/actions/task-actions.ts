@@ -7,6 +7,7 @@ import {
   idSchema,
   taskSchema,
   taskSchemaDB,
+  taskSchemaEditForm,
   taskSchemaForm,
   tasksPositionsPayloadSchema,
 } from "../lib/validations/validations";
@@ -58,6 +59,15 @@ export async function getTaskByIdAction(task_id: number): Promise<ServerActionRe
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
   return await queries.tasks.getById(task_id);
+}
+
+export async function getProjectIdentifier(task_id: number): Promise<ServerActionResponse<number>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: task_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  return await queries.tasks.getProjectIdentifier(task_id);
 }
 
 // Mutations
@@ -112,6 +122,29 @@ export async function updateTaskAction(
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
   const assignedIds = taskFormData ? taskFormData.assigneeIds : null;
+
+  return await queries.tasks.update(task_id, taskDBData, assignedIds);
+}
+
+
+export async function updateTaskNewAction(
+  task_id: number,
+  taskFormData?: z.infer<typeof taskSchemaEditForm>,
+): Promise<ServerActionResponse<TaskSelect>> {
+  await checkAuthenticationStatus();
+
+  const res = await queries.tasks.getById(task_id);
+  if (!res.success) return res;
+
+  const taskDBData: z.infer<typeof taskSchema> = {
+    ...res.data,
+    ...taskFormData,
+  };
+
+  const parsed = taskSchema.safeParse(taskDBData);
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  const assignedIds = taskFormData?.assigneeIds ? taskFormData.assigneeIds : null;
 
   return await queries.tasks.update(task_id, taskDBData, assignedIds);
 }

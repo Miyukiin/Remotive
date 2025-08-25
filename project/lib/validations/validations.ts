@@ -234,6 +234,8 @@ export const taskSchemaForm = taskSchema
   })
   .extend({ assigneeIds: z.array(z.int()).nullable() }); // Because on task creation and update, we can assign zero, one or more members.
 
+export const taskSchemaEditForm = taskSchemaForm.partial(); // All fields are optional, for updating task data piecemeal in the task drawer.
+
 export const commentSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
@@ -399,12 +401,13 @@ export const listPositionPayloadSchema = listSchema.pick({
 
 export const listsPositionsPayloadSchema = z.array(listPositionPayloadSchema); // https://stackoverflow.com/questions/74967542/zod-validation-for-an-array-of-objects
 
-
-export const taskPositionPayloadSchema = taskSchema.pick({
-  id: true,
-  position: true,
-}).extend({
-  listId: z.int().min(1, errorTemplates.idMinError).optional(),
-});
+export const taskPositionPayloadSchema = taskSchema
+  .pick({
+    id: true,
+    position: true,
+  })
+  .extend({
+    listId: z.int().min(1, errorTemplates.idMinError).optional(),
+  });
 
 export const tasksPositionsPayloadSchema = z.array(taskPositionPayloadSchema);

@@ -3,8 +3,6 @@ import { Drawer, DrawerTitle, DrawerContent } from "@/components/ui/drawer";
 import { FC, useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "../ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { Input } from "../ui/input";
 import { Calendar, Ellipsis, Flame, Loader, Settings, Tag, Users } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -13,19 +11,26 @@ import { Separator } from "../ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 import dynamic from "next/dynamic";
+import { useTaskStore } from "@/stores/task-store";
+import { TaskName } from "../tasks/task-modal-ui/task-name";
 
 const DynamicRichTextEditor = dynamic(() => import("../ui/rich-text-editor"), {
   ssr: false,
   loading: () => <p>Loading editor...</p>,
 });
 
-const TaskDetailsModal: FC = () => {
+const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
   const { isTaskDetailsModalOpen, setTaskDetailsModalOpen } = useUIStore();
-  const [isEditingName, setIsEditingName] = useState(false);
+  const { activeTask } = useTaskStore();
+
   const screenWidth = useScreenWidth();
   const isMobile = screenWidth ? (screenWidth < 768 ? true : false) : false;
 
   const [isEditingContent, setIsEditingContent] = useState(false);
+
+  if (!activeTask) {
+    return null; // Should be unable to retrieve active task
+  }
 
   return (
     <Drawer
@@ -41,36 +46,7 @@ const TaskDetailsModal: FC = () => {
       <DrawerContent className="max-w-[600px]! xl:max-w-[800px]!">
         <div className="p-6 w-full overflow-y-auto">
           {/* Task Title and Editing */}
-          {isEditingName ? (
-            <div className="flex items-center gap-3">
-              <Input defaultValue={"Task 4.5 Implement Task Modal Drawer"}></Input>
-              <Button onClick={() => {}} size="sm" variant="save">
-                {" "}
-                Save{" "}
-              </Button>
-              <Button onClick={() => setIsEditingName(false)} size="sm" variant="secondary">
-                {" "}
-                Cancel{" "}
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center min-w-0 ">
-                <Tooltip>
-                  <TooltipTrigger className="w-full">
-                    <h1 className="text-2xl font-medium whitespace-nowrap overflow-hidden text-ellipsis">
-                      Task 4.5: Implement Task Modal Drawer
-                    </h1>
-                  </TooltipTrigger>
-                  <TooltipContent>Task 4.5: Implement Task Modal Drawer</TooltipContent>
-                </Tooltip>
-              </div>
-              <Button onClick={() => setIsEditingName(true)} size="sm" variant="outline">
-                {" "}
-                Edit{" "}
-              </Button>
-            </div>
-          )}
+          <TaskName activeTask={activeTask} project_id={project_id} />
           {/* Task Details */}
           <div className={`mt-4 grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} grid-rows-1 gap-3`}>
             {/* Assignees */}
@@ -270,7 +246,6 @@ const TaskDetailsModal: FC = () => {
                   <Button variant="save" size="sm">
                     Comment
                   </Button>
-                  
                 </div>
               </div>
             </div>
