@@ -13,9 +13,11 @@ import { listSchemaForm } from "@/lib/validations/validations";
 import z from "zod";
 import { ListPositionPayload, ListSelect } from "@/types";
 import { getTempId } from "@/lib/utils";
+import { useKanbanStore } from "@/stores/kanban-store";
 
 export function useLists(project_id: number) {
   const queryClient = useQueryClient();
+  const { mergeActiveList, setActiveList } = useKanbanStore.getState();
 
   const list = useQuery({
     queryKey: ["lists", project_id],
@@ -124,6 +126,7 @@ export function useLists(project_id: number) {
       await queryClient.cancelQueries({ queryKey: ["lists", project_id] });
 
       const previousLists = queryClient.getQueryData<ListSelect[]>(["lists", project_id]);
+      const previousActiveList = useKanbanStore.getState().activeList;
 
       // Optimistically update the team with the inputted listFormData
       queryClient.setQueryData<ListSelect[]>(["lists", project_id], (old) =>
@@ -139,14 +142,23 @@ export function useLists(project_id: number) {
           : old,
       );
 
-      return { previousLists };
+      // Zustand optimistic update
+      if (listFormData && Object.keys(listFormData).length > 0) {
+        mergeActiveList(listFormData as Partial<ListSelect>);
+      }
+
+      return { previousLists, previousActiveList };
     },
     onSuccess: () => {
       toast.success("Success", { description: "Successfully updated the list." });
     },
     onError: (error, variables, context) => {
       toast.error("Error", { description: error.message });
+      // React Query Rollback
       queryClient.setQueryData(["lists", project_id], context?.previousLists);
+
+      // Zustand Rollback
+      if (context?.previousActiveList) setActiveList(context?.previousActiveList);
     },
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ queryKey: ["lists", variables.project_id] });
@@ -194,11 +206,7 @@ export function useLists(project_id: number) {
   });
 
   const updateListsStatus = useMutation({
-    mutationFn: async ({
-      new_done_list_id,
-    }: {
-      new_done_list_id: number;
-    }) => {
+    mutationFn: async ({ new_done_list_id }: { new_done_list_id: number }) => {
       const res = await updateListsStatusAction(new_done_list_id);
       if (!res.success) throw new Error(res.message);
       return res.data;

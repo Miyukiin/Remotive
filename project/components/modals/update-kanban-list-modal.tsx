@@ -56,7 +56,7 @@ const UpdateKanbanModal: FC<UpdateKanbanModalProps> = ({ project_id }) => {
 
   return (
     <Dialog open={isUpdateKanbanModalOpen} onOpenChange={setUpdateKanbanModalOpen}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Update Column</DialogTitle>
         </DialogHeader>

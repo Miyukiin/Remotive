@@ -35,6 +35,8 @@ export const lists = {
 
       const changed: Partial<types.ListInsert> = {};
       if (existingListData.name != incomingListData.name) changed.name = incomingListData.name;
+      if (existingListData.description != incomingListData.description) changed.description = incomingListData.description;
+      if (existingListData.color != incomingListData.color) changed.color = incomingListData.color;
       if (existingListData.position != incomingListData.position) changed.position = incomingListData.position;
 
       const finalUpdatedObjectData = {
