@@ -71,10 +71,12 @@ export function TaskName({ activeTask, project_id }: TaskNameProps) {
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex items-center min-w-0 ">
+      <div className="flex items-center min-w-0 w-full">
         <Tooltip>
           <TooltipTrigger className="w-full">
-            <h1 className="text-2xl font-medium whitespace-nowrap overflow-hidden text-ellipsis">{activeTask.title}</h1>
+            <h1 className="text-2xl text-start w-full font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+              {activeTask.title}
+            </h1>
           </TooltipTrigger>
           <TooltipContent>{activeTask.title}</TooltipContent>
         </Tooltip>
