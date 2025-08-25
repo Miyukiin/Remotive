@@ -127,9 +127,9 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
         <CardContent className="p-3">
           <div className="flex flex-col gap-2">
             {/* Title, Priority, Description */}
-            <div className="flex justify-between">
-              <p className="font-medium text-foreground/85 text-sm">{task.title}</p>
-              <Badge className={`${taskPriorityColor[task.priority]}`}>{capitalize(task.priority)}</Badge>
+            <div className="flex justify-between gap-2">
+              <p className="font-medium text-foreground/85 text-sm overflow-hidden whitespace-nowrap text-ellipsis">{task.title}</p>
+              <Badge className={`${taskPriorityColor[task.priority]} shrink-0 whitespace-nowrap w-auto`}>{capitalize(task.priority)}</Badge>
             </div>
             <div className="flex justify-between">
               <p className="text-xs text-foreground/65">{task.description}</p>
