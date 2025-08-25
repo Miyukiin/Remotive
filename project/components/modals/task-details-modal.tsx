@@ -15,6 +15,7 @@ import { useTaskStore } from "@/stores/task-store";
 import { TaskName } from "../tasks/task-modal-ui/task-name";
 import { TaskDue } from "../tasks/task-modal-ui/task-due";
 import { TaskCreated } from "../tasks/task-modal-ui/task-created";
+import { TaskPriority } from "../tasks/task-modal-ui/task-priority";
 
 const DynamicRichTextEditor = dynamic(() => import("../ui/rich-text-editor"), {
   ssr: false,
@@ -116,18 +117,7 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
               </div>
             </div>
             {/* Priority */}
-            <div>
-              <div className="flex items-center justify-between text-dark-grey-300 dark:text-white-smoke-200 hover:bg-black/10 dark:hover:bg-white/10 active:bg-black/10 dark:active:bg-white/10 py-1 px-2 rounded-sm">
-                <div className="flex items-center gap-2 text-inherit">
-                  <Flame size={16} />
-                  <p className="text-sm font-medium"> Priority </p>
-                </div>
-                <Settings size={16} />
-              </div>
-              <div className="mt-1 flex gap-1 ml-8">
-                <Badge className={`${taskPriorityColor["medium"]}`}>{capitalize("medium")}</Badge>
-              </div>
-            </div>
+            <TaskPriority activeTask={activeTask} project_id={project_id}/>
             {/* Due Date */}
             <TaskDue activeTask={activeTask} project_id={project_id} />
             {/* Created at Date */}
