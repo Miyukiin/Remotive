@@ -9,6 +9,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { DragButton } from "../ui/drag-button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CircleCheck } from "lucide-react";
+import { listColor } from "@/lib/utils";
 
 type KanbanListProps = {
   tasks: TaskSelect[];
@@ -74,26 +75,36 @@ const KanbanList: FC<KanbanListProps> = ({ tasks, list, project_id, searchTerm }
       <div ref={setNodeRef} style={style} className="min-w-[80px] min-h-[350px] w-80 overflow-y shrink-0">
         <div className="bg-list-bg min-h-[350px] h-full rounded-lg border border-border ">
           <div className="p-4 border-b border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex gap-3 items-center">
+            <div className="flex items-center gap-1 justify-between min-w-0">
+              <div className="flex gap-3 items-center min-w-0 flex-1">
                 <DragButton listeners={listeners} attributes={attributes} />
-                <div className="flex items-center gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      {isDoneColumn && <CircleCheck size={14} className="text-green-600 dark:text-green-300" />}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Any tasks dragged to this column will be marked as done.</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <p className="font-semibold text-foreground text-sm">
-                    {list.name}
-                    <span className="ml-2 px-2 py-1 text-xs bg-foreground/10 rounded-full">{list.position}</span>
-                  </p>
+                <div className="flex items-center gap-1 min-w-0 flex-1">
+                  {isDoneColumn && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="shrink-0">
+                          <CircleCheck size={14} className="text-green-600 dark:text-green-300" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Any tasks dragged to this column will be marked as done.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  <div className="min-w-0 flex-1 truncate">
+                    {/* Title and Description */}
+                    <p className="min-w-0 font-semibold text-foreground text-sm truncate flex-1">{list.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{list.description}</p>
+                  </div>
+                  {/* Colored Position */}
+                  <div className="flex items-center">
+                    <span className={`shrink-0 px-2 py-1 text-xs rounded-full ${listColor[list.color]}`}>
+                      {list.position}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-2 items-center">
+              <div>
                 <KanbanListOptions project_id={project_id} list={list} isDone={isDoneColumn} />
               </div>
             </div>
