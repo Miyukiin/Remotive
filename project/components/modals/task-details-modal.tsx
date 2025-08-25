@@ -43,7 +43,7 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
       <VisuallyHidden>
         <DrawerTitle> Title</DrawerTitle>
       </VisuallyHidden>
-      <DrawerContent className="max-w-[600px]! xl:max-w-[800px]!">
+      <DrawerContent aria-describedby={undefined} className="max-w-[600px]! xl:max-w-[800px]!">
         <div className="p-6 w-full overflow-y-auto">
           {/* Task Title and Editing */}
           <TaskName activeTask={activeTask} project_id={project_id} />
