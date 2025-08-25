@@ -45,8 +45,14 @@ const UpdateKanbanModal: FC<UpdateKanbanModalProps> = ({ project_id }) => {
 
   // Keep form in sync when opening with a different list
   useEffect(() => {
-    if (isUpdateKanbanModalOpen) form.reset({ name: activeList?.name });
-  }, [isUpdateKanbanModalOpen, activeList?.name, form]);
+    if (isUpdateKanbanModalOpen) {
+      form.reset({
+        name: activeList?.name ?? "",
+        description: activeList?.description ?? "",
+        color: activeList?.color ?? "GRAY",
+      });
+    }
+  }, [isUpdateKanbanModalOpen, activeList, form]);
 
   const onSubmit = async (values: ListFormOutput) => {
     const maybePromise = updateList({ list_id: activeList!.id, project_id, listFormData: values });
