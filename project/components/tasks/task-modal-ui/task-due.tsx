@@ -1,10 +1,10 @@
-import { Settings, Calendar as CalendarIcon } from "lucide-react";
+import { Settings, Calendar as CalendarIcon, CircleAlert } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { TaskSelect } from "@/types";
 import { useState } from "react";
-import { formatDate } from "@/lib/utils";
+import { calculateOverdueInfo, formatDate } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 
 type TaskDueProps = {
@@ -15,6 +15,7 @@ type TaskDueProps = {
 export function TaskDue({ activeTask, project_id }: TaskDueProps) {
   const [open, setOpen] = useState(false);
   const { updateTaskNew, isUpdateTaskNewLoading } = useTasks({ task_id: activeTask.id });
+  const { isOverdue, daysOverdue, isDueToday } = calculateOverdueInfo(activeTask.dueDate);
 
   const selected = activeTask.dueDate ? new Date(activeTask.dueDate) : undefined;
 
@@ -69,8 +70,18 @@ export function TaskDue({ activeTask, project_id }: TaskDueProps) {
         </PopoverContent>
       </Popover>
 
-      <div className="mt-1 flex gap-1 ml-8">
+      <div className="mt-1 flex gap-2 ml-8">
         <p className="text-foreground text-xs">{activeTask.dueDate ? formatDate(activeTask.dueDate) : "Not Set"}</p>
+        {isOverdue || isDueToday ? (
+          <div className="flex gap-1  text-red-500  dark:text-red-300  items-center">
+            <CircleAlert size={12} />
+            <p className={`text-xs`}>
+              {isDueToday ? "Due today" : `Overdue by ${daysOverdue} ${daysOverdue === 1 ? "day" : "days"}`}
+            </p>
+          </div>
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );

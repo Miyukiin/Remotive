@@ -3,10 +3,10 @@ import { Drawer, DrawerTitle, DrawerContent } from "@/components/ui/drawer";
 import { FC, useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "../ui/button";
-import { Ellipsis, Flame, Loader, Settings, Tag, Users } from "lucide-react";
+import { Ellipsis, Loader, Settings, Tag, Users } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { capitalize, useScreenWidth, projectStatusColor, taskPriorityColor } from "@/lib/utils";
+import { useScreenWidth, projectStatusColor } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 

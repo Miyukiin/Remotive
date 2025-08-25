@@ -5,7 +5,7 @@ import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 import MembersAvatars from "../ui/members-avatars";
 import { FC, useState } from "react";
-import { capitalize, taskPriorityColor } from "@/lib/utils";
+import { calculateOverdueInfo, capitalize, taskPriorityColor } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 import TaskOptions from "./task-options";
 import UpdateTaskModal from "../modals/update-task-modal";
@@ -75,6 +75,8 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   const { setTaskDetailsModalOpen } = useUIStore();
   const { setActiveTask } = useTaskStore();
 
+  const { isOverdue, daysOverdue, isDueToday } = calculateOverdueInfo(task.dueDate);
+
   const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: {
@@ -128,8 +130,12 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
           <div className="flex flex-col gap-2">
             {/* Title, Priority, Description */}
             <div className="flex justify-between gap-2">
-              <p className="font-medium text-foreground/85 text-sm overflow-hidden whitespace-nowrap text-ellipsis">{task.title}</p>
-              <Badge className={`${taskPriorityColor[task.priority]} shrink-0 whitespace-nowrap w-auto`}>{capitalize(task.priority)}</Badge>
+              <p className="font-medium text-foreground/85 text-sm overflow-hidden whitespace-nowrap text-ellipsis">
+                {task.title}
+              </p>
+              <Badge className={`${taskPriorityColor[task.priority]} shrink-0 whitespace-nowrap w-auto`}>
+                {capitalize(task.priority)}
+              </Badge>
             </div>
             <div className="flex justify-between">
               <p className="text-xs text-foreground/65">{task.description}</p>
@@ -144,9 +150,14 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
                 </div>
                 <div className="inline-flex gap-1">
                   <Calendar size={14} className="text-foreground/65" />
-                  <p className="font-base text-muted-foreground text-xs ">
-                    {" "}
-                    {task.dueDate ? `${formatDate(task.dueDate)}` : "No due date"}{" "}
+                  <p className={`font-base text-xs ${isOverdue || isDueToday ? "text-red-500 dark:text-red-300" : "text-muted-foreground"}`}>
+                    {isOverdue
+                      ? `Overdue by ${daysOverdue} ${daysOverdue === 1 ? "day" : "days"}`
+                      : isDueToday
+                        ? "Due today"
+                        : task.dueDate
+                          ? formatDate(task.dueDate)
+                          : "No due date"}
                   </p>
                 </div>
               </div>

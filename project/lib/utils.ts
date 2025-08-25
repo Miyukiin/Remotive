@@ -63,6 +63,33 @@ export function useScreenWidth() {
   return width;
 }
 
+export type OverdueInfo = {
+  isOverdue: boolean; // true if due date is before today (by whole days)
+  isDueToday: boolean; // true if due date is today (calendar day)
+  daysOverdue: number; // whole days overdue (0 if not overdue)
+};
+
+export function calculateOverdueInfo(dueInput: Date | null): OverdueInfo {
+  if (!dueInput) return { isOverdue: false, daysOverdue: 0, isDueToday: false };
+
+  const due = dueInput;
+  if (isNaN(due.getTime())) return { isOverdue: false, daysOverdue: 0, isDueToday: false };
+
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()); // Helper func to strip the time off, so that we avoid off-by-hours bugs.
+  const today = startOf(new Date());
+  const dueDay = startOf(due);
+
+  const MS_PER_DAY = 86_400_000;
+  const diffMs = today.getTime() - dueDay.getTime(); // milliseconds difference
+  const diffDays = Math.floor(diffMs / MS_PER_DAY); // whole-day difference
+
+  return {
+    isDueToday: diffDays === 0, // is Due Today
+    isOverdue: diffDays > 0, // Overdue by how many days
+    daysOverdue: diffDays > 0 ? diffDays : 0, // Due in |diffDays| days
+  };
+}
+
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.
 // To be used within update query utilities to identify changed fields to be updated.
 // export function getDataDiff<T>(existingData: T, newData: T): Partial<T> {
