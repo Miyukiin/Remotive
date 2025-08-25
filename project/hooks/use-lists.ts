@@ -46,6 +46,8 @@ export function useLists(project_id: number) {
       const optimisticList: ListSelect = {
         id: tempId,
         name: "New Board", // Same as createListAction
+        description: "A New Board",
+        color: "GRAY",
         projectId: project_id,
         isDone: false,
         createdAt: now,

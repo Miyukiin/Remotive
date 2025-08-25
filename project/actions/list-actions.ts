@@ -27,6 +27,8 @@ export async function createListAction(
   const listDBData: z.infer<typeof listSchemaDB> = {
     name: "New Board",
     projectId: project_id,
+    description: "A New Board",
+    color: "GRAY",
     position: position,
     isDone: false,
     createdAt: new Date(),
@@ -52,6 +54,8 @@ export async function updateListAction(
   const listDBData: z.infer<typeof listSchemaDB> = {
     ...res.data,
     name: listFormData.name,
+    description: listFormData.description,
+    color: listFormData.color,
   };
 
   const parsed = listSchemaDB.safeParse(listDBData);
@@ -83,9 +87,7 @@ export async function updateListsPositionsAction(
   return await queries.lists.updateListsPositions(listsPayload, project_id);
 }
 
-export async function updateListsStatusAction(
-  new_done_list_id: number,
-): Promise<ServerActionResponse<ListSelect>> {
+export async function updateListsStatusAction(new_done_list_id: number): Promise<ServerActionResponse<ListSelect>> {
   await checkAuthenticationStatus();
 
   const parsed = idSchema.safeParse({ id: new_done_list_id });

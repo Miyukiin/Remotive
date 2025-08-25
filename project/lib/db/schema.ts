@@ -48,9 +48,9 @@ import {
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
-import { priorityEnum, rolesEnum, statusEnum } from "./db-enums";
+import { priorityEnum, rolesEnum, statusEnum, listColorEnum} from "./db-enums";
 import { sql } from "drizzle-orm";
-export { priorityEnum, rolesEnum, statusEnum } from "./db-enums";
+export { priorityEnum, rolesEnum, statusEnum, listColorEnum } from "./db-enums";
 
 export const users = pgTable(
   "users",
@@ -116,6 +116,8 @@ export const lists = pgTable(
     projectId: integer("projectId")
       .references(() => projects.id, { onDelete: "cascade" })
       .notNull(),
+    description: text("description"),
+    color: listColorEnum().notNull().default("GRAY"),
     position: integer("position").notNull(),
     isDone: boolean("isDone").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),

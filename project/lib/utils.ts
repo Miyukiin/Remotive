@@ -17,6 +17,17 @@ export const taskPriorityColor = {
   high: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
 } as const;
 
+export const listColor = {
+  BLUE:   "bg-[#0969da]/15 text-[#0969da] dark:bg-[#1f6feb]/20 dark:text-[#1f6feb]",
+  GRAY:   "bg-[#59636e]/15 text-[#59636e] dark:bg-[#6e7681]/20 dark:text-[#6e7681]",
+  GREEN:  "bg-[#1f883d]/15 text-[#1f883d] dark:bg-[#238636]/20 dark:text-[#238636]",
+  ORANGE: "bg-[#bc4c00]/15 text-[#bc4c00] dark:bg-[#bd561d]/20 dark:text-[#bd561d]",
+  PINK:   "bg-[#bf3989]/15 text-[#bf3989] dark:bg-[#bf4b8a]/20 dark:text-[#bf4b8a]",
+  PURPLE: "bg-[#8250df]/15 text-[#8250df] dark:bg-[#8957e5]/20 dark:text-[#8957e5]",
+  RED:    "bg-[#cf222e]/15 text-[#cf222e] dark:bg-[#da3633]/20 dark:text-[#da3633]",
+  YELLOW: "bg-[#9a6700]/15 text-[#9a6700] dark:bg-[#9e6a03]/20 dark:text-[#9e6a03]",
+} as const;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

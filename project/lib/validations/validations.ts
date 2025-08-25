@@ -1,6 +1,7 @@
 import { priorityTuple, rolesTuple, statusTuple } from "@/lib/db/db-enums";
 import { errorTemplates, today } from "./validations-utils";
 import * as z from "zod";
+import { listColorTuple } from "../db/db-enums";
 
 export const userSchema = z
   .object({
@@ -129,6 +130,8 @@ export const listSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
     name: z.string().trim().min(1, errorTemplates.nameMinError).max(100, errorTemplates.nameMaxError),
+    description: z.string().trim().max(200, errorTemplates.descriptionMaxError).nullable(),
+    color: z.enum(listColorTuple),
     projectId: z.int().min(1, errorTemplates.idMinError),
     position: z.int().min(0, errorTemplates.positionMinError),
     isDone: z.boolean(),
