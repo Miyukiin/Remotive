@@ -54,9 +54,15 @@ interface UIState {
   // Modal states
   isTaskDetailsModalOpen: boolean;
   setTaskDetailsModalOpen: (val: boolean) => void;
+
+  isUpdateKanbanModalOpen: boolean;
+  setUpdateKanbanModalOpen: (val: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()((set) => ({
   isTaskDetailsModalOpen: false,
   setTaskDetailsModalOpen: (val) => set(() => ({ isTaskDetailsModalOpen: val })),
+
+  isUpdateKanbanModalOpen: false,
+  setUpdateKanbanModalOpen: (val) => set(() => ({ isUpdateKanbanModalOpen: val })),
 }));

@@ -1,12 +1,11 @@
 "use client";
 import { useProjects } from "@/hooks/use-projects";
-import { use, useState } from "react";
+import { use } from "react";
 import { KanbanBoard } from "@/components/kanban-board/kanban-board";
 import ProjectHeading from "@/components/projects/project-heading";
 import { useLists } from "@/hooks/use-lists";
 import { useTasks } from "@/hooks/use-tasks";
 import SkeletonKanbanBoardPage from "@/components/kanban-board/kanban-page-skeleton";
-import { useUIStore } from "@/stores/ui-store";
 import TaskDetailsModal from "@/components/modals/task-details-modal";
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {

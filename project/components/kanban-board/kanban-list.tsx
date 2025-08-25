@@ -14,11 +14,10 @@ type KanbanListProps = {
   tasks: TaskSelect[];
   list: ListSelect;
   project_id: number;
-  onEdit: () => void;
   searchTerm: string;
 };
 
-const KanbanList: FC<KanbanListProps> = ({ tasks, list, project_id, onEdit, searchTerm }) => {
+const KanbanList: FC<KanbanListProps> = ({ tasks, list, project_id, searchTerm }) => {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   const task_ids = useMemo(() => tasks.map((l) => l.id), [tasks]);
@@ -95,7 +94,7 @@ const KanbanList: FC<KanbanListProps> = ({ tasks, list, project_id, onEdit, sear
                 </div>
               </div>
               <div className="flex gap-2 items-center">
-                <KanbanListOptions project_id={project_id} list_id={list.id} onEdit={onEdit} isDone={isDoneColumn} />
+                <KanbanListOptions project_id={project_id} list={list} isDone={isDoneColumn} />
               </div>
             </div>
           </div>

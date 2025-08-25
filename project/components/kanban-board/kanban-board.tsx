@@ -71,7 +71,6 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
   const [kanbanLists, setKanbanLists] = useState<ListSelect[]>(lists);
   const [kanbanTasks, setKanbanTasks] = useState<TaskSelect[]>(tasks);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [editTarget, setEditTarget] = useState<{ id: number; name: string } | null>(null);
 
   const listIds = useMemo(() => kanbanLists.map((l) => l.id), [kanbanLists]);
 
@@ -283,15 +282,8 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
 
   return (
     <>
-      {editTarget && (
-        <UpdateKanbanModal
-          list_name={editTarget.name}
-          project_id={projectId}
-          list_id={editTarget.id}
-          isModalOpen={true}
-          setIsModalOpen={(open) => !open && setEditTarget(null)}
-        />
-      )}
+      <UpdateKanbanModal project_id={projectId} />
+
       <div className="flex flex-col bg-background space-y-6 scrollbar-custom">
         {/* Task Search */}
         <TasksSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
@@ -305,7 +297,6 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
                     key={list.id}
                     list={list}
                     project_id={projectId}
-                    onEdit={() => setEditTarget({ id: list.id, name: list.name })}
                     searchTerm={searchTerm}
                   />
                 ))}
@@ -322,7 +313,6 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
                   key={activeList.id}
                   list={activeList}
                   project_id={projectId}
-                  onEdit={() => setEditTarget({ id: activeList.id, name: activeList.name })}
                   searchTerm={searchTerm}
                 />
               )}

@@ -4,23 +4,32 @@ import { Button } from "../ui/button";
 import { EllipsisVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useLists } from "@/hooks/use-lists";
+import { useUIStore } from "@/stores/ui-store";
+import { ListSelect } from "@/types";
+import { useKanbanStore } from "@/stores/kanban-store";
 
 type KanbanListOptionsProps = {
   project_id: number;
-  list_id: number;
-  onEdit: () => void;
+  list: ListSelect;
   isDone: boolean;
 };
 
-const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list_id, onEdit, isDone }) => {
+const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list, isDone }) => {
   const { deleteList, isListDeleteLoading, updateListsStatus } = useLists(project_id);
+  const { setUpdateKanbanModalOpen } = useUIStore();
+  const { setActiveList } = useKanbanStore();
 
   function onClick() {
-    deleteList({ project_id, list_id });
+    deleteList({ project_id, list_id: list.id });
   }
 
   function setAsDone() {
-    updateListsStatus({ new_done_list_id: list_id });
+    updateListsStatus({ new_done_list_id: list.id });
+  }
+
+  function onEdit(){
+    setActiveList(list);
+    setUpdateKanbanModalOpen(true)
   }
 
   return (

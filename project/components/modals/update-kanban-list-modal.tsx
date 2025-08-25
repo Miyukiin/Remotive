@@ -1,116 +1,87 @@
 "use client";
+
 import { FC, useEffect } from "react";
+import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+
 import { listSchemaForm } from "@/lib/validations/validations";
-import z from "zod";
-import { Loader2Icon, XIcon } from "lucide-react";
 import { useLists } from "@/hooks/use-lists";
-import { Button } from "../ui/button";
+
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { LoadingButtonContent } from "@/components/ui/loading-button-content";
+import { useKanbanStore } from "@/stores/kanban-store";
+import { useUIStore } from "@/stores/ui-store";
 
 type UpdateKanbanModalProps = {
-  list_name: string;
-  list_id: number;
   project_id: number;
-  isModalOpen: boolean;
-  setIsModalOpen: (value: boolean) => void;
 };
 
-const UpdateKanbanModal: FC<UpdateKanbanModalProps> = ({
-  list_name,
-  list_id,
-  project_id,
-  isModalOpen,
-  setIsModalOpen,
-}) => {
-  // Disable scrolling when modal is open.
-  useEffect(() => {
-    if (isModalOpen) {
-      // Account for layout shift due to hiding the scrollbar. Usually 15px
-      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.classList.add("overflow-hidden");
-      document.body.style.paddingRight = `${scrollBarWidth}px`;
-    } else {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    }
-    // Cleanup function on unmount
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    };
-  }, [isModalOpen]);
+const UpdateKanbanModal: FC<UpdateKanbanModalProps> = ({ project_id }) => {
+  const { updateList, isListUpdateLoading } = useLists(project_id);
+  const { activeList } = useKanbanStore();
+  const { isUpdateKanbanModalOpen, setUpdateKanbanModalOpen } = useUIStore();
 
-  // Form Handling
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<z.infer<typeof listSchemaForm>>({
+  const form = useForm<z.infer<typeof listSchemaForm>>({
     resolver: zodResolver(listSchemaForm),
-    defaultValues: {
-      name: list_name,
-    },
+    defaultValues: { name: activeList?.name },
+    mode: "onSubmit",
   });
 
-  const { updateList, isListUpdateLoading } = useLists(project_id);
+  // Keep form in sync when opening with a different list
+  useEffect(() => {
+    if (isUpdateKanbanModalOpen) form.reset({ name: activeList?.name });
+  }, [isUpdateKanbanModalOpen, activeList?.name, form]);
 
-  // Will only run if there is no zod validation errors.
   const onSubmit = async (values: z.infer<typeof listSchemaForm>) => {
-    updateList({ list_id, project_id, listFormData: values });
-    setIsModalOpen(false);
+    const maybePromise = updateList({ list_id: activeList!.id, project_id, listFormData: values });
+    await maybePromise;
+    setUpdateKanbanModalOpen(false);
   };
 
   return (
-    <>
-      {/* Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"
-          onMouseDown={() => setIsModalOpen(false)}
-        >
-          <div
-            className="bg-white dark:bg-gray-900 p-6 rounded-lg w-full mx-4 md:mx-0 max-w-md shadow-xl"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-semibold text-dark-grey-600 dark:text-gray-100">Update Column</h2>
-              <button onClick={() => setIsModalOpen(false)} className="hover: " aria-label="Close">
-                <XIcon className="text-dark-grey-600 w-full h-full" />
-              </button>
-            </div>
-            {/* Form */}
-            <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-              <label htmlFor="name" className="mb-2">
-                {" "}
-                Label
-              </label>
-              <input id="name" className="outline-1 px-2 rounded-sm " {...register("name")}></input>
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isListUpdateLoading}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isListUpdateLoading}>
-                  {isListUpdateLoading ? (
-                    <div className="flex gap-2">
-                      <Loader2Icon className="animate-spin " /> Loading
-                    </div>
-                  ) : (
-                    "Update"
-                  )}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+    <Dialog open={isUpdateKanbanModalOpen} onOpenChange={setUpdateKanbanModalOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Update Column</DialogTitle>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Label</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter column name" disabled={isListUpdateLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setUpdateKanbanModalOpen(false)}
+                disabled={isListUpdateLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isListUpdateLoading}>
+                <LoadingButtonContent isLoading={isListUpdateLoading} displayText="Update" />
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
