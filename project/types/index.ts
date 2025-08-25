@@ -1,5 +1,5 @@
 import * as schema from "@/lib/db/schema";
-import { projectSchemaForm, projectSchemaUpdateForm, taskSchemaEditForm, taskSchemaForm} from "@/lib/validations/validations";
+import { listSchemaForm, projectSchemaForm, projectSchemaUpdateForm, taskSchemaEditForm, taskSchemaForm} from "@/lib/validations/validations";
 import z from "zod";
 
 // For Project Creation and Update Form
@@ -15,6 +15,9 @@ export type TaskFormOutput = z.output<typeof taskSchemaForm>; // For after valid
 
 export type TaskEditFormInput = z.input<typeof taskSchemaEditForm>; // All fields are optional, for updating task data piecemeal in the task drawer.
 export type TaskEditFormOutput = z.output<typeof taskSchemaEditForm>; 
+
+export type ListFormInput = z.input<typeof listSchemaForm>;
+export type ListFormOutput = z.output<typeof listSchemaForm>;
 
 // Query Types
 export type QueryResponse<T> =

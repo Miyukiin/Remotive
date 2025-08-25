@@ -130,7 +130,10 @@ export const listSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
     name: z.string().trim().min(1, errorTemplates.nameMinError).max(100, errorTemplates.nameMaxError),
-    description: z.string().trim().max(200, errorTemplates.descriptionMaxError).nullable(),
+    description: z.preprocess(
+      (v: string | null) => (v == null ? "" : v),
+      z.string().trim().max(200, errorTemplates.descriptionMaxError),
+    ),
     color: z.enum(listColorTuple),
     projectId: z.int().min(1, errorTemplates.idMinError),
     position: z.int().min(0, errorTemplates.positionMinError),
