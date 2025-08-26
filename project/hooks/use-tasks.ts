@@ -71,6 +71,7 @@ import {
   getTaskMembersAction,
   getTasksByListIdAction,
   getTasksByProjectAction,
+  getTaskStatusAction,
   updateTaskAction,
   updateTaskNewAction,
   updateTasksPositionsAction,
@@ -134,6 +135,17 @@ export function useTasks({
     queryFn: async ({ queryKey }) => {
       const [, task_id] = queryKey as ["tasks_members", number];
       const res = await getTaskMembersAction(task_id);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
+  const getTaskStatus = useQuery({
+    queryKey: ["task_status", task_id],
+    enabled: typeof task_id === "number",
+    queryFn: async ({ queryKey }) => {
+      const [, task_id] = queryKey as ["tasks_members", number];
+      const res = await getTaskStatusAction(task_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -423,6 +435,11 @@ export function useTasks({
     task: getTaskById.data,
     isTaskLoading: getTaskById.isLoading,
     taskError: getTaskById.error,
+
+    // Get task status
+    taskStatus: getTaskStatus.data,
+    isTaskStatusLoading: getTaskStatus.isLoading,
+    taskStatusError: getTaskStatus.error,
 
     // Create task
     createTask: createTask.mutate,

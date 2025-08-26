@@ -130,6 +130,7 @@ export const tasks = {
       const changed: Partial<types.TaskSelect> = {};
       if (existingTask.position != incomingTask.position) changed.position = incomingTask.position;
       if (existingTask.title != incomingTask.title) changed.title = incomingTask.title;
+      if (existingTask.listId != incomingTask.listId) changed.listId = incomingTask.listId;
       if (existingTask.description != incomingTask.description) changed.description = incomingTask.description;
       if (existingTask.dueDate != incomingTask.dueDate) changed.dueDate = incomingTask.dueDate;
       if (existingTask.priority != incomingTask.priority) changed.priority = incomingTask.priority;
@@ -290,11 +291,28 @@ export const tasks = {
         .limit(1);
 
       const projectId = res[0]?.projectId;
-      if(projectId === null) throw new Error("Database returned no matches.")
+      if (projectId === null) throw new Error("Database returned no matches.");
 
       return successResponse(`Task's project identifier retrieved successfully.`, projectId);
     } catch (e) {
-      return failResponse(`Unable to task's project identifier.`, e);
+      return failResponse(`Unable to retrieve task's project identifier.`, e);
+    }
+  },
+  getTaskStatus: async (task_id: number): Promise<types.QueryResponse<types.TaskStatus>> => {
+    try {
+      const res = await db
+        .select({ status: schema.lists.name, color: schema.lists.color })
+        .from(schema.tasks)
+        .innerJoin(schema.lists, eq(schema.lists.id, schema.tasks.listId))
+        .where(eq(schema.tasks.id, task_id))
+        .limit(1);
+
+      const taskStatus = res[0]
+      if (taskStatus === null) throw new Error("Database returned no matches.");
+
+      return successResponse(`Task status retrieved successfully.`, taskStatus);
+    } catch (e) {
+      return failResponse(`Unable to retrieve task status.`, e);
     }
   },
 };

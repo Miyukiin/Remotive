@@ -192,8 +192,8 @@ export const taskSchema = z
       z
         .string()
         .transform((val) => new Date(val))
-        .pipe(z.date().min(today, errorTemplates.dueDateMinError)),
-      z.date().min(today, errorTemplates.dueDateMinError).nullable(),
+        .pipe(z.date()),
+      z.date().nullable(),
     ]), // Allow only Today or Future dates
     position: z.int().min(0, errorTemplates.positionMinError),
     createdAt: z.date(),
@@ -240,7 +240,10 @@ export const taskSchemaForm = taskSchema
   })
   .extend({ assigneeIds: z.array(z.int()).nullable() }); // Because on task creation and update, we can assign zero, one or more members.
 
-export const taskSchemaEditForm = taskSchemaForm.partial(); // All fields are optional, for updating task data piecemeal in the task drawer.
+export const taskSchemaEditForm = taskSchema
+  .omit({ id: true, createdAt: true, updatedAt: true })
+  .extend({ assigneeIds: z.array(z.int()).nullable() })
+  .partial(); // All fields are optional, for updating task data piecemeal in the task drawer.
 
 export const commentSchema = z
   .object({

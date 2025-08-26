@@ -1,6 +1,6 @@
 "use server";
 
-import { TaskPositionPayload, TaskSelect, UserSelect } from "@/types";
+import { TaskPositionPayload, TaskSelect, TaskStatus, UserSelect } from "@/types";
 import { ServerActionResponse } from "./actions-types";
 import { queries } from "@/lib/db/queries/queries";
 import {
@@ -70,6 +70,15 @@ export async function getProjectIdentifier(task_id: number): Promise<ServerActio
   return await queries.tasks.getProjectIdentifier(task_id);
 }
 
+export async function getTaskStatusAction(task_id: number): Promise<ServerActionResponse<TaskStatus>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: task_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  return await queries.tasks.getTaskStatus(task_id);
+}
+
 // Mutations
 export async function deleteTaskAction(task_id: number): Promise<ServerActionResponse<TaskSelect>> {
   await checkAuthenticationStatus();
@@ -125,7 +134,6 @@ export async function updateTaskAction(
 
   return await queries.tasks.update(task_id, taskDBData, assignedIds);
 }
-
 
 export async function updateTaskNewAction(
   task_id: number,

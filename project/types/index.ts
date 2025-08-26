@@ -1,6 +1,14 @@
 import * as schema from "@/lib/db/schema";
-import { listSchemaForm, projectSchemaForm, projectSchemaUpdateForm, taskSchemaEditForm, taskSchemaForm} from "@/lib/validations/validations";
+import { listColor } from "@/lib/utils";
+import {
+  listSchemaForm,
+  projectSchemaForm,
+  projectSchemaUpdateForm,
+  taskSchemaEditForm,
+  taskSchemaForm,
+} from "@/lib/validations/validations";
 import z from "zod";
+import { TaskStatus } from "../components/tasks/task-modal-ui/task-status";
 
 // For Project Creation and Update Form
 export type ProjectFormInput = z.input<typeof projectSchemaForm>; // This is because our input for duedate field accepts string.
@@ -8,13 +16,12 @@ export type ProjectFormOutput = z.output<typeof projectSchemaForm>; // For after
 export type ProjectFormInputUpdate = z.input<typeof projectSchemaUpdateForm>;
 export type ProjectFormOutputUpdate = z.output<typeof projectSchemaUpdateForm>;
 
-
 // for Task Creation and Update Form
 export type TaskFormInput = z.input<typeof taskSchemaForm>; // This is because our input for duedate field accepts string.
 export type TaskFormOutput = z.output<typeof taskSchemaForm>; // For after validation, dueDate output is a Date or null.
 
 export type TaskEditFormInput = z.input<typeof taskSchemaEditForm>; // All fields are optional, for updating task data piecemeal in the task drawer.
-export type TaskEditFormOutput = z.output<typeof taskSchemaEditForm>; 
+export type TaskEditFormOutput = z.output<typeof taskSchemaEditForm>;
 
 export type ListFormInput = z.input<typeof listSchemaForm>;
 export type ListFormOutput = z.output<typeof listSchemaForm>;
@@ -72,11 +79,13 @@ export type RecentProjects = {
 
 export type ListPositionPayload = {
   id: number;
-  position: number
-}
+  position: number;
+};
 
 export type TaskPositionPayload = {
   id: number;
   list_id?: number;
-  position: number
-}
+  position: number;
+};
+
+export type TaskStatus = { status: string; color: keyof typeof listColor };
