@@ -142,6 +142,9 @@ export const tasks = pgTable(
     title: varchar("title").notNull(),
     description: text("description"),
     content: text("content"),
+    creatorId: integer("creatorId")
+      .references(() => users.id, { onDelete: "restrict" })
+      .notNull(),
     listId: integer("listId")
       .references(() => lists.id, { onDelete: "cascade" })
       .notNull(),
@@ -152,6 +155,7 @@ export const tasks = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => ({
+    idxOwner: index("idx_projects_creator").on(t.creatorId),
     idxList: index("idx_tasks_list").on(t.listId), // Joins
     idxListPos: index("idx_tasks_list_pos").on(t.listId, t.position), // fast lookups for positions
     // uxListPos: uniqueIndex("ux_tasks_list_pos").on(t.listId, t.position), // Prevents same task positions

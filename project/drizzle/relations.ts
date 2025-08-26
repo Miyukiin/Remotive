@@ -6,6 +6,10 @@ export const tasksRelations = relations(tasks, ({one, many}) => ({
 		fields: [tasks.listId],
 		references: [lists.id]
 	}),
+	user: one(users, {
+		fields: [tasks.creatorId],
+		references: [users.id]
+	}),
 	comments: many(comments),
 	taskLabels: many(taskLabels),
 	usersToTasks: many(usersToTasks),
@@ -17,6 +21,15 @@ export const listsRelations = relations(lists, ({one, many}) => ({
 		fields: [lists.projectId],
 		references: [projects.id]
 	}),
+}));
+
+export const usersRelations = relations(users, ({many}) => ({
+	tasks: many(tasks),
+	comments: many(comments),
+	projects: many(projects),
+	usersToTasks: many(usersToTasks),
+	usersToTeams: many(usersToTeams),
+	projectMembers: many(projectMembers),
 }));
 
 export const commentsRelations = relations(comments, ({one, many}) => ({
@@ -36,14 +49,6 @@ export const commentsRelations = relations(comments, ({one, many}) => ({
 	comments: many(comments, {
 		relationName: "comments_parentCommentId_comments_id"
 	}),
-}));
-
-export const usersRelations = relations(users, ({many}) => ({
-	comments: many(comments),
-	projects: many(projects),
-	usersToTasks: many(usersToTasks),
-	usersToTeams: many(usersToTeams),
-	projectMembers: many(projectMembers),
 }));
 
 export const projectsRelations = relations(projects, ({one, many}) => ({
