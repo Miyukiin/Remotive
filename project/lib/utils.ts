@@ -39,13 +39,7 @@ export function areStringArraysEqual(a: string[] | null, b: string[] | null): bo
   return a.every((val, index) => val === b[index]);
 }
 
-export function formatDate(date: Date | string): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
+
 
 export function capitalize(string: string): string {
   if (string.length === 0) return string;

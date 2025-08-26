@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Users, Calendar } from "lucide-react";
 import { getRecentProjects } from "@/lib/api-calls";
-import { formatDate, projectStatusColor } from "@/lib/utils";
+import { projectStatusColor } from "@/lib/utils";
+import { formatDate } from "@/lib/server-utils";
 import type { RecentProjects } from "@/types";
 
 export default async function RecentProjectsCard() {

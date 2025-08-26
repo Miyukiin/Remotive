@@ -4,7 +4,8 @@ import { Calendar as CalendarPicker } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { TaskSelect } from "@/types";
 import { useState } from "react";
-import { calculateOverdueInfo, formatDate } from "@/lib/utils";
+import { calculateOverdueInfo } from "@/lib/utils";
+import { formatDate } from "@/lib/server-utils";
 import { useTasks } from "@/hooks/use-tasks";
 
 type TaskDueProps = {

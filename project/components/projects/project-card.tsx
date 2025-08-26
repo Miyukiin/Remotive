@@ -1,7 +1,8 @@
 "use client";
 
 import { useProjectMembers, useProjects } from "@/hooks/use-projects";
-import { formatDate, projectStatusColor } from "@/lib/utils";
+import { projectStatusColor } from "@/lib/utils";
+import { formatDate } from "@/lib/server-utils";
 import { ProjectSelect } from "@/types";
 import { Calendar, Users } from "lucide-react";
 import Link from "next/link";
@@ -117,9 +118,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
-  const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(
-    project.id,
-  );
+  const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(project.id);
   const { taskCount, isTaskCountLoading, taskCountError } = useProjects(project.id);
 
   const [isEditModalOpen, setIsModalOpen] = useState(false);

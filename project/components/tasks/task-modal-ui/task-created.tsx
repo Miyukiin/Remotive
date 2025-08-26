@@ -1,6 +1,6 @@
 import { Calendar } from "lucide-react";
 import { TaskSelect } from "@/types";
-import { formatDate } from "../../../lib/utils";
+import { formatDate } from "@/lib/server-utils";
 
 type TaskCreatedAtProps = {
   activeTask: TaskSelect;

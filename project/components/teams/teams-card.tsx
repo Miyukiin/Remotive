@@ -1,5 +1,5 @@
 "use client";
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/server-utils";
 import { TeamsSelect } from "@/types";
 import { FC } from "react";
 import MembersAvatars from "../ui/members-avatars";

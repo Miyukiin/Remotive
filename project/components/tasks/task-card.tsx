@@ -13,7 +13,7 @@ import { Calendar, MessageCircleMore } from "lucide-react";
 import { CSS } from "@dnd-kit/utilities";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { formatDate } from "../../lib/utils";
+import { formatDate } from "@/lib/server-utils";
 import { DragButton } from "../ui/drag-button";
 import { useSortable } from "@dnd-kit/sortable";
 import { useUIStore } from "@/stores/ui-store";

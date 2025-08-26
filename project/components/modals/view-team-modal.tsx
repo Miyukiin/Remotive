@@ -2,7 +2,7 @@
 import { XIcon } from "lucide-react";
 import { FC, useEffect } from "react";
 import { TeamsSelect, UserSelect } from "@/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/server-utils";
 import { Separator } from "../ui/separator";
 
 import TeamName from "../teams/team-name";
