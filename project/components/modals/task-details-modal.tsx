@@ -79,7 +79,7 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
 
           <Separator className="my-5" />
           {/* Content of Task */}
-          <TaskContent activeTask={activeTask} isMobile={isMobile} />
+          <TaskContent activeTask={activeTask} isMobile={isMobile} project_id={project_id} />
 
           {/* Add a comment */}
           <div className="flex w-full gap-3 mt-10">

@@ -80,6 +80,15 @@ export async function getTaskStatusAction(task_id: number): Promise<ServerAction
   return await queries.tasks.getTaskStatus(task_id);
 }
 
+export async function getTaskCreatorAction(task_id: number): Promise<ServerActionResponse<UserSelect>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: task_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  return await queries.tasks.getTaskCreator(task_id);
+}
+
 // Mutations
 export async function deleteTaskAction(task_id: number): Promise<ServerActionResponse<TaskSelect>> {
   await checkAuthenticationStatus();

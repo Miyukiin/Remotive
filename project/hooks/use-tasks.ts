@@ -68,6 +68,7 @@ import {
   createTaskAction,
   deleteTaskAction,
   getTaskByIdAction,
+  getTaskCreatorAction,
   getTaskMembersAction,
   getTasksByListIdAction,
   getTasksByProjectAction,
@@ -145,8 +146,19 @@ export function useTasks({
     queryKey: ["task_status", task_id],
     enabled: typeof task_id === "number",
     queryFn: async ({ queryKey }) => {
-      const [, task_id] = queryKey as ["tasks_members", number];
+      const [, task_id] = queryKey as ["task_status", number];
       const res = await getTaskStatusAction(task_id);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
+  const getTaskCreator = useQuery({
+    queryKey: ["task_creator", task_id],
+    enabled: typeof task_id === "number",
+    queryFn: async ({ queryKey }) => {
+      const [, task_id] = queryKey as ["task_creator", number];
+      const res = await getTaskCreatorAction(task_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -177,7 +189,7 @@ export function useTasks({
 
       const tempId = getTempId();
       const res = await getUserId();
-      if(!res.success) throw new Error(res.message)
+      if (!res.success) throw new Error(res.message);
 
       // Build an optimistic task
       const now = new Date();
@@ -360,6 +372,7 @@ export function useTasks({
     }) => {
       const res = await updateTaskNewAction(task_id, taskFormData);
       if (!res.success) throw new Error(res.message);
+
       return res.data;
     },
     onMutate: async ({ task_id, project_id, taskFormData }) => {
@@ -487,6 +500,11 @@ export function useTasks({
     taskStatus: getTaskStatus.data,
     isTaskStatusLoading: getTaskStatus.isLoading,
     taskStatusError: getTaskStatus.error,
+
+    // Get task creator
+    taskCreator: getTaskCreator.data,
+    isTaskCreatorLoading: getTaskCreator.isLoading,
+    taskCreatorError: getTaskCreator.error,
 
     // Create task
     createTask: createTask.mutate,

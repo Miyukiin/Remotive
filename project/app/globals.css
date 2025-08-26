@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@plugin '@tailwindcss/typography';
 @plugin 'tailwindcss-animate';
 
 @source '../*.{js,ts,jsx,tsx,mdx}';
@@ -304,6 +304,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --code-bg: var(--color-dark-grey-800); 
+  --code-border: var(--color-dark-grey-700); 
+  --code-text: var(--color-white-smoke-100); 
 }
 
 .dark {
@@ -361,6 +365,10 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.439 0 0);
+
+  --code-bg: var(--color-dark-grey-600); 
+  --code-border: var(--color-dark-grey-500);
+  --code-text: var(--color-white-smoke-50);
 }
 
 @layer base {

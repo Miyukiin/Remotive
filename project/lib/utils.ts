@@ -18,13 +18,13 @@ export const taskPriorityColor = {
 } as const;
 
 export const listColor = {
-  BLUE:   "bg-[#0969da]/15 text-[#0969da] dark:bg-[#1f6feb]/20 dark:text-[#1f6feb]",
-  GRAY:   "bg-[#59636e]/15 text-[#59636e] dark:bg-[#6e7681]/20 dark:text-[#6e7681]",
-  GREEN:  "bg-[#1f883d]/15 text-[#1f883d] dark:bg-[#238636]/20 dark:text-[#238636]",
+  BLUE: "bg-[#0969da]/15 text-[#0969da] dark:bg-[#1f6feb]/20 dark:text-[#1f6feb]",
+  GRAY: "bg-[#59636e]/15 text-[#59636e] dark:bg-[#6e7681]/20 dark:text-[#6e7681]",
+  GREEN: "bg-[#1f883d]/15 text-[#1f883d] dark:bg-[#238636]/20 dark:text-[#238636]",
   ORANGE: "bg-[#bc4c00]/15 text-[#bc4c00] dark:bg-[#bd561d]/20 dark:text-[#bd561d]",
-  PINK:   "bg-[#bf3989]/15 text-[#bf3989] dark:bg-[#bf4b8a]/20 dark:text-[#bf4b8a]",
+  PINK: "bg-[#bf3989]/15 text-[#bf3989] dark:bg-[#bf4b8a]/20 dark:text-[#bf4b8a]",
   PURPLE: "bg-[#8250df]/15 text-[#8250df] dark:bg-[#8957e5]/20 dark:text-[#8957e5]",
-  RED:    "bg-[#cf222e]/15 text-[#cf222e] dark:bg-[#da3633]/20 dark:text-[#da3633]",
+  RED: "bg-[#cf222e]/15 text-[#cf222e] dark:bg-[#da3633]/20 dark:text-[#da3633]",
   YELLOW: "bg-[#9a6700]/15 text-[#9a6700] dark:bg-[#9e6a03]/20 dark:text-[#9e6a03]",
 } as const;
 
@@ -38,8 +38,6 @@ export function areStringArraysEqual(a: string[] | null, b: string[] | null): bo
 
   return a.every((val, index) => val === b[index]);
 }
-
-
 
 export function capitalize(string: string): string {
   if (string.length === 0) return string;
@@ -93,6 +91,23 @@ export function calculateOverdueInfo(dueInput: Date | null): OverdueInfo {
     isOverdue: diffDays > 0, // Overdue by how many days
     daysOverdue: diffDays > 0 ? diffDays : 0, // Due in |diffDays| days
   };
+}
+
+export function calculateDaysPassed(createdAt: Date | null): { daysAgo: number } {
+  if (!createdAt) return { daysAgo: 0 };
+
+  const whenCreated = createdAt;
+  if (isNaN(whenCreated.getTime())) return { daysAgo: 0 };
+
+  const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()); // Helper func to strip the time off, so that we avoid off-by-hours bugs.
+  const today = startOf(new Date());
+  const dueDay = startOf(createdAt);
+
+  const MS_PER_DAY = 86_400_000;
+  const diffMs = today.getTime() - dueDay.getTime(); // milliseconds difference
+  const diffDays = Math.floor(diffMs / MS_PER_DAY); // whole-day difference
+
+  return {daysAgo: diffDays};
 }
 
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.

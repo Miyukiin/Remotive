@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -6,66 +11,156 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Ellipsis } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import dynamic from "next/dynamic";
-import { useState } from "react";
-import { TaskSelect } from "@/types";
+import { TaskEditFormInput, TaskEditFormOutput, TaskSelect } from "@/types";
+import { useTasks } from "@/hooks/use-tasks";
+import { formatDate, initials } from "@/lib/server-utils";
+import { QuillEditor } from "@/components/ui/rich-text-editor";
+import { LoadingButtonContent } from "@/components/ui/loading-button-content";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { taskSchemaEditForm } from "@/lib/validations/validations";
+import { ContentRenderer } from "./content-renderer";
+import { calculateDaysPassed } from "@/lib/utils";
 
 type TaskContentProps = {
   activeTask: TaskSelect;
   isMobile: boolean;
+  project_id: number;
 };
 
-const DynamicRichTextEditor = dynamic(() => import("../../ui/rich-text-editor"), {
-  ssr: false,
-  loading: () => <p>Loading editor...</p>,
-});
-
-export function TaskContent({ activeTask, isMobile }: TaskContentProps) {
+export function TaskContent({ activeTask, isMobile, project_id }: TaskContentProps) {
   const [isEditingContent, setIsEditingContent] = useState(false);
+  const { daysAgo } = calculateDaysPassed(activeTask.createdAt);
+
+  const {
+    taskCreator: taskCreatorObject,
+    updateTaskNew,
+    isUpdateTaskNewLoading,
+  } = useTasks({
+    task_id: activeTask.id,
+  });
+
+  const taskCreator = taskCreatorObject;
+
+  const form = useForm<TaskEditFormInput, undefined, TaskEditFormOutput>({
+    resolver: zodResolver(taskSchemaEditForm),
+    defaultValues: { content: activeTask.content ?? "" },
+  });
+
+  async function onSubmit(values: TaskEditFormOutput) {
+    await updateTaskNew({
+      task_id: activeTask.id,
+      project_id,
+      taskFormData: { content: values.content },
+    });
+    setIsEditingContent(false);
+  }
+
+  function onCancel() {
+    form.reset({ content: activeTask.content ?? "" });
+    setIsEditingContent(false);
+  }
+
   return (
     <div className="flex w-full gap-3">
-      {" "}
       {!isMobile && (
         <Avatar className="w-12 h-12">
-          <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage src={taskCreator?.image_url} />
+          <AvatarFallback className="text-sm">{initials(taskCreator?.name)}</AvatarFallback>
         </Avatar>
       )}
-      <div className="w-full rounded-md border border-green/400 dark:border-green-200/10">
-        <div className="flex justify-between items-center gap-2 px-3 py-2 border-b border-green/400 dark:border-green-200/10">
-          <div className="flex items-center gap-2">
+
+      <div className="w-full rounded-md border border-emerald-900/40 dark:border-emerald-400/20">
+        {/* Header row */}
+        <div className="flex items-center gap-2 px-3 py-2 border-b bg-emerald-100/30 dark:bg-emerald-400/20 rounded-t-md border-emerald-900/40 dark:border-emerald-400/20">
+          <div className="flex items-center gap-2 flex-1 basis-0 min-w-0 ">
             {isMobile && (
               <Avatar className="w-6 h-6">
-                <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarImage src={taskCreator?.image_url} />
+                <AvatarFallback className="text-sm">{initials(taskCreator?.name)}</AvatarFallback>
               </Avatar>
             )}
-            <p className="text-sm">
-              <span className="font-medium">jrconcha-strat</span> opened 4 days ago ·{" "}
-              <span className="font-medium">jrconcha-strat</span>{" "}
-            </p>
-          </div>
-          {/* Dropdown for Editing. Should replace text content with a rich text editor. */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Ellipsis />
-              </Button>
-            </DropdownMenuTrigger>
 
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => setIsEditingContent(true)}>Edit</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <div className="flex-1 basis-0 min-w-0 overflow-hidden">
+              <div className="flex items-center gap-2 min-w-0">
+                <p className="text-xs font-medium truncate min-w-0">{taskCreator?.name}</p>
+                {!isMobile && (
+                  <>
+                    <span className="font-light text-xs text-foreground/40 shrink-0">|</span>
+                    <span className="font-light text-xs text-foreground/70 shrink-0">
+                      {daysAgo === 0
+                        ? "just opened today"
+                        : daysAgo >= 1 && daysAgo <= 7
+                          ? `opened ${daysAgo} ${daysAgo === 1 ? "day" : "days"} ago`
+                          : `opened on ${formatDate(activeTask.createdAt)}`}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <p className="text-xs text-muted-foreground truncate min-w-0">{taskCreator?.email}</p>
+
+              {isMobile && (
+                <span className="font-light text-xs text-foreground/70 shrink-0">
+                  {daysAgo === 0
+                    ? "just opened today"
+                    : daysAgo >= 1 && daysAgo <= 7
+                      ? `opened ${daysAgo} ${daysAgo === 1 ? "day" : "days"} ago`
+                      : `opened on ${formatDate(activeTask.createdAt)}`}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                  <Ellipsis />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditingContent(true)}>Edit</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
-        {/* Text Content. This would be Render React Markdown styled with Prose */}
+        {/* Content */}
         <div className="p-3 w-full">
           {isEditingContent ? (
-            <DynamicRichTextEditor />
+            <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)} id="task-content-form">
+              <Controller
+                name="content"
+                control={form.control}
+                render={({ field }) => (
+                  <QuillEditor
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    placeholder="Write task details…"
+                    className="min-h-40"
+                  />
+                )}
+              />
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onCancel}
+                  disabled={isUpdateTaskNewLoading}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" size="sm" variant="save" disabled={isUpdateTaskNewLoading}>
+                  <LoadingButtonContent isLoading={isUpdateTaskNewLoading} displayText="Save" />
+                </Button>
+              </div>
+            </form>
+          ) : activeTask.content ? (
+            <ContentRenderer content={activeTask.content} />
           ) : (
-            <p className="justify-evenly text-sm">{activeTask.description}</p>
+            <p className="text-muted-foreground">No Content Yet</p>
           )}
         </div>
       </div>

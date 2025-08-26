@@ -132,6 +132,7 @@ export const tasks = {
       if (existingTask.title != incomingTask.title) changed.title = incomingTask.title;
       if (existingTask.listId != incomingTask.listId) changed.listId = incomingTask.listId;
       if (existingTask.description != incomingTask.description) changed.description = incomingTask.description;
+      if (existingTask.content != incomingTask.content) changed.content = incomingTask.content;
       if (existingTask.dueDate != incomingTask.dueDate) changed.dueDate = incomingTask.dueDate;
       if (existingTask.priority != incomingTask.priority) changed.priority = incomingTask.priority;
 
@@ -307,12 +308,29 @@ export const tasks = {
         .where(eq(schema.tasks.id, task_id))
         .limit(1);
 
-      const taskStatus = res[0]
+      const taskStatus = res[0];
       if (taskStatus === null) throw new Error("Database returned no matches.");
 
       return successResponse(`Task status retrieved successfully.`, taskStatus);
     } catch (e) {
       return failResponse(`Unable to retrieve task status.`, e);
+    }
+  },
+  getTaskCreator: async (task_id: number): Promise<types.QueryResponse<types.UserSelect>> => {
+    try {
+      const res = await db
+        .select({ users: schema.users })
+        .from(schema.users)
+        .innerJoin(schema.tasks, eq(schema.tasks.creatorId, schema.users.id))
+        .where(eq(schema.tasks.id, task_id))
+        .limit(1);
+
+      const taskCreator = res[0].users;
+      if (taskCreator === null) throw new Error("Database returned no matches.");
+
+      return successResponse(`Task creator retrieved successfully.`, taskCreator);
+    } catch (e) {
+      return failResponse(`Unable to retrieve task creator.`, e);
     }
   },
 };
