@@ -17,6 +17,7 @@ import { TaskPriority } from "../tasks/task-modal-ui/task-priority";
 import { TaskStatus } from "../tasks/task-modal-ui/task-status";
 import { TaskAssignees } from "../tasks/task-modal-ui/task-assignees";
 import { TaskContent } from "../tasks/task-modal-ui/task-content";
+import { TaskDescription } from "../tasks/task-modal-ui/task-description";
 
 const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
   const { isTaskDetailsModalOpen, setTaskDetailsModalOpen } = useUIStore();
@@ -44,6 +45,8 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
         <div className="p-6 w-full overflow-y-auto">
           {/* Task Title and Editing */}
           <TaskName activeTask={activeTask} project_id={project_id} />
+          {/* Task Description and Editing */}
+          <TaskDescription activeTask={activeTask} project_id={project_id} />
           {/* Task Details */}
           <div className={`mt-4 grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} grid-rows-1 gap-3`}>
             {/* Assignees */}

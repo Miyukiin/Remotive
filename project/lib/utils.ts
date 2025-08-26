@@ -101,13 +101,13 @@ export function calculateDaysPassed(createdAt: Date | null): { daysAgo: number }
 
   const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()); // Helper func to strip the time off, so that we avoid off-by-hours bugs.
   const today = startOf(new Date());
-  const dueDay = startOf(createdAt);
+  const createdDay = startOf(createdAt);
 
   const MS_PER_DAY = 86_400_000;
-  const diffMs = today.getTime() - dueDay.getTime(); // milliseconds difference
+  const diffMs = today.getTime() - createdDay.getTime(); // milliseconds difference
   const diffDays = Math.floor(diffMs / MS_PER_DAY); // whole-day difference
 
-  return {daysAgo: diffDays};
+  return { daysAgo: diffDays };
 }
 
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.
