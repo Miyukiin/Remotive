@@ -3,7 +3,7 @@ import { Drawer, DrawerTitle, DrawerContent } from "@/components/ui/drawer";
 import { FC, useState } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "../ui/button";
-import { Ellipsis, Settings, Tag, Users } from "lucide-react";
+import { Ellipsis, Settings, Tag } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useScreenWidth } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { TaskDue } from "../tasks/task-modal-ui/task-due";
 import { TaskCreated } from "../tasks/task-modal-ui/task-created";
 import { TaskPriority } from "../tasks/task-modal-ui/task-priority";
 import { TaskStatus } from "../tasks/task-modal-ui/task-status";
+import { TaskAssignees } from "../tasks/task-modal-ui/task-assignees";
 
 const DynamicRichTextEditor = dynamic(() => import("../ui/rich-text-editor"), {
   ssr: false,
@@ -54,36 +55,7 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
           {/* Task Details */}
           <div className={`mt-4 grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} grid-rows-1 gap-3`}>
             {/* Assignees */}
-            <div>
-              <div className="flex items-center justify-between text-dark-grey-300 dark:text-white-smoke-200 hover:bg-black/10 dark:hover:bg-white/10 active:bg-black/10 dark:active:bg-white/10 py-1 px-2 rounded-sm">
-                <div className="flex items-center gap-2 text-inherit">
-                  <Users size={16} />
-                  <p className="text-sm font-medium"> Assignees </p>
-                </div>
-                <Settings size={16} />
-              </div>
-              {/* Assigned Members */}
-              <div className="mt-1 flex flex-col gap-2 ml-8">
-                <div className="flex items-center gap-2">
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <p className="flex gap-2">
-                    <span className="text-foreground text-xs">Jhack Concha</span>{" "}
-                    <span className="text-muted-foreground text-xs">Task Owner </span>{" "}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Avatar className="w-6 h-6">
-                    <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <p className="text-foreground text-xs">James Reeves</p>
-                </div>
-              </div>
-            </div>
+            <TaskAssignees activeTask={activeTask} project_id={project_id} />
 
             {/* Labels */}
             <div>

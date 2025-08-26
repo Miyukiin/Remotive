@@ -188,7 +188,7 @@ const UpdateTaskModal: FC<UpdateTaskModalProps> = ({ isModalOpen, setIsModalOpen
                 {errors.priority && <p className="text-red-500 text-sm mt-1">{errors.priority.message}</p>}
               </div>
 
-              <div>
+              <div className="flex">
                 <label className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2">
                   Assign Members
                 </label>

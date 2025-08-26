@@ -171,7 +171,7 @@
 /* Custom scrollbar styles */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--french-gray) transparent;
+  background-color: var(--color-white-smoke-400);
 }
 
 .scrollbar-thin::-webkit-scrollbar {
