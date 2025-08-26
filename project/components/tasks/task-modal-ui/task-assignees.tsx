@@ -14,6 +14,8 @@ import { useProjectMembers } from "@/hooks/use-projects";
 import type { TaskEditFormInput, TaskEditFormOutput, TaskSelect } from "@/types";
 import { initials } from "@/lib/server-utils";
 import { LoadingButtonContent } from "@/components/ui/loading-button-content";
+import { taskSchemaEditForm } from "@/lib/validations/validations";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type TaskAssigneesProps = {
   activeTask: TaskSelect;
@@ -31,8 +33,8 @@ export function TaskAssignees({ activeTask, project_id }: TaskAssigneesProps) {
     task_id: activeTask.id,
   });
 
-  // RHF just for the assigneeIds field
   const { control, handleSubmit, reset } = useForm<TaskEditFormInput, undefined, TaskEditFormOutput>({
+    resolver: zodResolver(taskSchemaEditForm),
     defaultValues: {
       assigneeIds: taskMembers?.map((m) => m.id) ?? [],
     },
