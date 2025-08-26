@@ -79,7 +79,7 @@ import {
 import { getTempId } from "@/lib/utils";
 import { taskSchemaEditForm, taskSchemaForm } from "@/lib/validations/validations";
 import { useTaskStore } from "@/stores/task-store";
-import { TaskPositionPayload, TaskSelect } from "@/types";
+import { TaskPositionPayload, TaskSelect, UserSelect } from "@/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import z from "zod";
@@ -192,10 +192,28 @@ export function useTasks({
         updatedAt: now,
       };
 
+      // Tanstack Optimistic UI
       queryClient.setQueryData<TaskSelect[]>(["tasks", list_id], (old) => (old ? [...old, optimisticTask] : old));
       queryClient.setQueryData<TaskSelect[]>(["tasks", project_id], (old) => (old ? [...old, optimisticTask] : old));
 
-      return { previousListTasks, previousProjectTasks, tempId };
+      // Tanstack Optimistic UI for members
+      const assigneeIds = taskFormData.assigneeIds as number[] | undefined;
+      let previousTempMembers: UserSelect[] | undefined;
+
+      if (assigneeIds?.length) {
+        // Hydrate from cached project members
+        const projectMembers = queryClient.getQueryData<UserSelect[]>(["project_members", project_id]) ?? [];
+        const pmById = new Map(projectMembers.map((m) => [m.id, m]));
+        const optimisticMembers = assigneeIds.map((id) => pmById.get(id)).filter(Boolean);
+
+        // snapshot existing (should be undefined)
+        previousTempMembers = queryClient.getQueryData(["task_members", tempId]);
+
+        // seed task_members for tempId
+        queryClient.setQueryData(["task_members", tempId], optimisticMembers);
+      }
+
+      return { previousListTasks, previousProjectTasks, tempId, previousTempMembers, project_id, list_id, assigneeIds };
     },
     onSuccess: (createdTask, variables, context) => {
       toast.success("Success", { description: "Successfully created the task." });
@@ -205,11 +223,35 @@ export function useTasks({
         ["tasks", list_id],
         (old) => old?.map((t) => (t.id === context.tempId ? createdTask : t)) ?? old,
       );
+
+      queryClient.setQueryData<TaskSelect[]>(
+        ["tasks", variables.project_id],
+        (old) => old?.map((t) => (t.id === context!.tempId ? createdTask : t)) ?? old,
+      );
+
+      // We also transfer our assignees from task_members entry with temp id to task_members entry with actual id
+      const tempMembers = queryClient.getQueryData<UserSelect[]>(["task_members", context!.tempId]) ?? [];
+      if (tempMembers.length) {
+        queryClient.setQueryData(["task_members", createdTask.id], tempMembers);
+        // Then just remove the old query
+        queryClient.removeQueries({ queryKey: ["task_members", context!.tempId], exact: true });
+      }
+      // Then invalidate to refetch
+      queryClient.invalidateQueries({ queryKey: ["task_members", createdTask.id] });
     },
     onError: (error, variables, context) => {
       toast.error("Error", { description: error.message });
+
+      // Rollback
       queryClient.setQueryData(["tasks", list_id], context?.previousListTasks);
       queryClient.setQueryData(["tasks", project_id], context?.previousProjectTasks);
+
+      // Rollback for optimistic ui members
+      if (context?.previousTempMembers !== undefined) {
+        queryClient.setQueryData(["task_members", context.tempId], context.previousTempMembers);
+      } else {
+        queryClient.removeQueries({ queryKey: ["task_members", context!.tempId], exact: true });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", list_id] });
