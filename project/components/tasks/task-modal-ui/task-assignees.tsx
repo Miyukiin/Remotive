@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Users, Settings, Loader2 } from "lucide-react";
+import { Users, Settings } from "lucide-react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import { useTasks } from "@/hooks/use-tasks";
 import { useProjectMembers } from "@/hooks/use-projects";
 import type { TaskEditFormInput, TaskEditFormOutput, TaskSelect } from "@/types";
 import { initials } from "@/lib/server-utils";
+import { LoadingButtonContent } from "@/components/ui/loading-button-content";
 
 type TaskAssigneesProps = {
   activeTask: TaskSelect;
@@ -123,13 +124,7 @@ export function TaskAssignees({ activeTask, project_id }: TaskAssigneesProps) {
                 Cancel
               </Button>
               <Button type="submit" size="sm" disabled={isUpdateTaskNewLoading || isTaskLoading}>
-                {isUpdateTaskNewLoading ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" /> Saving…
-                  </span>
-                ) : (
-                  "Save"
-                )}
+                <LoadingButtonContent isLoading={isUpdateTaskNewLoading} displayText="Save"></LoadingButtonContent>
               </Button>
             </div>
           </form>
