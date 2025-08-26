@@ -204,7 +204,7 @@ export function useTasks({
         // Hydrate from cached project members
         const projectMembers = queryClient.getQueryData<UserSelect[]>(["project_members", project_id]) ?? [];
         const pmById = new Map(projectMembers.map((m) => [m.id, m]));
-        const optimisticMembers = assigneeIds.map((id) => pmById.get(id)).filter(Boolean);
+        const optimisticMembers = assigneeIds.map((id) => pmById.get(id)).filter(Boolean); // If a user isn't in cache, pmById.get(id) returns undefined. filter(Boolean) drops any undefineds.
 
         // snapshot existing (should be undefined)
         previousTempMembers = queryClient.getQueryData(["task_members", tempId]);
