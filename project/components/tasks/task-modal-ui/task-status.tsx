@@ -93,7 +93,7 @@ export function TaskStatus({ activeTask, project_id }: TaskStatusProps) {
                     aria-checked={selected}
                     className={`w-full flex items-center justify-between rounded-sm px-2 py-1.5 text-sm
                                 hover:bg-black/10 dark:hover:bg-white/10
-                                ${selected ? "font-medium" : ""}`}
+                                ${selected ? "bg:black/10 dark:bg-white/10  font-medium" : ""}`}
                   >
                     <span className="flex items-center gap-2">
                       <Badge className={badgeClass}>{ls.name}</Badge>
