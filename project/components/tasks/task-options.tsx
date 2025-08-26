@@ -10,10 +10,9 @@ type TaskOptionsProps = {
   list_id: number;
   project_id: number;
   className?: string;
-  setEditModalOpen: () => void;
 };
 
-const TaskOptions: FC<TaskOptionsProps> = ({ task_id, list_id, project_id, className, setEditModalOpen }) => {
+const TaskOptions: FC<TaskOptionsProps> = ({ task_id, list_id, project_id, className }) => {
   const { deleteTask, isDeleteTaskLoading } = useTasks({ task_id, list_id });
 
   function onClick() {
@@ -36,16 +35,6 @@ const TaskOptions: FC<TaskOptionsProps> = ({ task_id, list_id, project_id, class
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem
-          variant="default"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setEditModalOpen();
-          }}
-        >
-          Edit
-        </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isDeleteTaskLoading}
           variant="destructive"
