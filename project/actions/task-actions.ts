@@ -14,6 +14,7 @@ import {
 import z from "zod";
 import { checkAuthenticationStatus } from "./actions-utils";
 import { failResponse } from "@/lib/db/queries/query_utils";
+import { getUserId } from "./user-actions";
 
 // Fetches
 export async function getTaskMembersAction(task_id: number): Promise<ServerActionResponse<UserSelect[]>> {
@@ -96,9 +97,13 @@ export async function createTaskAction(
 ): Promise<ServerActionResponse<TaskSelect>> {
   await checkAuthenticationStatus();
 
+  const res = await getUserId();
+  if (!res.success) return res;
+
   const taskDBData: z.infer<typeof taskSchemaDB> = {
     ...taskFormData,
     listId: list_id,
+    creatorId: res.data.id,
     position: position,
     createdAt: new Date(),
     updatedAt: new Date(),

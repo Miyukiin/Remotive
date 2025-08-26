@@ -239,11 +239,12 @@ export const taskSchemaForm = taskSchema
     updatedAt: true,
     position: true,
     listId: true,
+    creatorId: true,
   })
   .extend({ assigneeIds: z.array(z.int()).nullable() }); // Because on task creation and update, we can assign zero, one or more members.
 
 export const taskSchemaEditForm = taskSchema
-  .omit({ id: true, createdAt: true, updatedAt: true })
+  .omit({ id: true, createdAt: true, updatedAt: true, creatorId: true })
   .extend({ assigneeIds: z.array(z.int()).nullable() })
   .partial(); // All fields are optional, for updating task data piecemeal in the task drawer.
 

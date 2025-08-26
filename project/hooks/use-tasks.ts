@@ -76,6 +76,7 @@ import {
   updateTaskNewAction,
   updateTasksPositionsAction,
 } from "@/actions/task-actions";
+import { getUserId } from "@/actions/user-actions";
 import { getTempId } from "@/lib/utils";
 import { taskSchemaEditForm, taskSchemaForm } from "@/lib/validations/validations";
 import { useTaskStore } from "@/stores/task-store";
@@ -175,6 +176,8 @@ export function useTasks({
       const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", project_id]);
 
       const tempId = getTempId();
+      const res = await getUserId();
+      if(!res.success) throw new Error(res.message)
 
       // Build an optimistic task
       const now = new Date();
@@ -184,6 +187,8 @@ export function useTasks({
         id: tempId,
         title: taskFormData.title,
         description: taskFormData.description,
+        content: taskFormData.content,
+        creatorId: res.data.id,
         listId: list_id,
         priority: taskFormData.priority,
         dueDate: taskFormData.dueDate,

@@ -143,12 +143,29 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ isModalOpen, setIsModalOpen
                 </label>
                 <textarea
                   rows={3}
-                  className="w-full px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
+                  className="w-full min-h-[100px] max-h-[150px] px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
                   placeholder="Task description"
                   {...register("description")}
                   disabled={isCreateTaskLoading}
                 />
                 {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="content"
+                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
+                >
+                  Content
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full min-h-[100px] max-h-[150px]  px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
+                  placeholder="Task Content"
+                  {...register("content")}
+                  disabled={isCreateTaskLoading}
+                />
+                {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>}
               </div>
 
               <div>
