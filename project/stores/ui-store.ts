@@ -64,6 +64,9 @@ interface UIState {
   isCreateProjectModalOpen: boolean;
   setCreateProjectModalOpen: (val: boolean) => void;
 
+  isDeleteProjectModalOpen: boolean;
+  setDeleteProjectModalOpen: (val: boolean) => void;
+
   isCreateLabelModalOpen: boolean;
   setCreateLabelModalOpen: (val: boolean) => void;
 
@@ -83,6 +86,9 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isCreateProjectModalOpen: false,
   setCreateProjectModalOpen: (val) => set(() => ({ isCreateProjectModalOpen: val })),
+
+  isDeleteProjectModalOpen: false,
+  setDeleteProjectModalOpen: (val) => set(() => ({ isDeleteProjectModalOpen: val })),
 
   isCreateLabelModalOpen: false,
   setCreateLabelModalOpen: (val) => set(() => ({ isCreateLabelModalOpen: val })),
