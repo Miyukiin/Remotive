@@ -80,39 +80,42 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
 
   return (
     <div className="flex flex-col gap-y-8">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/projects">Projects</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          {isDefault ? (
+      {/* Breadcrumbs */}
+      <div className="flex gap-2 items-center">
+        <Link href="/projects" className="p-2 hover:bg-foreground/10 rounded-lg transition-colors">
+          <ArrowLeft size={16} />
+        </Link>
+        <Breadcrumb>
+          <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbPage>{project.name}</BreadcrumbPage>
+              <BreadcrumbLink href="/projects">Projects</BreadcrumbLink>
             </BreadcrumbItem>
-          ) : (
-            <>
+            <BreadcrumbSeparator />
+            {isDefault ? (
               <BreadcrumbItem>
-                <BreadcrumbLink href={`/projects/${project.id}`}>{project.name}</BreadcrumbLink>
+                <BreadcrumbPage>{project.name}</BreadcrumbPage>
               </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{navItems.find((n) => n.current && n.name !== "Default")?.name ?? "Loading..."}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </>
-          )}
-        </BreadcrumbList>
-      </Breadcrumb>
-
+            ) : (
+              <>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href={`/projects/${project.id}`}>{project.name}</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    {navItems.find((n) => n.current && n.name !== "Default")?.name ?? "Loading..."}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </>
+            )}
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      {/* Project Name, View Description, Buttons */}
       <div className="flex flex-col gap-4 md:gap-0 md:flex-row items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href="/projects" className="p-2 hover:bg-foreground/10 rounded-lg transition-colors">
-            <ArrowLeft size={20} />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
-            <p className="text-foreground/70 mt-1">{navItems.find((n) => n.current)?.description ?? "Loading..."}</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
+          <p className="text-foreground/70 mt-1">{navItems.find((n) => n.current)?.description ?? "Loading..."}</p>
         </div>
 
         <div className="bg-foreground/5 rounded-md px-1 md:bg-transparent flex items-center space-x-2">
