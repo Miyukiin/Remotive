@@ -1,7 +1,7 @@
 "use client";
 
 import { ProjectSelect } from "@/types";
-import { ArrowLeft, Calendar, LucideIcon, MoreHorizontal, PanelsTopLeft, Settings, Users } from "lucide-react";
+import { ArrowLeft, Calendar, LucideIcon, PanelsTopLeft, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FC, useEffect, useState } from "react";
@@ -128,7 +128,7 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
                 <button
                   className={`p-2 rounded-lg transition-colors ${
                     itm.current
-                      ? "bg-primary text-white"
+                      ? "bg-emerald-600 dark:bg-emerald-800 text-white "
                       : "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
                   }`}
                 >
@@ -137,11 +137,6 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
               </Link>
             );
           })}
-          <button
-            className={`p-2 text-foreground/70 hover:bg-foreground/10 hover:text-foreground rounded-lg transition-colors`}
-          >
-            <MoreHorizontal size={20} />
-          </button>
         </div>
       </div>
     </div>

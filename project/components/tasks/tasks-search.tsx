@@ -25,7 +25,7 @@ const TasksSearch: FC<TasksSearchProps> = ({ searchTerm, setSearchTerm }) => {
           className="w-full pl-10"
         />
       </div>
-      <Button variant="default" size="sm" className="w-full md:w-max h-full text-white p-1 px-2 hover:bg-primary"  onClick={clearSearch}>
+      <Button variant="default" size="sm" className="w-full md:w-max h-full p-1 px-2 hover:bg-primary" onClick={clearSearch}>
         Clear
       </Button>
     </div>
