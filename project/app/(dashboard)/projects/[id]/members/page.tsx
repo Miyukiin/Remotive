@@ -1,6 +1,5 @@
 "use client";
 import { use } from "react";
-import ProjectHeading from "@/components/projects/project-heading";
 import { useProjects } from "@/hooks/use-projects";
 import LoadingUI from "@/components/ui/loading-ui";
 
@@ -15,10 +14,5 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
     throw new Error(projectError?.message);
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Project Header */}
-      <ProjectHeading project={project} />
-    </div>
-  );
+  return <></>;
 }

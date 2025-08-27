@@ -2,7 +2,6 @@
 import { useProjects } from "@/hooks/use-projects";
 import { use } from "react";
 import { KanbanBoard } from "@/components/kanban-board/kanban-board";
-import ProjectHeading from "@/components/projects/project-heading";
 import { useLists } from "@/hooks/use-lists";
 import { useTasks } from "@/hooks/use-tasks";
 import SkeletonKanbanBoardPage from "@/components/kanban-board/kanban-page-skeleton";
@@ -39,10 +38,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       {listToAddTo && listTasks && (
         <CreateTaskModal list_id={listToAddTo.id} project_id={project_id} position={listTasks.length} />
       )}
-      <div className="space-y-6">
-        {/* Project Heading */}
-        <ProjectHeading project={project} />
-
+      <div>
         {/* Kanban Board */}
         <KanbanBoard
           tasks={projectTasks}

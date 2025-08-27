@@ -1,3 +1,5 @@
+"use client";
+
 import { ProjectSelect } from "@/types";
 import { ArrowLeft, Calendar, MoreHorizontal, PanelsTopLeft, Settings, Users } from "lucide-react";
 import Link from "next/link";
