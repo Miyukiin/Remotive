@@ -10,21 +10,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 
 import { useLabels } from "@/hooks/use-labels";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { LabelDeleteModal } from "../modals/label-delete-modal";
+import { useLabelStore } from "@/stores/labels-store";
+import { LabelSelect } from "@/types";
 
 type Props = { project_id: number };
 
 export function ProjectLabelSettings({ project_id }: Props) {
-  const { setCreateLabelModalOpen } = useUIStore();
+  const { setCreateLabelModalOpen, setDeleteLabelModalOpen } = useUIStore();
+  const { setLabelToDelete } = useLabelStore();
   const { projectLabels, isProjectLabelsLoading } = useLabels(project_id);
-  const labels = projectLabels ?? [];
+  const labels = (projectLabels as LabelSelect[]) ?? [];
 
   function onAddClick() {
     setCreateLabelModalOpen(true);
   }
 
+  function onDeleteClick(e: React.MouseEvent, row: LabelSelect) {
+    setLabelToDelete(row);
+    setDeleteLabelModalOpen(true);
+  }
+
   return (
     <>
-      <LabelCreateModal project_id={project_id} />
+      <LabelDeleteModal project_id={project_id} /> <LabelCreateModal project_id={project_id} />
       <div className="flex flex-col gap-2">
         {/* Section Title and Description */}
         <p className="text-xl">Labels</p>
@@ -93,11 +102,11 @@ export function ProjectLabelSettings({ project_id }: Props) {
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => {}}
+                            variant="destructive"
+                            onClick={(e) => onDeleteClick(e, row)}
                             disabled={row.isDefault}
                           >
-                            <Trash className="mr-2 h-4 w-4" />
+                            <Trash className="mr-2 h-4 w-4 " />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
