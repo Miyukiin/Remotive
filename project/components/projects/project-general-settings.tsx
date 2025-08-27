@@ -56,7 +56,9 @@ export function ProjectGeneralSettings({ project_id }: ProjectGeneralSettingsPro
 
   return (
     <div className="flex flex-col gap-2">
+      {/* Section Title and Description */}
       <p className="text-xl">General</p>
+      <p className="text-sm text-muted-foreground">Update general project settings</p>
       <Separator className="mb-4" />
       <div>
         <Form {...form}>
