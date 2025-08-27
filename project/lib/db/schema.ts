@@ -194,23 +194,22 @@ export const comments = pgTable(
   ],
 );
 
-export const task_labels = pgTable(
-  "task_labels",
+export const project_labels = pgTable(
+  "project_labels",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
-    taskId: integer("taskId")
-      .references(() => tasks.id, { onDelete: "cascade" })
+    project_id: integer("project_id")
+      .references(() => projects.id, { onDelete: "cascade" })
       .notNull(),
     name: varchar("name").notNull(),
-    category: varchar("category").notNull(),
     color: varchar("color").notNull(),
     isDefault: boolean("is_default").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => ({
-    idxTask: index("idx_task_labels_task").on(t.taskId), // fetch per task
-    uxTaskName: uniqueIndex("ux_task_labels_task_name").on(t.taskId, t.name), // Prevent duplicates for same task
+    idxProject: index("idx_project_labels_task").on(t.project_id), // fetch per task
+    idxProjectColor: index("idx_project_labels_project_color").on(t.project_id, t.color),
   }),
 );
 
@@ -303,5 +302,22 @@ export const project_members = pgTable(
     index("idx_pm_user").on(table.user_id), // Get user project memberships
     index("idx_pm_project_user").on(table.project_id, table.user_id), // Permissions
     index("idx_pm_project_role").on(table.project_id, table.role), // Roles
+  ],
+);
+
+export const labels_to_tasks = pgTable(
+  "labels_to_tasks",
+  {
+    label_id: integer("label_id")
+      .references(() => project_labels.id, { onDelete: "cascade" })
+      .notNull(),
+    task_id: integer("task_id")
+      .references(() => tasks.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.task_id, table.label_id] }),
   ],
 );

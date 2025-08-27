@@ -103,25 +103,6 @@ export const users = pgTable("users", {
 	unique("users_email_unique").on(table.email),
 ]);
 
-export const taskLabels = pgTable("task_labels", {
-	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "task_labels_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
-	taskId: integer().notNull(),
-	name: varchar().notNull(),
-	category: varchar().notNull(),
-	color: varchar().notNull(),
-	isDefault: boolean("is_default").default(false).notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_task_labels_task").using("btree", table.taskId.asc().nullsLast().op("int4_ops")),
-	uniqueIndex("ux_task_labels_task_name").using("btree", table.taskId.asc().nullsLast().op("int4_ops"), table.name.asc().nullsLast().op("int4_ops")),
-	foreignKey({
-			columns: [table.taskId],
-			foreignColumns: [tasks.id],
-			name: "task_labels_taskId_tasks_id_fk"
-		}).onDelete("cascade"),
-]);
-
 export const roles = pgTable("roles", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "roles_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
 	roleName: roleName("role_name").default('No Role Yet').notNull(),
@@ -147,6 +128,24 @@ export const lists = pgTable("lists", {
 			columns: [table.projectId],
 			foreignColumns: [projects.id],
 			name: "lists_projectId_projects_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const projectLabels = pgTable("project_labels", {
+	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "project_labels_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
+	projectId: integer("project_id").notNull(),
+	name: varchar().notNull(),
+	color: varchar().notNull(),
+	isDefault: boolean("is_default").default(false).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_project_labels_project_color").using("btree", table.projectId.asc().nullsLast().op("int4_ops"), table.color.asc().nullsLast().op("int4_ops")),
+	index("idx_project_labels_task").using("btree", table.projectId.asc().nullsLast().op("int4_ops")),
+	foreignKey({
+			columns: [table.projectId],
+			foreignColumns: [projects.id],
+			name: "project_labels_project_id_projects_id_fk"
 		}).onDelete("cascade"),
 ]);
 
@@ -200,6 +199,25 @@ export const teamsToProjects = pgTable("teams_to_projects", {
 			name: "teams_to_projects_project_id_projects_id_fk"
 		}).onDelete("cascade"),
 	primaryKey({ columns: [table.teamId, table.projectId], name: "teams_to_projects_team_id_project_id_pk"}),
+]);
+
+export const labelsToTasks = pgTable("labels_to_tasks", {
+	labelId: integer("label_id").notNull(),
+	taskId: integer("task_id").notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.labelId],
+			foreignColumns: [projectLabels.id],
+			name: "labels_to_tasks_label_id_project_labels_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.taskId],
+			foreignColumns: [tasks.id],
+			name: "labels_to_tasks_task_id_tasks_id_fk"
+		}).onDelete("cascade"),
+	primaryKey({ columns: [table.labelId, table.taskId], name: "labels_to_tasks_task_id_label_id_pk"}),
 ]);
 
 export const usersToTeams = pgTable("users_to_teams", {

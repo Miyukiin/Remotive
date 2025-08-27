@@ -127,6 +127,20 @@
       "when": 1756180629818,
       "tag": "0017_solid_eddie_brock",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1756275374265,
+      "tag": "0018_ambitious_radioactive_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1756275406044,
+      "tag": "0019_strange_puck",
+      "breakpoints": true
     }
   ]
 }
