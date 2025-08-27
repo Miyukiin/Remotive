@@ -21,6 +21,7 @@ export function useLists(project_id: number) {
 
   const list = useQuery({
     queryKey: ["lists", project_id],
+    refetchInterval: 3000,
     queryFn: async () => {
       if (!project_id) return [];
       const res = await getAllListsAction(project_id);

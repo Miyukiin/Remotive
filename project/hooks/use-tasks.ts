@@ -100,6 +100,7 @@ export function useTasks({
 
   const getTaskByProject = useQuery({
     queryKey: ["tasks", project_id],
+    refetchInterval: 3000,
     enabled: typeof project_id === "number",
     queryFn: async ({ queryKey }) => {
       const [, project_id] = queryKey as ["tasks", number];
@@ -111,6 +112,7 @@ export function useTasks({
 
   const getTaskByListId = useQuery({
     queryKey: ["tasks", list_id],
+    refetchInterval: 3000,
     enabled: typeof list_id === "number",
     queryFn: async ({ queryKey }) => {
       const [, list_id] = queryKey as ["tasks", number];
