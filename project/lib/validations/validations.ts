@@ -1,5 +1,5 @@
 import { priorityTuple, rolesTuple, statusTuple } from "@/lib/db/db-enums";
-import { errorTemplates, today } from "./validations-utils";
+import { errorTemplates } from "./validations-utils";
 import * as z from "zod";
 import { listColorTuple } from "../db/db-enums";
 
@@ -65,13 +65,8 @@ export const projectSchema = z
     description: z.string().trim().max(200, errorTemplates.descriptionMaxError).nullable(),
     status: z.enum(statusTuple),
     ownerId: z.int().min(1, errorTemplates.idMinError),
-    dueDate: z.union([
-      z
-        .string()
-        .transform((val) => new Date(val))
-        .pipe(z.date().min(today, errorTemplates.dueDateMinError)),
-      z.date().min(today, errorTemplates.dueDateMinError).nullable(),
-    ]), // Allow only Today or Future dates
+    dueDate: z.date().nullable(),
+    // Allow only Today or Future dates
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -118,13 +113,15 @@ export const projectSchemaForm = projectSchema
     teamIds: z.array(z.int()).min(1, "Select at least one team"), // Because on project creation, we must have a team assigned.
   });
 
-export const projectSchemaUpdateForm = projectSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  ownerId: true,
-  status: true,
-});
+export const projectSchemaUpdateForm = projectSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    ownerId: true,
+    status: true,
+  })
+  .partial();
 
 export const listSchema = z
   .object({
@@ -190,9 +187,7 @@ export const taskSchema = z
     creatorId: z.int().min(1, errorTemplates.idMinError),
     listId: z.int().min(1, errorTemplates.idMinError),
     priority: z.enum(priorityTuple),
-    dueDate: 
-      z.date().nullable()
-    , // Allow only Today or Future dates
+    dueDate: z.date().nullable(), // Allow only Today or Future dates
     position: z.int().min(0, errorTemplates.positionMinError),
     createdAt: z.date(),
     updatedAt: z.date(),
