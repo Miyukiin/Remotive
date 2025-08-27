@@ -3,19 +3,17 @@ import { FC } from "react";
 import { Button } from "../ui/button";
 import { EllipsisVertical } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { useProjects } from "@/hooks/use-projects";
+import { redirect } from "next/navigation";
 
 type ProjectOptionsProps = {
   project_id: number;
 };
 
 const ProjectOptions: FC<ProjectOptionsProps> = ({ project_id }) => {
-  const { deleteProject, isProjectDeleteLoading } = useProjects();
-
   function onClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     e.preventDefault();
     e.stopPropagation(); // Prevent clicks on dropdown from redirecting to the project card slug page.
-    deleteProject(project_id);
+    redirect(`/projects/${project_id}/settings`);
   }
 
   return (
@@ -38,8 +36,8 @@ const ProjectOptions: FC<ProjectOptionsProps> = ({ project_id }) => {
           e.stopPropagation();
         }}
       >
-        <DropdownMenuItem disabled={isProjectDeleteLoading} variant="destructive" onClick={(e) => onClick(e)}>
-          Delete Project
+        <DropdownMenuItem variant="default" onClick={(e) => onClick(e)}>
+          View Settings
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
