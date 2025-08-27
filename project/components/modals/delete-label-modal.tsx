@@ -13,9 +13,9 @@ import { useLabels } from "@/hooks/use-labels";
 import { LoadingButtonContent } from "../ui/loading-button-content";
 import { useLabelStore } from "@/stores/labels-store";
 
-type LabelDeleteModalProps = { project_id: number };
+type DeleteLabelModalProps = { project_id: number };
 
-export function LabelDeleteModal({ project_id }: LabelDeleteModalProps) {
+export function DeleteLabelModal({ project_id }: DeleteLabelModalProps) {
   const { isDeleteLabelModalOpen, setDeleteLabelModalOpen } = useUIStore();
   const { deleteLabel, isLabelDeletionLoading } = useLabels(project_id);
   const { labelToDelete } = useLabelStore();

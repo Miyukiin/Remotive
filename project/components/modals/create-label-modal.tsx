@@ -11,9 +11,9 @@ import { HexColorInput, HexColorPicker } from "react-colorful";
 import { useLabels } from "@/hooks/use-labels";
 import { LoadingButtonContent } from "../ui/loading-button-content";
 
-type LabelCreateModalProps = { project_id: number };
+type CreateLabelModalProps = { project_id: number };
 
-export function LabelCreateModal({ project_id }: LabelCreateModalProps) {
+export function CreateLabelModal({ project_id }: CreateLabelModalProps) {
   const { isCreateLabelModalOpen, setCreateLabelModalOpen } = useUIStore();
   const { createLabel, isLabelCreationLoading } = useLabels(project_id);
 

@@ -14,8 +14,8 @@ import { useUIStore } from "@/stores/ui-store";
 import { useLabelStore } from "@/stores/labels-store";
 import { useLabels } from "@/hooks/use-labels";
 
-import { LabelCreateModal } from "../modals/label-create-modal";
-import { LabelDeleteModal } from "../modals/label-delete-modal";
+import { CreateLabelModal } from "../modals/create-label-modal";
+import { DeleteLabelModal } from "../modals/delete-label-modal";
 
 import {
   DropdownMenu,
@@ -140,8 +140,8 @@ export function ProjectLabelSettings({ project_id }: Props) {
 
   return (
     <>
-      <LabelDeleteModal project_id={project_id} />
-      <LabelCreateModal project_id={project_id} />
+      <DeleteLabelModal project_id={project_id} />
+      <CreateLabelModal project_id={project_id} />
 
       <div className="flex flex-col gap-2">
         {/* Section Title and Description */}
