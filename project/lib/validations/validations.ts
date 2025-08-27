@@ -119,7 +119,6 @@ export const projectSchemaUpdateForm = projectSchema
     createdAt: true,
     updatedAt: true,
     ownerId: true,
-    status: true,
   })
   .partial();
 

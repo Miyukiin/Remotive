@@ -97,6 +97,7 @@ export const projects = {
       if (existingProject.description !== incomingProject.description)
         changed.description = incomingProject.description;
       if (existingProject.dueDate !== incomingProject.dueDate) changed.dueDate = incomingProject.dueDate;
+      if (existingProject.status !== incomingProject.status) changed.status = incomingProject.status;
 
       const finalUpdatedObjectData = {
         ...getBaseFields(existingProject),
