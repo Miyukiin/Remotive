@@ -6,9 +6,8 @@ import { formatDate } from "@/lib/server-utils";
 import { ProjectSelect } from "@/types";
 import { Calendar, Users } from "lucide-react";
 import Link from "next/link";
-import { FC, useState } from "react";
+import { FC } from "react";
 import ProjectOptions from "./project-options";
-import UpdateProjectModal from "../modals/update-project-modal";
 import { differenceInDays, isValid } from "date-fns";
 import MembersAvatars from "../ui/members-avatars";
 import { Skeleton } from "../ui/skeleton";
@@ -121,7 +120,6 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
   const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(project.id);
   const { taskCount, isTaskCountLoading, taskCountError } = useProjects(project.id);
 
-  const [isEditModalOpen, setIsModalOpen] = useState(false);
   const daysLeft =
     project.dueDate && isValid(new Date(project.dueDate))
       ? differenceInDays(new Date(project.dueDate), new Date())
@@ -129,14 +127,11 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
 
   return (
     <>
-      {isEditModalOpen && (
-        <UpdateProjectModal projectData={project} isModalOpen={isEditModalOpen} setIsModalOpen={setIsModalOpen} />
-      )}
       <Link href={`projects/${project.id}`}>
         <div className="bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6 hover:shadow-lg transition-shadow">
           <div className="flex justify-between">
             <h3 className="text-xl font-semibold text-outer_space-500 dark:text-platinum-500 mb-2">{project.name}</h3>
-            <ProjectOptions project_id={project.id} setEditModalOpen={setIsModalOpen} />
+            <ProjectOptions project_id={project.id} />
           </div>
 
           <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400 mb-4 line-clamp-2">
