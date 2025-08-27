@@ -43,5 +43,15 @@ export const labels = {
   //     id: number,
   //     incomingLabelData: types.LabelInsert,
   //   ): Promise<types.QueryResponse<types.LabelSelect>> => {},
-  //   delete: async (id: number): Promise<types.QueryResponse<types.LabelSelect>> => {},
+  delete: async (label_id: number): Promise<types.QueryResponse<types.LabelSelect>> => {
+    try {
+      const [result] = await db.delete(schema.project_labels).where(eq(schema.project_labels.id, label_id)).returning();
+
+      // Check if deletion is successful.
+      if (result) return successResponse(`Successfully deleted label`, result);
+      else return failResponse(`Unable to delete label.`, `Database returned no result`);
+    } catch (e) {
+      return failResponse(`Unable to delete label.`, e);
+    }
+  },
 };

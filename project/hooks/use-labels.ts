@@ -1,4 +1,4 @@
-import { createLabelAction, getProjectLabelsAction } from "@/actions/labels-actions";
+import { createLabelAction, deleteLabelAction, getProjectLabelsAction } from "@/actions/labels-actions";
 import { getTempId } from "@/lib/utils";
 import { labelSchemaForm } from "@/lib/validations/validations";
 import { LabelSelect } from "@/types";
@@ -74,6 +74,35 @@ export function useLabels(project_id: number) {
     },
   });
 
+  const deleteLabel = useMutation({
+    mutationFn: async (label_id: number) => {
+      const res = await deleteLabelAction(label_id);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+    onMutate: async (label_id: number) => {
+      queryClient.invalidateQueries({ queryKey: ["labels", project_id] });
+
+      const previousLabels = queryClient.getQueryData<LabelSelect[]>(["labels", project_id]);
+
+      queryClient.setQueryData<LabelSelect[]>(["labels", project_id], (old) =>
+        old ? old.filter((l) => l.id != label_id) : old,
+      );
+
+      return { previousLabels };
+    },
+    onSuccess: () => {
+      toast.success("Success", { description: "Successfully deleted the label." });
+    },
+    onError: (error, variables, context) => {
+      toast.error("Error", { description: error.message });
+      queryClient.setQueryData(["labels", project_id], context?.previousLabels);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["labels", project_id] });
+    },
+  });
+
   return {
     // Get Project Labels
     projectLabels: getLabelsByProject.data,
@@ -84,5 +113,9 @@ export function useLabels(project_id: number) {
     createLabel: createLabel.mutateAsync,
     isLabelCreationLoading: createLabel.isPending,
     labelCreationError: createLabel.error,
+
+    deleteLabel: deleteLabel.mutateAsync,
+    isLabelDeletionLoading: deleteLabel.isPending,
+    labelDeletionError: deleteLabel.error,
   };
 }

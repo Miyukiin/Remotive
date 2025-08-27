@@ -38,3 +38,12 @@ export async function createLabelAction(
 
   return await queries.labels.create(labelDBData);
 }
+
+export async function deleteLabelAction(label_id: number): Promise<ServerActionResponse<LabelSelect>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: label_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+  
+  return await queries.labels.delete(label_id);
+}
