@@ -60,6 +60,9 @@ interface UIState {
 
   isCreateTaskModalOpen: boolean;
   setCreateTaskModalOpen: (val: boolean) => void;
+
+  isCreateProjectModalOpen: boolean;
+  setCreateProjectModalOpen: (val: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()((set) => ({
@@ -70,5 +73,8 @@ export const useUIStore = create<UIState>()((set) => ({
   setUpdateKanbanModalOpen: (val) => set(() => ({ isUpdateKanbanModalOpen: val })),
 
   isCreateTaskModalOpen: false,
-  setCreateTaskModalOpen: (val) => set(() => ({ isCreateTaskModalOpen: val})),
+  setCreateTaskModalOpen: (val) => set(() => ({ isCreateTaskModalOpen: val })),
+
+  isCreateProjectModalOpen: false,
+  setCreateProjectModalOpen: (val) => set(() => ({ isCreateProjectModalOpen: val })),
 }));
