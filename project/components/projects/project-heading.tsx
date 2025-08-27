@@ -1,7 +1,7 @@
 "use client";
 
 import { ProjectSelect } from "@/types";
-import { ArrowLeft, Calendar, MoreHorizontal, PanelsTopLeft, Settings, Users } from "lucide-react";
+import { ArrowLeft, Calendar, LucideIcon, MoreHorizontal, PanelsTopLeft, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FC, useEffect, useState } from "react";
@@ -15,16 +15,48 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
+type NavItem = {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  current: boolean;
+  description: string;
+};
+
 type ProjectHeadingProps = {
   project: ProjectSelect;
 };
 
 const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
-  const navigationItems = [
-    { name: "Default", href: `${project.id}`, icon: PanelsTopLeft, current: false },
-    { name: "Members", href: "members", icon: Users, current: false },
-    { name: "Calendar", href: "calendar", icon: Calendar, current: false },
-    { name: "Settings", href: "settings", icon: Settings, current: false },
+  const navigationItems: NavItem[] = [
+    {
+      name: "Default",
+      href: `${project.id}`,
+      icon: PanelsTopLeft,
+      current: false,
+      description: "Kanban board view for managing tasks",
+    },
+    {
+      name: "Members",
+      href: "members",
+      icon: Users,
+      current: false,
+      description: "Manage your project's members",
+    },
+    {
+      name: "Calendar",
+      href: "calendar",
+      icon: Calendar,
+      current: false,
+      description: "View your project's tasks calendar-style",
+    },
+    {
+      name: "Settings",
+      href: "settings",
+      icon: Settings,
+      current: false,
+      description: "Manage your project settings and preferences",
+    },
   ];
 
   const [navItems, setNavItems] = useState(navigationItems);
@@ -65,7 +97,7 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>{navItems.find((n) => n.current && n.name !== "Default")?.name}</BreadcrumbPage>
+                <BreadcrumbPage>{navItems.find((n) => n.current && n.name !== "Default")?.name ?? "Loading..."}</BreadcrumbPage>
               </BreadcrumbItem>
             </>
           )}
@@ -79,7 +111,7 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
-            <p className="text-foreground/70 mt-1">Kanban board view for project management</p>
+            <p className="text-foreground/70 mt-1">{navItems.find((n) => n.current)?.description ?? "Loading..."}</p>
           </div>
         </div>
 
@@ -92,7 +124,9 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
               >
                 <button
                   className={`p-2 rounded-lg transition-colors ${
-                    itm.current ? "bg-primary text-white" : "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
+                    itm.current
+                      ? "bg-primary text-white"
+                      : "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
                   }`}
                 >
                   <itm.icon size={20} />
@@ -100,7 +134,9 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
               </Link>
             );
           })}
-          <button className={`p-2 text-foreground/70 hover:bg-foreground/10 hover:text-foreground rounded-lg transition-colors`}>
+          <button
+            className={`p-2 text-foreground/70 hover:bg-foreground/10 hover:text-foreground rounded-lg transition-colors`}
+          >
             <MoreHorizontal size={20} />
           </button>
         </div>
