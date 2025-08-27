@@ -3,6 +3,71 @@ import { errorTemplates } from "./validations-utils";
 import * as z from "zod";
 import { listColorTuple } from "../db/db-enums";
 
+export const labelSchema = z
+  .object({
+    id: z.int().min(1, errorTemplates.idMinError),
+    project_id: z.int().min(1, errorTemplates.idMinError),
+    name: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-zÀ-ÿ'\- ]+$/, errorTemplates.nameFormatError)
+      .min(1, errorTemplates.nameMinError)
+      .max(100, errorTemplates.nameMaxError),
+    color: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, {
+      message: "Invalid hexadecimal color code.",
+    }),
+    isDefault: z.boolean(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+  })
+  .superRefine((data, ctx) => {
+    const now = new Date();
+    const nowTime = now.getTime();
+
+    if (data.createdAt.getTime() > nowTime) {
+      ctx.addIssue({
+        path: ["createdAt"],
+        code: "too_big",
+        maximum: nowTime,
+        inclusive: true,
+        origin: "date",
+        message: "createdAt cannot be in the future.",
+      });
+    }
+
+    if (data.updatedAt.getTime() > nowTime) {
+      ctx.addIssue({
+        path: ["updatedAt"],
+        code: "too_big",
+        maximum: nowTime,
+        inclusive: true,
+        origin: "date",
+        message: "updatedAt cannot be in the future.",
+      });
+    }
+  });
+
+export const labelSchemaDB = labelSchema.omit({
+  id: true,
+});
+
+export const labelSchemaForm = labelSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  isDefault: true,
+  project_id: true,
+});
+
+export const labelSchemaUpdateForm = labelSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    isDefault: true,
+  })
+  .partial();
+
 export const userSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),

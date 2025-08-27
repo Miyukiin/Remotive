@@ -1,6 +1,8 @@
 import * as schema from "@/lib/db/schema";
 import { listColor } from "@/lib/utils";
 import {
+  labelSchemaForm,
+  labelSchemaUpdateForm,
   listSchemaForm,
   projectSchemaForm,
   projectSchemaUpdateForm,
@@ -10,17 +12,18 @@ import {
 import z from "zod";
 import { TaskStatus } from "../components/tasks/task-modal-ui/task-status";
 
-// For Project Creation and Update Form
+// Zod Form Types - Used in RHFs useForm and onSubmit values typing
 export type ProjectCreateForm = z.infer<typeof projectSchemaForm>;
 export type ProjectUpdateForm = z.infer<typeof projectSchemaUpdateForm>;
 
-// for Task Creation and Update Form
 export type TaskCreateForm = z.infer<typeof taskSchemaForm>;
 export type TaskUpdateForm = z.infer<typeof taskSchemaEditForm>;
 
-// For list creation
 export type ListFormInput = z.input<typeof listSchemaForm>;
 export type ListFormOutput = z.output<typeof listSchemaForm>;
+
+export type LabelCreateForm = z.infer<typeof labelSchemaForm>;
+export type LabelUpdateForm = z.infer<typeof labelSchemaUpdateForm>;
 
 // Query Types
 export type QueryResponse<T> =
@@ -61,6 +64,9 @@ export type UsersToTasksSelect = typeof schema.users_to_tasks.$inferSelect;
 
 export type ProjectMembersInsert = typeof schema.project_members.$inferInsert;
 export type ProjectMembersSelect = typeof schema.project_members.$inferSelect;
+
+export type LabelSelect = typeof schema.project_labels.$inferSelect;
+export type LabelInsert = typeof schema.project_labels.$inferInsert;
 
 export type RecentProjects = {
   id: number;
