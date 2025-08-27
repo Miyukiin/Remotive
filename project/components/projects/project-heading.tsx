@@ -1,10 +1,8 @@
-"use client";
-
 import { ProjectSelect } from "@/types";
 import { ArrowLeft, Calendar, LucideIcon, PanelsTopLeft, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FC, useEffect, useState } from "react";
+import { FC, useMemo } from "react";
 
 import {
   Breadcrumb,
@@ -28,7 +26,7 @@ type ProjectHeadingProps = {
 };
 
 const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
-  const navigationItems: NavItem[] = [
+  const baseNavItems: NavItem[] = [
     {
       name: "Default",
       href: `${project.id}`,
@@ -59,25 +57,21 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
     },
   ];
 
-  const [navItems, setNavItems] = useState(navigationItems);
-  const [isDefault, setDefault] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => {
-    // Determine which navItem is currently active.
-    if (pathname) {
-      const updated = navItems.map((item) => ({
+  const normalized = pathname.replace(/\/$/, ""); // trim trailing slash
+
+  const navItems = useMemo(
+    () =>
+      baseNavItems.map((item) => ({
         ...item,
-        current: pathname.endsWith(item.href),
-      }));
-      setNavItems(updated);
+        current: normalized.endsWith(String(item.href)),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [normalized],
+  );
 
-      // Check if we're on default page
-      const isOnDefaultPage = updated.find((n) => n.current && n.name === "Default") ? true : false;
-      setDefault(isOnDefaultPage);
-    }
-  }, [pathname]);
-
+  const isDefault = navItems.some((n) => n.current && n.name === "Default");
   return (
     <div className="flex flex-col gap-y-8">
       {/* Breadcrumbs */}
