@@ -7,6 +7,8 @@ import { useLists } from "@/hooks/use-lists";
 import { useTasks } from "@/hooks/use-tasks";
 import SkeletonKanbanBoardPage from "@/components/kanban-board/kanban-page-skeleton";
 import TaskDetailsModal from "@/components/modals/task-details-modal";
+import { useTaskStore } from "@/stores/task-store";
+import CreateTaskModal from "@/components/modals/create-task-modal";
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -14,6 +16,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const { project, projectError } = useProjects(project_id);
   const { lists, loadingListError, updateListsPositions } = useLists(project_id);
   const { projectTasks, getProjectTasksError, updateTasksPositions } = useTasks({ project_id: project_id });
+  const { listToAddTo } = useTaskStore();
+  const { listTasks } = useTasks({ list_id: listToAddTo?.id });
 
   if (!project || !lists || !projectTasks) {
     return <SkeletonKanbanBoardPage />;
@@ -32,6 +36,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   return (
     <>
       <TaskDetailsModal project_id={project_id} />
+      {listToAddTo && listTasks && (
+        <CreateTaskModal list_id={listToAddTo.id} project_id={project_id} position={listTasks.length} />
+      )}
       <div className="space-y-6">
         {/* Project Heading */}
         <ProjectHeading project={project} />

@@ -11,7 +11,7 @@ import MultiSelect from "@/components/ui/multi-select";
 
 import { useTasks } from "@/hooks/use-tasks";
 import { useProjectMembers } from "@/hooks/use-projects";
-import type { TaskEditFormInput, TaskEditFormOutput, TaskSelect } from "@/types";
+import { TaskSelect, TaskUpdateForm } from "@/types";
 import { initials } from "@/lib/server-utils";
 import { LoadingButtonContent } from "@/components/ui/loading-button-content";
 import { taskSchemaEditForm } from "@/lib/validations/validations";
@@ -33,7 +33,7 @@ export function TaskAssignees({ activeTask, project_id }: TaskAssigneesProps) {
     task_id: activeTask.id,
   });
 
-  const { control, handleSubmit, reset } = useForm<TaskEditFormInput, undefined, TaskEditFormOutput>({
+  const { control, handleSubmit, reset } = useForm<TaskUpdateForm>({
     resolver: zodResolver(taskSchemaEditForm),
     defaultValues: {
       assigneeIds: taskMembers?.map((m) => m.id) ?? [],
@@ -64,7 +64,7 @@ export function TaskAssignees({ activeTask, project_id }: TaskAssigneesProps) {
     [taskMembers],
   );
 
-  const onSubmit = async (values: TaskEditFormOutput) => {
+  const onSubmit = async (values: TaskUpdateForm) => {
     await updateTaskNew({
       task_id: activeTask.id,
       project_id,

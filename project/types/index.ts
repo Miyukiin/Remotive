@@ -17,12 +17,10 @@ export type ProjectFormInputUpdate = z.input<typeof projectSchemaUpdateForm>;
 export type ProjectFormOutputUpdate = z.output<typeof projectSchemaUpdateForm>;
 
 // for Task Creation and Update Form
-export type TaskFormInput = z.input<typeof taskSchemaForm>; // This is because our input for duedate field accepts string.
-export type TaskFormOutput = z.output<typeof taskSchemaForm>; // For after validation, dueDate output is a Date or null.
+export type TaskCreateForm = z.infer<typeof taskSchemaForm>;
+export type TaskUpdateForm = z.infer<typeof taskSchemaEditForm>;
 
-export type TaskEditFormInput = z.input<typeof taskSchemaEditForm>; // All fields are optional, for updating task data piecemeal in the task drawer.
-export type TaskEditFormOutput = z.output<typeof taskSchemaEditForm>;
-
+// For list creation
 export type ListFormInput = z.input<typeof listSchemaForm>;
 export type ListFormOutput = z.output<typeof listSchemaForm>;
 

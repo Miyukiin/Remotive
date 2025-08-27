@@ -5,7 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTaskStore } from "@/stores/task-store";
-import { TaskEditFormInput, TaskEditFormOutput, TaskSelect } from "@/types";
+import { TaskUpdateForm, TaskSelect } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { taskSchemaEditForm } from "../../../lib/validations/validations";
@@ -21,14 +21,14 @@ export function TaskName({ activeTask, project_id }: TaskNameProps) {
   const { isEditingTaskName, setisEditingTaskName } = useTaskStore();
   const { updateTaskNew, isUpdateTaskNewLoading } = useTasks({ task_id: activeTask.id });
 
-  const form = useForm<TaskEditFormInput, undefined, TaskEditFormOutput>({
+  const form = useForm<TaskUpdateForm>({
     resolver: zodResolver(taskSchemaEditForm),
     defaultValues: {
       title: activeTask.title,
     },
   });
 
-  async function onSubmit(values: TaskEditFormOutput) {
+  async function onSubmit(values: TaskUpdateForm) {
     await updateTaskNew({ task_id: activeTask.id, project_id, taskFormData: values });
     setisEditingTaskName(false);
   }

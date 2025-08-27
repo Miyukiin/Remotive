@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LoadingButtonContent } from "@/components/ui/loading-button-content";
 
 import { useTasks } from "@/hooks/use-tasks";
-import { TaskEditFormInput, TaskEditFormOutput, TaskSelect } from "@/types";
+import { TaskUpdateForm, TaskSelect } from "@/types";
 import { taskSchemaEditForm } from "../../../lib/validations/validations";
 
 type TaskDescriptionProps = {
@@ -21,16 +21,16 @@ export function TaskDescription({ activeTask, project_id }: TaskDescriptionProps
   const [isEditing, setIsEditing] = useState(false);
   const { updateTaskNew, isUpdateTaskNewLoading } = useTasks({ task_id: activeTask.id });
 
-  const form = useForm<TaskEditFormInput, undefined, TaskEditFormOutput>({
+  const form = useForm<TaskUpdateForm>({
     resolver: zodResolver(taskSchemaEditForm),
     defaultValues: {
       description: activeTask.description ?? "",
     },
   });
 
-  async function onSubmit(values: TaskEditFormOutput) {
+  async function onSubmit(values: TaskUpdateForm) {
     // normalize empty string -> null to satisfy your DB schema
-    const normalized: Partial<TaskEditFormOutput> = {
+    const normalized: Partial<TaskUpdateForm> = {
       description: values.description && values.description.trim() !== "" ? values.description.trim() : null,
     };
 

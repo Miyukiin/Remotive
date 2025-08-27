@@ -1,4 +1,4 @@
-import { TaskSelect } from "@/types";
+import { ListSelect, TaskSelect } from "@/types";
 import { create } from "zustand";
 
 interface TaskState {
@@ -8,16 +8,21 @@ interface TaskState {
 
   isEditingTaskName: boolean;
   setisEditingTaskName: (val: boolean) => void;
+
+  listToAddTo: ListSelect | null;
+  setListToAddTo: (list: ListSelect | null) => void;
 }
 
 export const useTaskStore = create<TaskState>()((set) => ({
   activeTask: null,
   setActiveTask: (task) => set(() => ({ activeTask: task })),
-  mergeActiveTask: (patch) =>
-    set((s) => (s.activeTask ? { activeTask: { ...s.activeTask, ...patch } } : s)),
+  mergeActiveTask: (patch) => set((s) => (s.activeTask ? { activeTask: { ...s.activeTask, ...patch } } : s)),
 
   isEditingTaskName: false,
   setisEditingTaskName(val) {
     set(() => ({ isEditingTaskName: val }));
   },
+
+  listToAddTo: null,
+  setListToAddTo: (list) => set(() => ({ listToAddTo: list })),
 }));

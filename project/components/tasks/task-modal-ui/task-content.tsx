@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Ellipsis } from "lucide-react";
-import { TaskEditFormInput, TaskEditFormOutput, TaskSelect } from "@/types";
+import { TaskSelect, TaskUpdateForm } from "@/types";
 import { useTasks } from "@/hooks/use-tasks";
 import { formatDate, initials } from "@/lib/server-utils";
 import { QuillEditor } from "@/components/ui/rich-text-editor";
@@ -41,12 +41,12 @@ export function TaskContent({ activeTask, isMobile, project_id }: TaskContentPro
 
   const taskCreator = taskCreatorObject;
 
-  const form = useForm<TaskEditFormInput, undefined, TaskEditFormOutput>({
+  const form = useForm<TaskUpdateForm>({
     resolver: zodResolver(taskSchemaEditForm),
     defaultValues: { content: activeTask.content ?? "" },
   });
 
-  async function onSubmit(values: TaskEditFormOutput) {
+  async function onSubmit(values: TaskUpdateForm) {
     await updateTaskNew({
       task_id: activeTask.id,
       project_id,
