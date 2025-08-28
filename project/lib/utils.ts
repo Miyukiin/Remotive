@@ -1,7 +1,5 @@
-"use client";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { useEffect, useState } from "react";
 import { BarChart3, Calendar, FolderOpen, Home, Settings, Users } from "lucide-react";
 
 export const projectStatusColor = {
@@ -61,23 +59,6 @@ export function capitalize(string: string): string {
 export function getTempId(): number {
   const tempId = -Math.floor(Math.random() * 1e9); // negative temp id to avoid collisions
   return tempId;
-}
-
-export function useScreenWidth() {
-  const [width, setWidth] = useState<number | null>(null);
-
-  useEffect(() => {
-    setWidth(window.innerWidth);
-
-    function handleResize() {
-      setWidth(window.innerWidth);
-    }
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return width;
 }
 
 export type OverdueInfo = {
@@ -150,6 +131,20 @@ export function getContrastYIQ(hexcolor: string): ContrastResult {
   const result: "black" | "white" = yiq >= 128 ? "black" : "white";
 
   return { result };
+}
+
+export function formatDate(date: Date | string): string {
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function initials(name?: string) {
+  if (!name) return "NA";
+  const parts = name.trim().split(/\s+/);
+  return (parts[0]?.[0] ?? "").concat(parts[1]?.[0] ?? "").toUpperCase() || name.slice(0, 2).toUpperCase();
 }
 
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.

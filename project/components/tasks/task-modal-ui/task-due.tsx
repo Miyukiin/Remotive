@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TaskSelect } from "@/types";
 import { useState } from "react";
 import { calculateOverdueInfo } from "@/lib/utils";
-import { formatDate } from "@/lib/server-utils";
+import { formatDate } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 
 type TaskDueProps = {

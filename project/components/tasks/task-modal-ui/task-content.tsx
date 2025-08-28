@@ -13,7 +13,7 @@ import {
 import { Ellipsis } from "lucide-react";
 import { TaskSelect, TaskUpdateForm } from "@/types";
 import { useTasks } from "@/hooks/use-tasks";
-import { formatDate, initials } from "@/lib/server-utils";
+import { formatDate, initials } from "@/lib/utils";
 import { QuillEditor } from "@/components/ui/rich-text-editor";
 import { LoadingButtonContent } from "@/components/ui/loading-button-content";
 import { zodResolver } from "@hookform/resolvers/zod";

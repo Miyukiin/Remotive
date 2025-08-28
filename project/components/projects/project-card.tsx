@@ -5,7 +5,7 @@ import { FC, useMemo } from "react";
 import { Calendar, Users } from "lucide-react";
 
 import { useProjectMembers, useProjects } from "@/hooks/use-projects";
-import { formatDate } from "@/lib/server-utils";
+import { formatDate } from "@/lib/utils";
 import { calculateOverdueInfo, cn } from "@/lib/utils";
 import { projectStatusColor } from "@/lib/utils"; // keeps your existing status color map
 import type { ProjectSelect } from "@/types";

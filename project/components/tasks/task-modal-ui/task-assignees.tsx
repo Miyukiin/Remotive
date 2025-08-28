@@ -12,7 +12,7 @@ import MultiSelect from "@/components/ui/multi-select";
 import { useTasks } from "@/hooks/use-tasks";
 import { useProjectMembers } from "@/hooks/use-projects";
 import { TaskSelect, TaskUpdateForm } from "@/types";
-import { initials } from "@/lib/server-utils";
+import { initials } from "@/lib/utils";
 import { LoadingButtonContent } from "@/components/ui/loading-button-content";
 import { taskSchemaEditForm } from "@/lib/validations/validations";
 import { zodResolver } from "@hookform/resolvers/zod";

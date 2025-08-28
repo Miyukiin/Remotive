@@ -25,7 +25,7 @@ import { useTaskStore } from "@/stores/task-store";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
-import { formatDate } from "@/lib/server-utils";
+import { formatDate } from "@/lib/utils";
 import { TaskCreateForm } from "@/types";
 
 type CreateTaskModalProps = {

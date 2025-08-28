@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Users, Calendar } from "lucide-react";
 import { getRecentProjects } from "@/lib/api-calls";
 import { projectStatusColor } from "@/lib/utils";
-import { formatDate } from "@/lib/server-utils";
+import { formatDate } from "@/lib/utils";
 import type { RecentProjects } from "@/types";
 
 export default async function RecentProjectsCard() {
@@ -36,7 +36,7 @@ export default async function RecentProjectsCard() {
         </Link>
       </div>
 
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         {projects.map((project) => (
           <Link href={`/projects/${project.id}`} key={project.id}>
             <div className="border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg p-4 hover:shadow-xl">

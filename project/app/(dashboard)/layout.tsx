@@ -9,7 +9,7 @@ import { Menu, Bell, Search, Loader2 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import LoadingUI from "@/components/ui/loading-ui";
-import { navigationItems, useScreenWidth } from "@/lib/utils";
+import { navigationItems } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useScreenWidth } from "@/lib/client-utils";
 
 type Props = { children: ReactNode };
 

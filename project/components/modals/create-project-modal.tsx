@@ -22,7 +22,7 @@ import { checkProjectNameUnique } from "@/actions/project-actions";
 import { projectSchemaForm } from "@/lib/validations/validations";
 import { ProjectCreateForm } from "@/types";
 import { useUIStore } from "@/stores/ui-store";
-import { formatDate } from "@/lib/server-utils";
+import { formatDate } from "@/lib/utils";
 
 const CreateProjectModal: FC = () => {
   const { isCreateProjectModalOpen, setCreateProjectModalOpen } = useUIStore();

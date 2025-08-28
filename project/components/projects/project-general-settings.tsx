@@ -11,7 +11,7 @@ import { Input } from "../ui/input";
 import { useProjects } from "@/hooks/use-projects";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { formatDate } from "@/lib/server-utils";
+import { formatDate } from "@/lib/utils";
 import { LoadingButtonContent } from "../ui/loading-button-content";
 import { Separator } from "../ui/separator";
 import { Badge } from "../ui/badge";
