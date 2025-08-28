@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import { useMemo, useState } from "react";
-import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,28 +24,17 @@ import { useLabels } from "@/hooks/use-labels";
 import { CreateLabelModal } from "../modals/create-label-modal";
 import { DeleteLabelModal } from "../modals/delete-label-modal";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 import type { LabelSelect } from "@/types";
+import { UpdateLabelModal } from "../modals/update-label-modal";
 
 type Props = { project_id: number };
 
 export function ProjectLabelSettings({ project_id }: Props) {
-  const { setCreateLabelModalOpen, setDeleteLabelModalOpen } = useUIStore();
-  const { setLabelToDelete } = useLabelStore();
+  const { setCreateLabelModalOpen, setDeleteLabelModalOpen, setUpdateLabelModalOpen } = useUIStore();
+  const { setLabelToDelete, setLabelToUpdate } = useLabelStore();
   const { projectLabels, isProjectLabelsLoading } = useLabels(project_id);
 
   const labels = (projectLabels as LabelSelect[]) ?? [];
@@ -52,79 +48,87 @@ export function ProjectLabelSettings({ project_id }: Props) {
     setDeleteLabelModalOpen(true);
   }
 
+  function onEditClick(row: LabelSelect) {
+    setLabelToUpdate(row);
+    setUpdateLabelModalOpen(true);
+  }
+
   // Columns for tanstack Data Table
-  const columns = useMemo<ColumnDef<LabelSelect>[]>(() => [
-    {
-      accessorKey: "name",
-      header: "Label Name",
-      cell: ({ row }) => <span className="font-medium">{row.getValue<string>("name")}</span>,
-    },
-    {
-      accessorKey: "color",
-      header: "Label Color",
-      cell: ({ row }) => {
-        const color = row.getValue<string>("color") ?? "#808080";
-        return (
-          <div className="flex items-center gap-2">
-            <span
-              className="h-3 w-3 rounded-full ring-1 ring-black/10"
-              style={{ backgroundColor: color }}
-              aria-hidden="true"
-            />
-            <Badge
-              className="border text-foreground"
-              style={{ backgroundColor: color, borderColor: "rgba(0,0,0,0.15)" }}
-            >
-              {color.toUpperCase()}
-            </Badge>
-          </div>
-        );
+  const columns = useMemo<ColumnDef<LabelSelect>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Label Name",
+        cell: ({ row }) => <span className="font-medium">{row.getValue<string>("name")}</span>,
       },
-      // Allow global filter to match this column
-      filterFn: "includesString",
-    },
-    {
-      accessorKey: "isDefault",
-      header: "Default",
-      cell: ({ row }) =>
-        row.getValue<boolean>("isDefault") ? <Badge variant="secondary">Default</Badge> : "No",
-      enableGlobalFilter: false,
-    },
-    {
-      id: "actions",
-      header: () => <div className="text-right">Actions</div>,
-      cell: ({ row }) => {
-        const item = row.original;
-        return (
-          <div className="text-right">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => { /* TODO: open edit modal */ }}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => onDeleteClick(item)}
-                  disabled={item.isDefault}
-                >
-                  <Trash className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        );
+      {
+        accessorKey: "color",
+        header: "Label Color",
+        cell: ({ row }) => {
+          const color = row.getValue<string>("color") ?? "#808080";
+          return (
+            <div className="flex items-center gap-2">
+              <span
+                className="h-3 w-3 rounded-full ring-1 ring-black/10"
+                style={{ backgroundColor: color }}
+                aria-hidden="true"
+              />
+              <Badge
+                className="border text-foreground"
+                style={{ backgroundColor: color, borderColor: "rgba(0,0,0,0.15)" }}
+              >
+                {color.toUpperCase()}
+              </Badge>
+            </div>
+          );
+        },
+        // Allow global filter to match this column
+        filterFn: "includesString",
       },
-      enableGlobalFilter: false,
-    },
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], []); // columns stable
+      {
+        accessorKey: "isDefault",
+        header: "Default",
+        cell: ({ row }) => (row.getValue<boolean>("isDefault") ? <Badge variant="secondary">Default</Badge> : "No"),
+        enableGlobalFilter: false,
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-right">Actions</div>,
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <div className="text-right">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      onEditClick(item);
+                    }}
+                    disabled={item.isDefault}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDeleteClick(item)} disabled={item.isDefault}>
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
+        enableGlobalFilter: false,
+      },
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    ],
+    [],
+  ); // columns stable
 
   // Table Config (pagination + filtering)
   const [globalFilter, setGlobalFilter] = useState("");
@@ -142,13 +146,12 @@ export function ProjectLabelSettings({ project_id }: Props) {
     <>
       <DeleteLabelModal project_id={project_id} />
       <CreateLabelModal project_id={project_id} />
+      <UpdateLabelModal project_id={project_id} />
 
       <div className="flex flex-col gap-2">
         {/* Section Title and Description */}
         <p className="text-xl">Labels</p>
-        <p className="text-sm text-muted-foreground">
-          Create, edit, or remove labels used across this project
-        </p>
+        <p className="text-sm text-muted-foreground">Create, edit, or remove labels used across this project</p>
         <Separator className="mb-4" />
 
         {/* Top bar: Search + New */}
@@ -220,12 +223,7 @@ export function ProjectLabelSettings({ project_id }: Props) {
           >
             Previous
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
+          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
             Next
           </Button>
         </div>

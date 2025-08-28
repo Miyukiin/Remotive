@@ -21,7 +21,7 @@ export function failResponse<T>(message: string, error: unknown): types.QueryRes
   };
 }
 
-type QueryKeys = Exclude<keyof typeof queries, "teams">;
+type QueryKeys = Exclude<keyof typeof queries, "teams" | "labels">;
 
 // Used to map the query key to their tables
 const tableMap = {

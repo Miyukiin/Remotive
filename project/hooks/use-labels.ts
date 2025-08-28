@@ -1,7 +1,7 @@
-import { createLabelAction, deleteLabelAction, getProjectLabelsAction } from "@/actions/labels-actions";
+import { createLabelAction, deleteLabelAction, getProjectLabelsAction, updateLabelAction } from "@/actions/labels-actions";
 import { getTempId } from "@/lib/utils";
-import { labelSchemaForm } from "@/lib/validations/validations";
-import { LabelSelect } from "@/types";
+import { labelSchemaForm, labelSchemaUpdateForm } from "@/lib/validations/validations";
+import { LabelSelect, LabelUpdateForm } from "@/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import z from "zod";
@@ -103,6 +103,46 @@ export function useLabels(project_id: number) {
     },
   });
 
+  const updateLabel = useMutation({
+    mutationFn: async ({ project_id, label_id, labelFormData }: { project_id: number, label_id: number, labelFormData: LabelUpdateForm }) => {
+      const res = await updateLabelAction(project_id, label_id, labelFormData);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+    onMutate: async ({ project_id, labelFormData }) => {
+      await queryClient.cancelQueries({ queryKey: ["labels", project_id] });
+
+      const previousLabels = queryClient.getQueryData<LabelSelect[]>(["labels", project_id]);
+
+      // Optimistically update the label with the inputted labelFormData
+      queryClient.setQueryData<LabelSelect[]>(["labels", project_id], (old) =>
+        old
+          ? old.map((l) =>
+              l.id === project_id
+                ? {
+                    ...l,
+                    ...labelFormData,
+                  }
+                : l,
+            )
+          : old,
+      );
+
+      return { previousLabels };
+    },
+    onSuccess: () => {
+      toast.success("Success", { description: "Successfully updated the label." });
+    },
+    onError: (error, variables, context) => {
+      toast.error("Error", { description: error.message });
+      // Rollback
+      queryClient.setQueryData(["labels", project_id], context?.previousLabels);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["labels", project_id] });
+    },
+  });
+
   return {
     // Get Project Labels
     projectLabels: getLabelsByProject.data,
@@ -117,5 +157,9 @@ export function useLabels(project_id: number) {
     deleteLabel: deleteLabel.mutateAsync,
     isLabelDeletionLoading: deleteLabel.isPending,
     labelDeletionError: deleteLabel.error,
+
+    updateLabel: updateLabel.mutateAsync,
+    isLabelUpdateLoading: updateLabel.isPending,
+    labelUpdateError: updateLabel.error,
   };
 }

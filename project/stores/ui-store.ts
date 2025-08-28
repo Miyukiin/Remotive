@@ -72,6 +72,9 @@ interface UIState {
 
   isDeleteLabelModalOpen: boolean;
   setDeleteLabelModalOpen: (val: boolean) => void;
+
+  isUpdateLabelModalOpen: boolean;
+  setUpdateLabelModalOpen: (val: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()((set) => ({
@@ -95,4 +98,7 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isDeleteLabelModalOpen: false,
   setDeleteLabelModalOpen: (val) => set(() => ({ isDeleteLabelModalOpen: val })),
+
+  isUpdateLabelModalOpen: false,
+  setUpdateLabelModalOpen: (val) => set(() => ({ isUpdateLabelModalOpen: val })),
 }));

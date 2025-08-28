@@ -2,7 +2,7 @@ import * as types from "../../../types/index";
 import { eq } from "drizzle-orm";
 import { db } from "../db-index";
 import * as schema from "../schema";
-import { successResponse, failResponse } from "./query_utils";
+import { successResponse, failResponse, getBaseFields } from "./query_utils";
 
 export const labels = {
   getByProject: async (projectId: number): Promise<types.QueryResponse<types.LabelSelect[]>> => {
@@ -20,7 +20,16 @@ export const labels = {
       return failResponse(`Unable to retrieve project labels.`, e);
     }
   },
-  //   getById: async (id: number): Promise<types.QueryResponse<types.LabelSelect>> => {},
+  getById: async (id: number): Promise<types.QueryResponse<types.LabelSelect>> => {
+    try {
+      const [label] = await db.select().from(schema.project_labels).limit(1).where(eq(schema.project_labels.id, id));
+
+      if (label) return successResponse(`Retrieved label successfully.`, label);
+      throw new Error(`Label does not exist.`);
+    } catch (e) {
+      return failResponse(`Unable to retrieve label.`, e);
+    }
+  },
 
   create: async (data: types.LabelInsert): Promise<types.QueryResponse<types.LabelSelect>> => {
     try {
@@ -39,10 +48,39 @@ export const labels = {
       return failResponse(`Unable to create label.`, e);
     }
   },
-  //   update: async (
-  //     id: number,
-  //     incomingLabelData: types.LabelInsert,
-  //   ): Promise<types.QueryResponse<types.LabelSelect>> => {},
+  update: async (id: number, incomingLabelData: types.LabelInsert): Promise<types.QueryResponse<types.LabelSelect>> => {
+    try {
+      const res = await labels.getById(id);
+      if (!res.success) throw new Error(res.message);
+
+      const existingLabelData = res.data;
+
+      const changed: Partial<types.LabelInsert> = {};
+
+      if (existingLabelData.name !== incomingLabelData.name) changed.name = incomingLabelData.name;
+      if (existingLabelData.color !== incomingLabelData.color) changed.color = incomingLabelData.color;
+      if (existingLabelData.project_id !== incomingLabelData.project_id) changed.project_id = incomingLabelData.project_id;
+
+      const finalUpdatedLabelData = {
+        ...getBaseFields(existingLabelData),
+        ...changed,
+        ...(Object.keys(changed).length > 0 ? { updatedAt: new Date() } : {}),
+      };
+
+      if (Object.keys(changed).length === 0) return successResponse(`No changes detected.`, existingLabelData);
+
+      const [result] = await db
+        .update(schema.project_labels)
+        .set(finalUpdatedLabelData)
+        .where(eq(schema.project_labels.id, id))
+        .returning();
+
+      if (result) return successResponse(`Updated label successfully.`, existingLabelData);
+      else return failResponse(`Unable to update label.`, `Database returned no result.`);
+    } catch (e) {
+      return failResponse(`Unable to update label.`, e);
+    }
+  },
   delete: async (label_id: number): Promise<types.QueryResponse<types.LabelSelect>> => {
     try {
       const [result] = await db.delete(schema.project_labels).where(eq(schema.project_labels.id, label_id)).returning();

@@ -31,8 +31,8 @@ export type QueryResponse<T> =
   | { success: false; message: string; error: unknown };
 
 // Type Narrowing for create query utilities.
-export type ObjectInsert = UserInsert | ProjectInsert | ListInsert | TaskInsert | CommentInsert | TeamsInsert;
-export type ObjectSelect = UserSelect | ProjectSelect | ListSelect | TaskSelect | CommentSelect | TeamsSelect;
+export type ObjectInsert = UserInsert | ProjectInsert | ListInsert | TaskInsert | CommentInsert | TeamsInsert | LabelInsert;
+export type ObjectSelect = UserSelect | ProjectSelect | ListSelect | TaskSelect | CommentSelect | TeamsSelect | LabelSelect ;
 
 // Type Safety
 export type UserInsert = typeof schema.users.$inferInsert;
