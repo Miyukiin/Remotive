@@ -4,8 +4,8 @@ import { TaskSelect } from "@/types";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 import MembersAvatars from "../ui/members-avatars";
-import { FC } from "react";
-import { calculateOverdueInfo, capitalize, taskPriorityColor } from "@/lib/utils";
+import { FC, useMemo } from "react";
+import { calculateOverdueInfo, capitalize, getContrastYIQ, taskPriorityColor } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 import TaskOptions from "./task-options";
 import { Calendar, MessageCircleMore } from "lucide-react";
@@ -16,6 +16,7 @@ import { DragButton } from "../ui/drag-button";
 import { useSortable } from "@dnd-kit/sortable";
 import { useUIStore } from "@/stores/ui-store";
 import { useTaskStore } from "@/stores/task-store";
+import { useLabels } from "@/hooks/use-labels";
 
 /*
 TODO: Implementation Notes for Interns:
@@ -69,8 +70,12 @@ export interface TaskDragData {
 
 const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   const { taskMembers, isTaskMembersLoading, getTaskMembersError } = useTasks({ task_id: task.id });
+  const { taskLabels = [], isTaskLabelsLoading } = useLabels({ project_id, task_id: task.id });
   const { setTaskDetailsModalOpen } = useUIStore();
   const { setActiveTask } = useTaskStore();
+  
+  const LABEL_LIMIT = 4;
+  const displayedLabels = useMemo(() => taskLabels.slice(0, LABEL_LIMIT),[LABEL_LIMIT, taskLabels]) 
 
   const { isOverdue, daysOverdue, isDueToday } = calculateOverdueInfo(task.dueDate);
 
@@ -161,13 +166,19 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
               )}
             </div>
           </div>
-          {/* Placeholder Labels */}
+          {/* Labels */}
           <div className="flex gap-1.5">
-            {["Late", "Frontend", "Documentation"].map((l, idx) => (
-              <Badge key={idx} className="text-[9px]">
-                {l}
-              </Badge>
-            ))}
+            {isTaskLabelsLoading ? (
+              <p className="text-xs text-muted-foreground">Loading assigned labels…</p>
+            ) : displayedLabels.length ? (
+              displayedLabels.map((l) => (
+                <Badge key={l.id} style={{ backgroundColor: l.color, color: getContrastYIQ(l.color).result }}>
+                  {l.name}
+                </Badge>
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">No labels</p>
+            )}
           </div>
         </div>
       </CardContent>

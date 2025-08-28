@@ -18,7 +18,7 @@ type UpdateLabelModalProps = { project_id: number };
 export function UpdateLabelModal({ project_id }: UpdateLabelModalProps) {
   const { isUpdateLabelModalOpen, setUpdateLabelModalOpen } = useUIStore();
   const { labelToUpdate } = useLabelStore();
-  const { updateLabel, isLabelUpdateLoading } = useLabels(project_id);
+  const { updateLabel, isLabelUpdateLoading } = useLabels({project_id});
 
   const form = useForm<LabelUpdateForm>({
     resolver: zodResolver(labelSchemaUpdateForm),

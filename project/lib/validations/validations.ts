@@ -478,3 +478,6 @@ export const taskPositionPayloadSchema = taskSchema
   });
 
 export const tasksPositionsPayloadSchema = z.array(taskPositionPayloadSchema);
+
+
+export const updateTasksLabelsPayloadSchema = z.array(labelSchema);

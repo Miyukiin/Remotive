@@ -1,5 +1,5 @@
 import * as types from "../../../types/index";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../db-index";
 import * as schema from "../schema";
 import { successResponse, failResponse, getBaseFields } from "./query_utils";
@@ -28,6 +28,25 @@ export const labels = {
       throw new Error(`Label does not exist.`);
     } catch (e) {
       return failResponse(`Unable to retrieve label.`, e);
+    }
+  },
+  getByTask: async (task_id: number): Promise<types.QueryResponse<types.LabelSelect[]>> => {
+    try {
+      const result = await db
+        .select({ labels: schema.project_labels })
+        .from(schema.project_labels)
+        .innerJoin(schema.labels_to_tasks, eq(schema.labels_to_tasks.label_id, schema.project_labels.id))
+        .where(eq(schema.labels_to_tasks.task_id, task_id))
+        .orderBy(schema.project_labels.name);
+
+      // Unwrap
+      const labels = result.map((r) => r.labels);
+
+      if (labels.length >= 1) return successResponse(`All task labels retrieved.`, labels);
+      else if (labels.length === 0) return successResponse(`No task labels yet.`, labels);
+      throw new Error(`No task labels retrieved.`);
+    } catch (e) {
+      return failResponse(`Unable to retrieve task labels.`, e);
     }
   },
 
@@ -59,7 +78,8 @@ export const labels = {
 
       if (existingLabelData.name !== incomingLabelData.name) changed.name = incomingLabelData.name;
       if (existingLabelData.color !== incomingLabelData.color) changed.color = incomingLabelData.color;
-      if (existingLabelData.project_id !== incomingLabelData.project_id) changed.project_id = incomingLabelData.project_id;
+      if (existingLabelData.project_id !== incomingLabelData.project_id)
+        changed.project_id = incomingLabelData.project_id;
 
       const finalUpdatedLabelData = {
         ...getBaseFields(existingLabelData),
@@ -90,6 +110,77 @@ export const labels = {
       else return failResponse(`Unable to delete label.`, `Database returned no result`);
     } catch (e) {
       return failResponse(`Unable to delete label.`, e);
+    }
+  },
+  updateAssignedTaskLabels: async (
+    task_id: number,
+    incomingLabels: types.LabelSelect[],
+  ): Promise<types.QueryResponse<types.LabelSelect[]>> => {
+    try {
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.LabelSelect[]>> => {
+        // Identify which task labels were added or removed.
+        // Remove or add these LabelsToTasks entries
+
+        const existingTaskToLabelsEntries = await tx
+          .select()
+          .from(schema.labels_to_tasks)
+          .where(eq(schema.labels_to_tasks.task_id, task_id));
+
+        const idsofExistingTaskLabels = new Set(existingTaskToLabelsEntries.map((l) => l.label_id));
+        const idsOfIncomingTaskLabels = new Set(incomingLabels.map((l) => l.id));
+
+        const idsToAdd = [...idsOfIncomingTaskLabels].filter((id) => !idsofExistingTaskLabels.has(id));
+        const idsToRemove = [...idsofExistingTaskLabels].filter((id) => !idsOfIncomingTaskLabels.has(id));
+
+        const now = new Date();
+
+        if (idsToAdd.length > 0) {
+          const rowsToInsert: types.LabelsToTasksInsert[] = idsToAdd.map((label_id) => ({
+            task_id,
+            label_id,
+            createdAt: now,
+            updatedAt: now,
+          }));
+
+          const inserted = await tx.insert(schema.labels_to_tasks).values(rowsToInsert).returning();
+          if (inserted.length !== rowsToInsert.length) {
+            throw new Error("Unable to assign all labels to task.");
+          }
+        }
+
+        if (idsToRemove.length > 0) {
+          const deleted = await tx
+            .delete(schema.labels_to_tasks)
+            .where(
+              and(eq(schema.labels_to_tasks.task_id, task_id), inArray(schema.labels_to_tasks.label_id, idsToRemove)),
+            )
+            .returning();
+
+          if (deleted.length !== idsToRemove.length) {
+            throw new Error("Unable to unassign all labels from task.");
+          }
+        }
+
+        // Check existing
+        const rows = await tx
+          .select({ labels: schema.project_labels })
+          .from(schema.project_labels)
+          .innerJoin(schema.labels_to_tasks, eq(schema.labels_to_tasks.label_id, schema.project_labels.id))
+          .where(eq(schema.labels_to_tasks.task_id, task_id))
+          .orderBy(schema.project_labels.name);
+
+        const newTaskLabels = rows.map((r) => r.labels);
+
+        if (newTaskLabels.length !== incomingLabels.length)
+          throw new Error("Unable to assign/unassign all task labels.");
+
+        return successResponse(`Successfully updated task labels.`, newTaskLabels);
+      });
+
+      if (txResult.success) return successResponse(`Successfully updated task labels.`, txResult.data);
+      return failResponse(`Unable update task labels.`, `Adding user to team database transaction failed`);
+    } catch (e) {
+      return failResponse(`Unable update task labels.`, e);
     }
   },
 };

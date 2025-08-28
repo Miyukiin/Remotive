@@ -68,6 +68,9 @@ export type ProjectMembersSelect = typeof schema.project_members.$inferSelect;
 export type LabelSelect = typeof schema.project_labels.$inferSelect;
 export type LabelInsert = typeof schema.project_labels.$inferInsert;
 
+export type LabelsToTasksInsert = typeof schema.labels_to_tasks.$inferInsert
+export type LabelsToTasksSelect = typeof schema.labels_to_tasks.$inferSelect
+
 export type RecentProjects = {
   id: number;
   name: string;
@@ -91,3 +94,5 @@ export type TaskPositionPayload = {
 };
 
 export type TaskStatus = { status: string; color: keyof typeof listColor };
+
+export type KanbanColor = keyof typeof listColor

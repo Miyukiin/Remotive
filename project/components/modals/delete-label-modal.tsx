@@ -17,7 +17,7 @@ type DeleteLabelModalProps = { project_id: number };
 
 export function DeleteLabelModal({ project_id }: DeleteLabelModalProps) {
   const { isDeleteLabelModalOpen, setDeleteLabelModalOpen } = useUIStore();
-  const { deleteLabel, isLabelDeletionLoading } = useLabels(project_id);
+  const { deleteLabel, isLabelDeletionLoading } = useLabels({project_id});
   const { labelToDelete } = useLabelStore();
 
   function onCancelClick() {

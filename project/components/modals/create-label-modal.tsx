@@ -15,7 +15,7 @@ type CreateLabelModalProps = { project_id: number };
 
 export function CreateLabelModal({ project_id }: CreateLabelModalProps) {
   const { isCreateLabelModalOpen, setCreateLabelModalOpen } = useUIStore();
-  const { createLabel, isLabelCreationLoading } = useLabels(project_id);
+  const { createLabel, isLabelCreationLoading } = useLabels({project_id});
 
   const form = useForm<LabelCreateForm>({
     resolver: zodResolver(labelSchemaForm),

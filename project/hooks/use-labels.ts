@@ -2,7 +2,9 @@ import {
   createLabelAction,
   deleteLabelAction,
   getProjectLabelsAction,
+  getTaskLabelsAction,
   updateLabelAction,
+  updateTaskLabelsAction,
 } from "@/actions/labels-actions";
 import { getTempId } from "@/lib/utils";
 import { labelSchemaForm } from "@/lib/validations/validations";
@@ -11,7 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import z from "zod";
 
-export function useLabels(project_id: number) {
+export function useLabels({ project_id, task_id }: { project_id: number; task_id?: number }) {
   const queryClient = useQueryClient();
 
   const getLabelsByProject = useQuery({
@@ -20,6 +22,17 @@ export function useLabels(project_id: number) {
     queryFn: async ({ queryKey }) => {
       const [, project_id] = queryKey as ["labels", number];
       const res = await getProjectLabelsAction(project_id);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
+  const getLabelsByTask = useQuery({
+    queryKey: ["labels", task_id],
+    enabled: typeof task_id === "number",
+    queryFn: async ({ queryKey }) => {
+      const [, task_id] = queryKey as ["labels", number];
+      const res = await getTaskLabelsAction(task_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -156,11 +169,46 @@ export function useLabels(project_id: number) {
     },
   });
 
+  const updateTaskLabels = useMutation({
+    mutationFn: async ({ task_id, incomingLabels }: { task_id: number; incomingLabels: LabelSelect[] }) => {
+      const res = await updateTaskLabelsAction(task_id, incomingLabels);
+
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+    onMutate: async ({ task_id, incomingLabels }) => {
+      await queryClient.cancelQueries({ queryKey: ["labels", task_id] });
+
+      const previousTaskLabels = queryClient.getQueryData<LabelSelect[]>(["labels", task_id]);
+
+      // Optimistically update the task's labels.
+      queryClient.setQueryData<LabelSelect[]>(["labels", task_id], () => incomingLabels);
+
+      return { previousTaskLabels, task_id };
+    },
+    onSuccess: () => {
+      // toast.success("Success", { description: "Successfully updated the task labels." });
+    },
+    onError: (error, variables, context) => {
+      toast.error("Error", { description: error.message });
+      // Rollback
+      queryClient.setQueryData(["labels", context?.task_id], context?.previousTaskLabels);
+    },
+    onSettled: (data, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: ["labels", context?.task_id] });
+    },
+  });
+
   return {
     // Get Project Labels
     projectLabels: getLabelsByProject.data,
     isProjectLabelsLoading: getLabelsByProject.isLoading,
     projectLabelsError: getLabelsByProject.error,
+
+    // Get Task Labels
+    taskLabels: getLabelsByTask.data,
+    isTaskLabelsLoading: getLabelsByTask.isLoading,
+    taskLabelsError: getLabelsByTask.error,
 
     // Mutations
     createLabel: createLabel.mutateAsync,
@@ -174,5 +222,9 @@ export function useLabels(project_id: number) {
     updateLabel: updateLabel.mutateAsync,
     isLabelUpdateLoading: updateLabel.isPending,
     labelUpdateError: updateLabel.error,
+
+    updateTaskLabels: updateTaskLabels.mutateAsync,
+    isTaskLabelsUpdating: updateTaskLabels.isPending,
+    updateTaskLabelsError: updateTaskLabels.error,
   };
 }
