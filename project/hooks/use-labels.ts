@@ -1,6 +1,11 @@
-import { createLabelAction, deleteLabelAction, getProjectLabelsAction, updateLabelAction } from "@/actions/labels-actions";
+import {
+  createLabelAction,
+  deleteLabelAction,
+  getProjectLabelsAction,
+  updateLabelAction,
+} from "@/actions/labels-actions";
 import { getTempId } from "@/lib/utils";
-import { labelSchemaForm, labelSchemaUpdateForm } from "@/lib/validations/validations";
+import { labelSchemaForm } from "@/lib/validations/validations";
 import { LabelSelect, LabelUpdateForm } from "@/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -104,7 +109,15 @@ export function useLabels(project_id: number) {
   });
 
   const updateLabel = useMutation({
-    mutationFn: async ({ project_id, label_id, labelFormData }: { project_id: number, label_id: number, labelFormData: LabelUpdateForm }) => {
+    mutationFn: async ({
+      project_id,
+      label_id,
+      labelFormData,
+    }: {
+      project_id: number;
+      label_id: number;
+      labelFormData: LabelUpdateForm;
+    }) => {
       const res = await updateLabelAction(project_id, label_id, labelFormData);
       if (!res.success) throw new Error(res.message);
       return res.data;
