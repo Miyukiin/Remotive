@@ -49,7 +49,7 @@ export const lists = {
 
       const [result] = await db
         .update(schema.lists)
-        .set(finalUpdatedObjectData)
+        .set(finalUpdatedObjectData as types.ListInsert)
         .where(eq(schema.lists.id, id))
         .returning();
 
