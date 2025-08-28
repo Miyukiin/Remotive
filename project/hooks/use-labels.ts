@@ -81,7 +81,7 @@ export function useLabels(project_id: number) {
       return res.data;
     },
     onMutate: async (label_id: number) => {
-      queryClient.invalidateQueries({ queryKey: ["labels", project_id] });
+      queryClient.cancelQueries({ queryKey: ["labels", project_id] });
 
       const previousLabels = queryClient.getQueryData<LabelSelect[]>(["labels", project_id]);
 
