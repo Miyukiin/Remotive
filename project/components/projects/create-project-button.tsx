@@ -7,9 +7,11 @@ export function CreateProjectButton() {
   const { setCreateProjectModalOpen } = useUIStore();
 
   return (
-    <Button className="font-medium" onClick={() => setCreateProjectModalOpen(true)}>
-      <Plus size={20} className="mr-2" />
-      New Project
-    </Button>
+    <div className="mt-4 flex gap-x-2">
+      <Button className="font-medium w-full" onClick={() => setCreateProjectModalOpen(true)}>
+        <Plus size={20} className="mr-2" />
+        New Project
+      </Button>
+    </div>
   );
 }
