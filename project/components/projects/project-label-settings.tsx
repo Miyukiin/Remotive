@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, Pencil, Plus, Trash } from "lucide-react";
+import { CircleQuestionMark, MoreHorizontal, Pencil, Plus, Trash } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 import { useUIStore } from "@/stores/ui-store";
@@ -24,11 +24,19 @@ import { useLabels } from "@/hooks/use-labels";
 import { CreateLabelModal } from "../modals/create-label-modal";
 import { DeleteLabelModal } from "../modals/delete-label-modal";
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 import type { LabelSelect } from "@/types";
 import { UpdateLabelModal } from "../modals/update-label-modal";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 type Props = { project_id: number };
 
@@ -105,6 +113,20 @@ export function ProjectLabelSettings({ project_id }: Props) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                    <div className="flex gap-2 items-center">
+                      <span>Actions </span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <CircleQuestionMark size={14} />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Default labels cannot be edited or deleted.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => {
                       onEditClick(item);
