@@ -1,5 +1,5 @@
 import * as schema from "@/lib/db/schema";
-import { listColor } from "@/lib/utils";
+import { listColor, projectsFilterOptions } from "@/lib/utils";
 import {
   labelSchemaForm,
   labelSchemaUpdateForm,
@@ -96,3 +96,6 @@ export type TaskPositionPayload = {
 export type TaskStatus = { status: string; color: keyof typeof listColor };
 
 export type KanbanColor = keyof typeof listColor
+
+// Projects Filter Options Type
+export type ProjectsFilterOptions = (typeof projectsFilterOptions)[number];

@@ -28,6 +28,14 @@ export const listColor = {
   YELLOW: "bg-[#9a6700]/15 text-[#9a6700] dark:bg-[#9e6a03]/20 dark:text-[#9e6a03]",
 } as const;
 
+// Projects Search Filter Options
+export const projectsFilterOptions = [
+  "Ascending (A-Z)",
+  "Descending (Z-A)",
+  "Newest First",
+  "Oldest First",
+] as const;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
