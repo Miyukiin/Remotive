@@ -86,8 +86,8 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
             <div>
               {team ? (
                 <div>
-                  <h1 className="text-3xl font-bold text-outer_space-500 dark:text-platinum-500">{team.teamName}</h1>
-                  <p className="text-payne's_gray-500 dark:text-french_gray-500 mt-1">View your team</p>
+                  <h1 className="text-3xl font-bold text-foreground">{team.teamName}</h1>
+                  <p className="text-muted-foreground mt-2">View your team</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
