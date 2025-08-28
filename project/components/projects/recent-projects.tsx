@@ -1,18 +1,21 @@
 import Link from "next/link";
 import { Users, Calendar } from "lucide-react";
 import { getRecentProjects } from "@/lib/api-calls";
-import { projectStatusColor } from "@/lib/utils";
-import { formatDate } from "@/lib/utils";
+import { projectStatusColor, formatDate, cn } from "@/lib/utils";
 import type { RecentProjects } from "@/types";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 export default async function RecentProjectsCard() {
   const res = await getRecentProjects();
 
   if (!res.success) {
     return (
-      <div className="flex flex-col items-center justify-center gap-y-2 bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6">
-        <p className="text-foreground/50 text-base">Unable to load data.</p>
-      </div>
+      <Card>
+        <CardContent className="py-10 text-center text-muted-foreground">Unable to load data.</CardContent>
+      </Card>
     );
   }
 
@@ -20,70 +23,72 @@ export default async function RecentProjectsCard() {
 
   if (projects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-y-2 bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6">
-        <p className="text-foreground/50 text-base">No projects found.</p>
-        <p className="text-foreground/50 text-base">Get invited to or create one.</p>
-      </div>
+      <Card>
+        <CardContent className="py-10 text-center text-muted-foreground">
+          <p>No projects found.</p>
+          <p>Get invited to or create one.</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-outer_space-500 dark:text-platinum-500">Recent Projects</h3>
-        <Link href="/projects" className="text-blue_munsell-500 hover:text-blue_munsell-600 text-sm font-medium">
-          View all
-        </Link>
-      </div>
+    <Card className="flex-1">
+      <CardHeader>
+        <div className="flex w-full items-center justify-between">
+          <CardTitle>Recent Projects</CardTitle>
+          <Link href="/projects" className="text-sm font-medium text-emerald-400 hover:underline">
+            View all
+          </Link>
+        </div>
+      </CardHeader>
 
-      <div className="flex flex-col gap-4">
-        {projects.map((project) => (
-          <Link href={`/projects/${project.id}`} key={project.id}>
-            <div className="border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg p-4 hover:shadow-xl">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h4 className="font-medium text-outer_space-500 dark:text-platinum-500">{project.name}</h4>
-                  <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400 mt-1">{project.description}</p>
+      <CardContent className="flex flex-col gap-4">
+        {projects.map((project) => {
+          const pct = 0;
 
-                  <div className="flex justify-between">
-                    <div className="flex items-center space-x-4 mt-3 text-sm text-payne's_gray-500 dark:text-french_gray-400">
-                      <div className="flex items-center">
-                        <Users size={16} className="mr-1" />
-                        {project.memberCount}
+          return (
+            <Link href={`/projects/${project.id}`} key={project.id} className="group">
+              <div className="rounded-md border bg-card p-4 transition-shadow hover:shadow-md">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <h4 className="font-medium leading-none">{project.name}</h4>
+                    {project.description ? (
+                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{project.description}</p>
+                    ) : null}
+
+                    <div className="mt-3 flex flex-col lg:flex-row justify-between gap-3">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="inline-flex items-center">
+                          <Users className="mr-1 h-4 w-4" aria-hidden="true" />
+                          {project.memberCount}
+                        </span>
+                        <span className="inline-flex items-center">
+                          <Calendar className="mr-1 h-4 w-4" aria-hidden="true" />
+                          {project.dueDate ? formatDate(project.dueDate) : "No due date."}
+                        </span>
                       </div>
-                      <div className="flex items-center">
-                        <Calendar size={16} className="mr-1" />
-                        <p>{project.dueDate ? formatDate(project.dueDate) : "No due date."}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${projectStatusColor[project.status]}`}
-                      >
-                        {project.status}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Progress placeholder */}
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-payne's_gray-500 dark:text-french_gray-400">Progress</span>
-                      <span className="text-outer_space-500 dark:text-platinum-500">66%</span>
+                      <Badge variant="outline" className={cn("capitalize", projectStatusColor[project.status])}>
+                        {String(project.status).replace(/[_-]/g, " ")}
+                      </Badge>
                     </div>
-                    <div className="w-full bg-french_gray-300 dark:bg-payne's_gray-400 rounded-full h-2">
-                      <div
-                        className="bg-blue_munsell-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `100%` }}
-                      />
+
+                    {/* Progress */}
+                    <div className="mt-3 space-y-1.5">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-medium">{pct}%</span>
+                      </div>
+                      <Progress value={pct} />
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
+            </Link>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
