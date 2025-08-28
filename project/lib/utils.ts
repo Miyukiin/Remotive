@@ -2,6 +2,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useState } from "react";
+import { BarChart3, Calendar, FolderOpen, Home, Settings, Users } from "lucide-react";
 
 export const projectStatusColor = {
   Completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
@@ -29,12 +30,17 @@ export const listColor = {
 } as const;
 
 // Projects Search Filter Options
-export const projectsFilterOptions = [
-  "Ascending (A-Z)",
-  "Descending (Z-A)",
-  "Newest First",
-  "Oldest First",
-] as const;
+export const projectsFilterOptions = ["Ascending (A-Z)", "Descending (Z-A)", "Newest First", "Oldest First"] as const;
+
+// Navigation Sidebar options
+export const navigationItems = [
+  { name: "Dashboard", href: "/dashboard", icon: Home, current: false },
+  { name: "Projects", href: "/projects", icon: FolderOpen, current: false },
+  { name: "Teams", href: "/teams", icon: Users, current: false },
+  { name: "Analytics", href: "/analytics", icon: BarChart3, current: false },
+  { name: "Calendar", href: "/calendar", icon: Calendar, current: false },
+  { name: "Settings", href: "/settings", icon: Settings, current: false },
+];
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

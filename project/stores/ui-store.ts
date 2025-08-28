@@ -75,6 +75,9 @@ interface UIState {
 
   isUpdateLabelModalOpen: boolean;
   setUpdateLabelModalOpen: (val: boolean) => void;
+
+  isSideBarOpen: boolean;
+  setSideBarOpen: (val: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()((set) => ({
@@ -101,4 +104,7 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isUpdateLabelModalOpen: false,
   setUpdateLabelModalOpen: (val) => set(() => ({ isUpdateLabelModalOpen: val })),
+
+  isSideBarOpen: false,
+  setSideBarOpen: (val) => set(() => ({ isSideBarOpen: val })),
 }));
