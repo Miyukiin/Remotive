@@ -110,6 +110,39 @@ export function calculateDaysPassed(createdAt: Date | null): { daysAgo: number }
   return { daysAgo: diffDays };
 }
 
+// Determine whether to use a light or dark fg given hexcolor bg
+type ContrastResult = {
+  result: "black" | "white";
+};
+
+export function getContrastYIQ(hexcolor: string): ContrastResult {
+  // Ensure hex starts with "#"
+  if (!hexcolor.startsWith("#")) {
+    throw new Error("Invalid hex color: must start with '#'");
+  }
+
+  // Expand shorthand like #fff → #ffffff
+  if (hexcolor.length === 4) {
+    hexcolor =
+      "#" +
+      hexcolor[1] +
+      hexcolor[1] +
+      hexcolor[2] +
+      hexcolor[2] +
+      hexcolor[3] +
+      hexcolor[3];
+  }
+
+  const r = parseInt(hexcolor.substring(1, 3), 16);
+  const g = parseInt(hexcolor.substring(3, 5), 16);
+  const b = parseInt(hexcolor.substring(5, 7), 16);
+
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  const result: "black" | "white" = yiq >= 128 ? "black" : "white";
+
+  return { result };
+}
+
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.
 // To be used within update query utilities to identify changed fields to be updated.
 // export function getDataDiff<T>(existingData: T, newData: T): Partial<T> {

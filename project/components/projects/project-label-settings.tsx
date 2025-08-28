@@ -37,13 +37,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import type { LabelSelect } from "@/types";
 import { UpdateLabelModal } from "../modals/update-label-modal";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { getContrastYIQ } from "@/lib/utils";
 
 type Props = { project_id: number };
 
 export function ProjectLabelSettings({ project_id }: Props) {
   const { setCreateLabelModalOpen, setDeleteLabelModalOpen, setUpdateLabelModalOpen } = useUIStore();
   const { setLabelToDelete, setLabelToUpdate } = useLabelStore();
-  const { projectLabels, isProjectLabelsLoading } = useLabels(project_id);
+  const { projectLabels, isProjectLabelsLoading } = useLabels({ project_id });
 
   const labels = (projectLabels as LabelSelect[]) ?? [];
 
@@ -83,7 +84,11 @@ export function ProjectLabelSettings({ project_id }: Props) {
               />
               <Badge
                 className="border text-foreground"
-                style={{ backgroundColor: color, borderColor: "rgba(0,0,0,0.15)" }}
+                style={{
+                  backgroundColor: color,
+                  borderColor: "rgba(0,0,0,0.15)",
+                  color: getContrastYIQ(color).result
+                }}
               >
                 {color.toUpperCase()}
               </Badge>
