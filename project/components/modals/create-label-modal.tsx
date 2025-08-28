@@ -19,12 +19,12 @@ export function CreateLabelModal({ project_id }: CreateLabelModalProps) {
 
   const form = useForm<LabelCreateForm>({
     resolver: zodResolver(labelSchemaForm),
-    defaultValues: { name: "", color: "000000" },
+    defaultValues: { name: "", color: "#000000" },
   });
 
   async function onSubmit(values: LabelCreateForm) {
     await createLabel({ project_id, labelFormData: values });
-    form.reset({ name: "", color: "000000" });
+    form.reset({ name: "", color: "#000000" });
     setCreateLabelModalOpen(false);
   }
 
