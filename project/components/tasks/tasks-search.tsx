@@ -14,8 +14,8 @@ const TasksSearch: FC<TasksSearchProps> = ({ searchTerm, setSearchTerm }) => {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-center">
-      <div className="relative flex-1">
+    <div className="flex flex-col md:flex-row gap-4 items-center">
+      <div className="relative w-full flex-1">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground" size={16} />
         <Input
           type="text"

@@ -12,6 +12,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Badge } from "../ui/badge";
+import { projectStatusColor } from "@/lib/utils";
 
 type NavItem = {
   name: string;
@@ -106,31 +108,41 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
         </Breadcrumb>
       </div>
       {/* Project Name, View Description, Buttons */}
-      <div className="flex flex-col gap-4 md:gap-0 md:flex-row items-center justify-between">
+      <div className="flex flex-col gap-4 justify-start md:flex-row md:justify-between md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
-          <p className="text-foreground/70 mt-1">{navItems.find((n) => n.current)?.description ?? "Loading..."}</p>
+          <div className="flex gap-3 items-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
+            <div>
+              <Badge className={projectStatusColor[project.status]}>{project.status}</Badge>
+            </div>
+          </div>
+
+          <p className="text-sm md:text-base text-foreground/70 mt-1">
+            {navItems.find((n) => n.current)?.description ?? "Loading..."}
+          </p>
         </div>
 
-        <div className="bg-foreground/5 rounded-md px-1 md:bg-transparent flex items-center space-x-2">
-          {navItems.map((itm, idx) => {
-            return (
-              <Link
-                key={idx}
-                href={itm.name === "Default" ? `/projects/${project.id}` : `/projects/${project.id}/${itm.href}`}
-              >
-                <button
-                  className={`p-2 rounded-lg transition-colors ${
-                    itm.current
-                      ? "bg-emerald-600 dark:bg-emerald-800 text-white "
-                      : "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
-                  }`}
+        <div className="flex justify-center">
+          <div className="bg-foreground/5 rounded-md md:bg-transparent flex grow-0 justify-center items-center space-x-2">
+            {navItems.map((itm, idx) => {
+              return (
+                <Link
+                  key={idx}
+                  href={itm.name === "Default" ? `/projects/${project.id}` : `/projects/${project.id}/${itm.href}`}
                 >
-                  <itm.icon size={20} />
-                </button>
-              </Link>
-            );
-          })}
+                  <button
+                    className={`p-2 rounded-lg transition-colors ${
+                      itm.current
+                        ? "bg-emerald-600 dark:bg-emerald-800 text-white "
+                        : "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
+                    }`}
+                  >
+                    <itm.icon size={20} />
+                  </button>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
