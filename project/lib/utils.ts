@@ -70,13 +70,14 @@ export type OverdueInfo = {
   isOverdue: boolean; // true if due date is before today (by whole days)
   isDueToday: boolean; // true if due date is today (calendar day)
   daysOverdue: number; // whole days overdue (0 if not overdue)
+  daysLeft: number; // how many whole days left till overdue (0 if overdue)
 };
 
 export function calculateOverdueInfo(dueInput: Date | null): OverdueInfo {
-  if (!dueInput) return { isOverdue: false, daysOverdue: 0, isDueToday: false };
+  if (!dueInput) return { isOverdue: false, daysOverdue: 0, daysLeft: 0, isDueToday: false };
 
   const due = dueInput;
-  if (isNaN(due.getTime())) return { isOverdue: false, daysOverdue: 0, isDueToday: false };
+  if (isNaN(due.getTime())) return { isOverdue: false, daysOverdue: 0, daysLeft: 0, isDueToday: false };
 
   const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()); // Helper func to strip the time off, so that we avoid off-by-hours bugs.
   const today = startOf(new Date());
@@ -89,7 +90,8 @@ export function calculateOverdueInfo(dueInput: Date | null): OverdueInfo {
   return {
     isDueToday: diffDays === 0, // is Due Today
     isOverdue: diffDays > 0, // Overdue by how many days
-    daysOverdue: diffDays > 0 ? diffDays : 0, // Due in |diffDays| days
+    daysOverdue: diffDays > 0 ? diffDays : 0, // Was Due in |diffDays| days
+    daysLeft: diffDays < 0 ? -diffDays : 0, // Will be Due in |diffDays| days
   };
 }
 
@@ -123,14 +125,7 @@ export function getContrastYIQ(hexcolor: string): ContrastResult {
 
   // Expand shorthand like #fff → #ffffff
   if (hexcolor.length === 4) {
-    hexcolor =
-      "#" +
-      hexcolor[1] +
-      hexcolor[1] +
-      hexcolor[2] +
-      hexcolor[2] +
-      hexcolor[3] +
-      hexcolor[3];
+    hexcolor = "#" + hexcolor[1] + hexcolor[1] + hexcolor[2] + hexcolor[2] + hexcolor[3] + hexcolor[3];
   }
 
   const r = parseInt(hexcolor.substring(1, 3), 16);
