@@ -138,8 +138,7 @@ export async function addUsersToTeamAction(
   team_id: number,
 ): Promise<ServerActionResponse<boolean>> {
   await checkAuthenticationStatus();
-
-  const parsed = addUsersToTeamSchema.safeParse({ users_ids, team_id });
+  const parsed = addUsersToTeamSchema.safeParse({ user_Ids: users_ids, team_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
   for (const user_id of users_ids) {
