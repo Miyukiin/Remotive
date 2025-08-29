@@ -96,8 +96,8 @@ export default function DashboardLayout({ children }: Props) {
                 onItemClick?.();
               }}
               className={`
-                flex items-center rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-accent-foreground
-                ${item.current ? "bg-primary text-accent-foreground" : "text-muted-foreground"},
+                flex items-center rounded-md px-3 py-2 text-sm hover:text-accent-foreground
+                ${item.current ? "bg-primary text-accent-foreground" : "text-muted-foreground transition-colors hover:bg-sidebar-accent  "},
               `}
             >
               <Icon className="mr-3 h-4 w-4" />
