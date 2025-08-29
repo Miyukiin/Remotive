@@ -17,6 +17,7 @@ import { TaskAssignees } from "../tasks/task-modal-ui/task-assignees";
 import { TaskContent } from "../tasks/task-modal-ui/task-content";
 import { TaskDescription } from "../tasks/task-modal-ui/task-description";
 import { TaskLabels } from "../tasks/task-modal-ui/task-labels";
+import { FileQuestion } from "lucide-react";
 
 const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
   const { isTaskDetailsModalOpen, setTaskDetailsModalOpen } = useUIStore();
@@ -25,8 +26,39 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
   const screenWidth = useScreenWidth();
   const isMobile = screenWidth ? (screenWidth < 768 ? true : false) : false;
 
+  const container = typeof window !== "undefined" ? (document.querySelector("main") ?? undefined) : undefined;
+
+  // If no active task, render an empty state **inside** the Drawer
   if (!activeTask) {
-    return null; // Should be unable to retrieve active task
+    return (
+      <Drawer
+        open={isTaskDetailsModalOpen}
+        onOpenChange={setTaskDetailsModalOpen}
+        direction={isMobile ? "bottom" : "right"}
+        container={container}
+        handleOnly={!isMobile}
+      >
+        <VisuallyHidden>
+          <DrawerTitle>Task details</DrawerTitle>
+        </VisuallyHidden>
+        <DrawerContent aria-describedby={undefined} className="max-w-[600px]! xl:max-w-[800px]!">
+          <div className="flex min-h-60 h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
+            <div className="rounded-full border p-3 text-muted-foreground">
+              <FileQuestion className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <h3 className="text-base font-semibold">No task selected</h3>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              We couldn’t load the active task. Open a task from the board to view its details.
+            </p>
+            <div className="mt-2 flex gap-2">
+              <Button variant="secondary" onClick={() => setTaskDetailsModalOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
   }
 
   return (
@@ -34,7 +66,7 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
       open={isTaskDetailsModalOpen}
       onOpenChange={setTaskDetailsModalOpen}
       direction={isMobile ? "bottom" : "right"}
-      container={document.querySelector("main")}
+      container={container}
       handleOnly={isMobile ? false : true}
     >
       <VisuallyHidden>
