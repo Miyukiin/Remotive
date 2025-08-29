@@ -18,6 +18,7 @@ import { TaskContent } from "../tasks/task-modal-ui/task-content";
 import { TaskDescription } from "../tasks/task-modal-ui/task-description";
 import { TaskLabels } from "../tasks/task-modal-ui/task-labels";
 import { FileQuestion } from "lucide-react";
+import { TaskComments } from "../tasks/task-modal-ui/task-comments";
 
 const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
   const { isTaskDetailsModalOpen, setTaskDetailsModalOpen } = useUIStore();
@@ -98,37 +99,8 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
           {/* Content of Task */}
           <TaskContent activeTask={activeTask} isMobile={isMobile} project_id={project_id} />
 
-          {/* Add a comment */}
-          <div className="flex w-full gap-3 mt-10">
-            {" "}
-            {!isMobile && (
-              <Avatar className="w-12 h-12">
-                <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-            )}
-            <div className="w-full space-y-5">
-              <div className="flex items-center gap-2">
-                {isMobile && (
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                )}
-                <p> Add a comment </p>
-              </div>
-
-              <div className="w-full rounded-md border border-green/400 dark:border-green-200/10">
-                {/* Text Content. This would be Render React Markdown styled with Prose */}
-                {/* <DynamicRichTextEditor /> */}
-                <div className="p-3 w-full space-y-2 flex flex-col items-end">
-                  <Button variant="default" size="sm">
-                    Comment
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Comment Section */}
+          <TaskComments activeTask={activeTask} isMobile={isMobile} />
         </div>
       </DrawerContent>
     </Drawer>

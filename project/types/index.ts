@@ -1,6 +1,7 @@
 import * as schema from "@/lib/db/schema";
 import { listColor, projectsFilterOptions } from "@/lib/utils";
 import {
+  commentSchemaForm,
   labelSchemaForm,
   labelSchemaUpdateForm,
   listSchemaForm,
@@ -24,6 +25,8 @@ export type ListFormOutput = z.output<typeof listSchemaForm>;
 
 export type LabelCreateForm = z.infer<typeof labelSchemaForm>;
 export type LabelUpdateForm = z.infer<typeof labelSchemaUpdateForm>;
+
+export type CommentCreateForm = z.infer<typeof commentSchemaForm>;
 
 // Query Types
 export type QueryResponse<T> =

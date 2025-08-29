@@ -1,5 +1,5 @@
 import { priorityTuple, rolesTuple, statusTuple } from "@/lib/db/db-enums";
-import { errorTemplates } from "./validations-utils";
+import { errorTemplates, htmlToText } from "./validations-utils";
 import * as z from "zod";
 import { listColorTuple } from "../db/db-enums";
 
@@ -306,7 +306,7 @@ export const taskSchemaEditForm = taskSchema
 export const commentSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
-    content: z.string().min(15, errorTemplates.contentMinError), // https://ux.stackexchange.com/questions/98672/what-is-the-ideal-maximum-of-the-length-of-a-comment-or-reply
+    content: z.string(),
     taskId: z.int().min(1, errorTemplates.idMinError),
     parentCommentId: z.int().min(1, errorTemplates.idMinError).nullable(),
     authorId: z.int().min(1, errorTemplates.idMinError),
@@ -344,14 +344,43 @@ export const commentSchemaDB = commentSchema.omit({
   id: true,
 });
 
-export const commentSchemaForm = commentSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  taskId: true,
-  parentCommentId: true,
-  authorId: true,
-});
+export const commentSchemaForm = commentSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    taskId: true,
+    parentCommentId: true,
+    authorId: true,
+  })
+  .superRefine((data, ctx) => {
+    // This is because we take in react quill as html content, so this strips away html tags and only validates the text content.
+    const text = htmlToText(data.content);
+
+    if (text.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["content"],
+        message: "Comment cannot be empty.",
+      });
+    }
+
+    if (text.length < 15) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["content"],
+        message: "Comment must be at least 15 characters.",
+      });
+    }
+
+    if (text.length > 5000) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["content"],
+        message: "Comment is too long (max 5000 characters).",
+      });
+    }
+  });
 
 export const teamSchema = z
   .object({

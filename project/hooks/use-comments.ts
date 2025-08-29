@@ -27,7 +27,6 @@ export function useComments(task_id: number) {
   });
 
   // Create comment
-
   const createComment = useMutation({
     mutationFn: async ({
       author_id,
@@ -170,7 +169,7 @@ export function useComments(task_id: number) {
     // Fetches
     taskComments: getCommentsByTask.data,
     taskCommentsIsLoading: getCommentsByTask.isLoading,
-    taskCommentsFetchError: getCommentsByTask.isError,
+    taskCommentsError: getCommentsByTask.isError,
 
     // Mutations
     createComment: createComment.mutateAsync,
