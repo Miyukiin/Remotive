@@ -15,21 +15,22 @@ type KanbanListOptionsProps = {
 };
 
 const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list, isDone }) => {
-  const { deleteList, isListDeleteLoading, updateListsStatus } = useLists(project_id);
-  const { setUpdateKanbanModalOpen } = useUIStore();
-  const { setActiveList } = useKanbanStore();
+  const { updateListsStatus } = useLists(project_id);
+  const { setUpdateKanbanModalOpen, setDeleteKanbanModalOpen, isDeleteKanbanModalOpen } = useUIStore();
+  const { setActiveList, setListToDelete } = useKanbanStore();
 
   function onClick() {
-    deleteList({ project_id, list_id: list.id });
+    setListToDelete(list);
+    setDeleteKanbanModalOpen(true);
   }
 
   function setAsDone() {
     updateListsStatus({ new_done_list_id: list.id });
   }
 
-  function onEdit(){
+  function onEdit() {
     setActiveList(list);
-    setUpdateKanbanModalOpen(true)
+    setUpdateKanbanModalOpen(true);
   }
 
   return (
@@ -44,13 +45,15 @@ const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list, isDon
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={onEdit}><SquarePen/> Edit</DropdownMenuItem>
+        <DropdownMenuItem onClick={onEdit}>
+          <SquarePen /> Edit
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={setAsDone} disabled={isDone}>
-          <ClipboardCheck/>
+          <ClipboardCheck />
           {isDone ? "Already the Done Column" : "Set as Done Column"}
         </DropdownMenuItem>
-        <DropdownMenuItem disabled={isListDeleteLoading} variant="destructive" onClick={onClick}>
-          <Trash/>
+        <DropdownMenuItem disabled={isDeleteKanbanModalOpen} variant="destructive" onClick={onClick}>
+          <Trash />
           Delete List
         </DropdownMenuItem>
       </DropdownMenuContent>

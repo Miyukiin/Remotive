@@ -12,6 +12,7 @@ import { createPortal } from "react-dom";
 import TaskCard from "../tasks/task-card";
 import { UseMutateFunction } from "@tanstack/react-query";
 import { debounce } from "lodash";
+import { DeleteKanbanModal } from "../modals/delete-list-modal.";
 // https://github.com/Georgegriff/react-dnd-kit-tailwind-shadcn-ui/blob/main/
 
 // TODO: Task 5.1 - Design responsive Kanban board layout
@@ -283,6 +284,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
   return (
     <>
       <UpdateKanbanModal project_id={projectId} />
+      <DeleteKanbanModal project_id={projectId} />
 
       <div className="flex flex-col bg-background space-y-6 scrollbar-custom">
         {/* Task Search */}

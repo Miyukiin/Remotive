@@ -58,6 +58,9 @@ interface UIState {
   isUpdateKanbanModalOpen: boolean;
   setUpdateKanbanModalOpen: (val: boolean) => void;
 
+  isDeleteKanbanModalOpen: boolean;
+  setDeleteKanbanModalOpen: (val: boolean) => void;
+
   isCreateTaskModalOpen: boolean;
   setCreateTaskModalOpen: (val: boolean) => void;
 
@@ -86,6 +89,9 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isUpdateKanbanModalOpen: false,
   setUpdateKanbanModalOpen: (val) => set(() => ({ isUpdateKanbanModalOpen: val })),
+
+  isDeleteKanbanModalOpen: false,
+  setDeleteKanbanModalOpen: (val) => set(() => ({ isDeleteKanbanModalOpen: val })),
 
   isCreateTaskModalOpen: false,
   setCreateTaskModalOpen: (val) => set(() => ({ isCreateTaskModalOpen: val })),
