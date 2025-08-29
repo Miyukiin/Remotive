@@ -96,8 +96,8 @@ export default function DashboardLayout({ children }: Props) {
                 onItemClick?.();
               }}
               className={`
-                flex items-center rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground
-                ${item.current ? "bg-accent text-accent-foreground" : "text-muted-foreground"},
+                flex items-center rounded-md px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent hover:text-accent-foreground
+                ${item.current ? "bg-primary text-accent-foreground" : "text-muted-foreground"},
               `}
             >
               <Icon className="mr-3 h-4 w-4" />
@@ -112,7 +112,7 @@ export default function DashboardLayout({ children }: Props) {
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r bg-card lg:block">
+      <div className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r bg-sidebar lg:block">
         <div className="flex h-16 items-center justify-between border-b px-6">{Brand}</div>
         <ScrollArea className="h-[calc(100vh-4rem)] px-3 py-4">
           <NavList />
@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }: Props) {
       {/* Main column */}
       <div className="lg:pl-64">
         {/* Top Bar */}
-        <div className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-card px-4 sm:gap-4 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-sidebar px-4 sm:gap-4 sm:px-6 lg:px-8">
           <div className="lg:hidden">
             {/* Mobile Sidebar (Sheet) */}
             <Sheet open={isSideBarOpen} onOpenChange={setSideBarOpen}>
