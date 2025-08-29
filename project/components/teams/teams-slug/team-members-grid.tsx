@@ -7,18 +7,15 @@ type TeamMembersGridProps = {
   isTeamLeader: boolean;
   teamLeaderUser: UserSelect;
   team_id: number;
-  openReassignModal: () => void;
-  isReassignLoading: boolean;
+  isReassignLoading: boolean,
   setNewLeaderId: (val: number) => void;
 };
 
 const TeamMembersGrid: FC<TeamMembersGridProps> = ({
   teamMembers,
-  isTeamLeader,
   teamLeaderUser,
-  team_id,
-  openReassignModal,
   isReassignLoading,
+  team_id,
   setNewLeaderId,
 }) => {
   return (
@@ -30,9 +27,7 @@ const TeamMembersGrid: FC<TeamMembersGridProps> = ({
             key={member.id}
             member={member}
             team_id={team_id}
-            isTeamLeader={isTeamLeader}
             teamLeaderData={teamLeaderUser}
-            openReassignModal={openReassignModal}
             isReassignLoading={isReassignLoading}
             setNewLeaderId={setNewLeaderId}
           />

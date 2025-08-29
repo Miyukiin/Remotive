@@ -1,16 +1,27 @@
 "use client";
-import { UserSelect } from "@/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { FC, useMemo } from "react";
 import { Mail } from "lucide-react";
-import { FC } from "react";
+
+import type { UserSelect } from "@/types";
 import MemberOptions from "./member-options";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type MemberCardProps = {
   member: UserSelect;
   team_id: number;
-  isTeamLeader: boolean;
   teamLeaderData: UserSelect;
-  openReassignModal: () => void;
   isReassignLoading: boolean;
   setNewLeaderId: (val: number) => void;
 };
@@ -18,91 +29,100 @@ type MemberCardProps = {
 const MemberCard: FC<MemberCardProps> = ({
   member,
   team_id,
-  isTeamLeader,
   teamLeaderData,
-  openReassignModal,
   isReassignLoading,
   setNewLeaderId,
 }) => {
+  const isLeader = member.id === teamLeaderData.id;
+  const projectsCount = useMemo(() => Math.floor(Math.random() * 10) + 1, []);
+
   return (
-    <div className="bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6">
-      <div className="flex items-start justify-between mb-4">
-        {/* Image, Name, Role */}
-        <div className="flex items-center space-x-3">
-          <Avatar>
-            <AvatarImage
-              src={member.image_url}
-              alt="User"
-              onLoad={(e) => e.currentTarget.classList.remove("opacity-0")}
-              className="transition-opacity duration-200 opacity-0"
-            />
-            <AvatarFallback>
-              <div className="h-8 w-8 rounded-full bg-white-smoke-100 ring-2 ring-white-smoke-200 animate-pulse" />
-            </AvatarFallback>
-          </Avatar>
+    <Card className="transition-shadow hover:shadow-md">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          {/* Avatar + Name + Role */}
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src={member.image_url ?? undefined}
+                alt={member.name ?? "User"}
+                onLoad={(e) => e.currentTarget.classList.remove("opacity-0")}
+                className="opacity-0 transition-opacity duration-200"
+              />
+              <AvatarFallback className="text-xs">
+                {(member.name ?? "U")
+                  .split(" ")
+                  .map((p) => p[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-          <div>
-            <h3 className="font-semibold text-outer_space-500 dark:text-platinum-500">{member.name}</h3>
-            <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
-              {member.id === teamLeaderData.id ? "Team Leader" : "Team Member"}
-            </p>
+            <div>
+              <CardTitle className="text-base leading-none">{member.name}</CardTitle>
+              <CardDescription className="mt-0.5">
+                {isLeader ? "Team Leader" : "Team Member"}
+              </CardDescription>
+            </div>
           </div>
-        </div>
-        {/* Dropdown - Do not show for Team Members. Do not show for team leader's card */}
-        {isTeamLeader && member.id !== teamLeaderData.id && (
-          <MemberOptions
-            team_id={team_id}
-            user_id={member.id}
-            isReassignLoading={isReassignLoading}
-            openModal={openReassignModal}
-            setNewLeaderId={setNewLeaderId}
-          />
-        )}
-      </div>
 
-      {/* Email */}
-      <div className="flex items-center text-sm text-payne's_gray-500 dark:text-french_gray-400 mb-4">
-        <Mail size={16} className="mr-2" />
-        {member.email}
-      </div>
-
-      {/* Status, and Active Projects count */}
-      <div className="flex items-center justify-between">
-        <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-          Active
-        </span>
-        <div className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
-          {Math.floor(Math.random() * 10) + 1} projects
+          {/* Actions (hidden for not leader) */}
+          {!isLeader && (
+            <MemberOptions
+              team_id={team_id}
+              user_id={member.id}
+              isReassignLoading={isReassignLoading}
+              setNewLeaderId={setNewLeaderId}
+            />
+          )}
         </div>
-      </div>
-    </div>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        {/* Email */}
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
+          <span className="truncate">{member.email}</span>
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex items-center justify-between">
+        <Badge variant={isLeader ? "default" : "secondary"}>
+          {isLeader ? "Leader" : "Active"}
+        </Badge>
+        <div className="text-sm text-muted-foreground">{projectsCount} projects</div>
+      </CardFooter>
+    </Card>
   );
 };
 
-const SkeletonMemberCard: FC = () => {
+const SkeletonMemberCard: FC<{ count?: number }> = ({ count = 6 }) => {
   return (
     <>
-      {/* Skeleton Cards */}{" "}
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6 animate-pulse"
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-white-smoke-200" />
-            <div className="space-y-2">
-              <div className="h-4 w-32 bg-white-smoke-200 rounded" />
-              <div className="h-3 w-24 bg-white-smoke-200 rounded" />
+      {Array.from({ length: count }).map((_, i) => (
+        <Card key={i} className="animate-pulse">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <Skeleton className="rounded-full" height="10" width="10" />
+              <div className="space-y-2">
+                <Skeleton height="4" width="32"/>
+                <Skeleton height="3" width="24"/>
+              </div>
             </div>
-          </div>
-          <div className="h-3 w-48 bg-white-smoke-200 rounded mb-2" />
-          <div className="h-3 w-40 bg-white-smoke-200 rounded" />
-        </div>
-      ))}{" "}
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Skeleton height="3" width="48"/>
+          </CardContent>
+          <CardFooter className="flex items-center justify-between">
+            <Skeleton className="rounded-full" height="6" width="16"/>
+            <Skeleton height="3" width="20" />
+          </CardFooter>
+        </Card>
+      ))}
     </>
   );
 };
 
 export { SkeletonMemberCard };
-
 export default MemberCard;

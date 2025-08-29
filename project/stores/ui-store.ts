@@ -82,6 +82,15 @@ interface UIState {
   isCreateTeamModalOpen: boolean;
   setCreateTeamModalOpen: (val: boolean) => void;
 
+  isDeleteTeamModalOpen: boolean;
+  setDeleteTeamModalOpen: (val: boolean) => void;
+
+  isAddMemberModalOpen: boolean;
+  setAddMemberModalOpen: (val: boolean) => void;
+
+  isReassignLeaderModalOpen: boolean;
+  setReassignLeaderModalOpen: (val: boolean) => void;
+
   isSideBarOpen: boolean;
   setSideBarOpen: (val: boolean) => void;
 }
@@ -116,6 +125,15 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isCreateTeamModalOpen: false,
   setCreateTeamModalOpen: (val) => set(() => ({ isCreateTeamModalOpen: val })),
+
+  isDeleteTeamModalOpen: false,
+  setDeleteTeamModalOpen: (val) => set(() => ({ isDeleteTeamModalOpen: val })),
+
+  isAddMemberModalOpen: false,
+  setAddMemberModalOpen: (val) => set(() => ({ isAddMemberModalOpen: val })),
+
+  isReassignLeaderModalOpen: false,
+  setReassignLeaderModalOpen: (val) => set(() => ({ isReassignLeaderModalOpen: val })),
 
   isSideBarOpen: false,
   setSideBarOpen: (val) => set(() => ({ isSideBarOpen: val })),

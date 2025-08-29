@@ -383,7 +383,7 @@ export function useTeams(team_id?: number) {
     teamMembersError: teamMembers.error,
 
     // mutations
-    deleteTeam: deleteTeam.mutate,
+    deleteTeam: deleteTeam.mutateAsync,
     isTeamDeleteLoading: deleteTeam.isPending,
     deleteTeamError: deleteTeam.error,
 

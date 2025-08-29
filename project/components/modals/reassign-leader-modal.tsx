@@ -1,96 +1,81 @@
-// components/teams/reassign-leader-modal.tsx
 "use client";
 
-import { FC, useEffect } from "react";
-import { XIcon, Loader2Icon, Crown } from "lucide-react";
+import { FC } from "react";
+import { Crown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { LoadingButtonContent } from "../ui/loading-button-content";
+import { useUIStore } from "@/stores/ui-store";
 
 type ReassignLeaderModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
   team_id: number;
   new_leader_id: number;
   current_leader_id: number;
-  reAssignLeader: ({
-    old_leader_id,
-    new_leader_id,
-    team_id,
-  }: {
-    old_leader_id: number;
-    new_leader_id: number;
-    team_id: number;
-  }) => void;
+  reAssignLeader: (args: { old_leader_id: number; new_leader_id: number; team_id: number }) => void;
   isReassignLoading: boolean;
 };
 
 const ReassignLeaderModal: FC<ReassignLeaderModalProps> = ({
-  isOpen,
-  onClose,
   team_id,
   new_leader_id,
   current_leader_id,
   reAssignLeader,
   isReassignLoading,
 }) => {
-  // Lock scroll when modal is open.
-  useEffect(() => {
-    if (!isOpen) return;
-    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.classList.add("overflow-hidden");
-    document.body.style.paddingRight = `${scrollBarWidth}px`;
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    };
-  }, [isOpen]);
-
-  const handleSubmit = async () => {
-    reAssignLeader({ old_leader_id: current_leader_id, new_leader_id: new_leader_id, team_id });
-    onClose();
+  const { isReassignLeaderModalOpen, setReassignLeaderModalOpen } = useUIStore();
+  const handleSubmit = () => {
+    reAssignLeader({
+      old_leader_id: current_leader_id,
+      new_leader_id,
+      team_id,
+    });
+    setReassignLeaderModalOpen(false);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45" onMouseDown={onClose}>
-      <div
-        className="bg-white dark:bg-gray-900 p-6 rounded-lg w-full mx-4 md:mx-0 max-w-md shadow-xl"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between mb-4">
+    <Dialog open={isReassignLeaderModalOpen} onOpenChange={setReassignLeaderModalOpen}>
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        {/* Optional close icon */}
+        <DialogClose
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </DialogClose>
+
+        <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-amber-500" />
-            <h2 className="text-xl font-semibold text-dark-grey-600 dark:text-gray-100">Are you sure?</h2>
+            <DialogTitle>Are you sure?</DialogTitle>
           </div>
-          <button onClick={onClose} aria-label="Close">
-            <XIcon className="text-dark-grey-600 dark:text-gray-100 h-5 w-5" />
-          </button>
-        </div>
-
-        <Separator />
-
-        <div className="mt-4 space-y-3">
-          <p className="text-sm text-muted-foreground">
+          <DialogDescription>
             This member will become the new Team Leader. You’ll lose leader privileges after reassignment.
-          </p>
-        </div>
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <Button variant="secondary" onClick={onClose} disabled={isReassignLoading}>
+        <DialogFooter className="gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setReassignLeaderModalOpen(false)}
+            disabled={isReassignLoading}
+          >
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isReassignLoading}>
-            {isReassignLoading ? (
-              <div className="flex items-center gap-2">
-                <Loader2Icon className="h-4 w-4 animate-spin" />
-                Reassigning…
-              </div>
-            ) : (
-              "Confirm"
-            )}
+            <LoadingButtonContent isLoading={isReassignLoading} displayText="Confirm" />
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
