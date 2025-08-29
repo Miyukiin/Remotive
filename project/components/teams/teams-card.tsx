@@ -13,7 +13,6 @@ type TeamsCardProps = {
 
 const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
   const { teamMembers, isTeamMembersLoading, teamMembersError } = useTeams(teamData.id);
-  const max_visible_users = 5;
 
   return (
     <Link href={`/teams/${teamData.id}`}>
@@ -29,11 +28,15 @@ const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
         {/* Member Avatars */}
         <div className="mt-4">
           {isTeamMembersLoading ? (
-            <Skeleton height="32" width="10" />
+            <Skeleton height="5" width="24" />
           ) : teamMembers && !teamMembersError ? (
-            <MembersAvatars members={teamMembers} max_visible={max_visible_users} size={8} />
+            teamMembers.length === 0 ? (
+              <p className="text-xs text-foreground/65">None Assigned</p>
+            ) : (
+              <MembersAvatars members={teamMembers} max_visible={5} size={5} />
+            )
           ) : (
-            <p>Unable to load members.</p>
+            <p className="text-xs text-foreground/65">Unable to load members.</p>
           )}
         </div>
       </div>
