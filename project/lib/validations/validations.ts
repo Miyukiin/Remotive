@@ -306,9 +306,9 @@ export const taskSchemaEditForm = taskSchema
 export const commentSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
-    content: z.string().min(15, errorTemplates.contentMinError).nullable(), // https://ux.stackexchange.com/questions/98672/what-is-the-ideal-maximum-of-the-length-of-a-comment-or-reply
+    content: z.string().min(15, errorTemplates.contentMinError), // https://ux.stackexchange.com/questions/98672/what-is-the-ideal-maximum-of-the-length-of-a-comment-or-reply
     taskId: z.int().min(1, errorTemplates.idMinError),
-    parentCommentId: z.int().min(1, errorTemplates.idMinError),
+    parentCommentId: z.int().min(1, errorTemplates.idMinError).nullable(),
     authorId: z.int().min(1, errorTemplates.idMinError),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -348,6 +348,9 @@ export const commentSchemaForm = commentSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  taskId: true,
+  parentCommentId: true,
+  authorId: true,
 });
 
 export const teamSchema = z
@@ -478,6 +481,5 @@ export const taskPositionPayloadSchema = taskSchema
   });
 
 export const tasksPositionsPayloadSchema = z.array(taskPositionPayloadSchema);
-
 
 export const updateTasksLabelsPayloadSchema = z.array(labelSchema);
