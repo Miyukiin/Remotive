@@ -1,7 +1,7 @@
 "use client";
 import { FC } from "react";
 import { Button } from "../ui/button";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Settings } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { redirect } from "next/navigation";
 
@@ -37,6 +37,7 @@ const ProjectOptions: FC<ProjectOptionsProps> = ({ project_id }) => {
         }}
       >
         <DropdownMenuItem variant="default" onClick={(e) => onClick(e)}>
+          <Settings />
           View Settings
         </DropdownMenuItem>
       </DropdownMenuContent>

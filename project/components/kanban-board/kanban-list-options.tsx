@@ -1,7 +1,7 @@
 "use client";
 import { FC } from "react";
 import { Button } from "../ui/button";
-import { EllipsisVertical } from "lucide-react";
+import { ClipboardCheck, EllipsisVertical, SquarePen, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useLists } from "@/hooks/use-lists";
 import { useUIStore } from "@/stores/ui-store";
@@ -44,12 +44,13 @@ const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list, isDon
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
+        <DropdownMenuItem onClick={onEdit}><SquarePen/> Edit</DropdownMenuItem>
         <DropdownMenuItem onClick={setAsDone} disabled={isDone}>
-          {" "}
+          <ClipboardCheck/>
           {isDone ? "Already the Done Column" : "Set as Done Column"}
         </DropdownMenuItem>
         <DropdownMenuItem disabled={isListDeleteLoading} variant="destructive" onClick={onClick}>
+          <Trash/>
           Delete List
         </DropdownMenuItem>
       </DropdownMenuContent>

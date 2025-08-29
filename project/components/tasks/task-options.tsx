@@ -1,7 +1,7 @@
 "use client";
 import { FC } from "react";
 import { Button } from "../ui/button";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useTasks } from "@/hooks/use-tasks";
 
@@ -44,6 +44,7 @@ const TaskOptions: FC<TaskOptionsProps> = ({ task_id, list_id, project_id, class
             onClick();
           }}
         >
+          <Trash />
           Delete Task
         </DropdownMenuItem>
       </DropdownMenuContent>
