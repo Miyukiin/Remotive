@@ -152,7 +152,7 @@ export function TaskContent({ activeTask, isMobile, project_id }: TaskContentPro
                 >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm" variant="save" disabled={isUpdateTaskNewLoading}>
+                <Button type="submit" size="sm" variant="default" disabled={isUpdateTaskNewLoading}>
                   <LoadingButtonContent isLoading={isUpdateTaskNewLoading} displayText="Save" />
                 </Button>
               </div>

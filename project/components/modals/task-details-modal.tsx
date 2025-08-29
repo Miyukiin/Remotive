@@ -90,7 +90,7 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
                 {/* Text Content. This would be Render React Markdown styled with Prose */}
                 {/* <DynamicRichTextEditor /> */}
                 <div className="p-3 w-full space-y-2 flex flex-col items-end">
-                  <Button variant="save" size="sm">
+                  <Button variant="default" size="sm">
                     Comment
                   </Button>
                 </div>

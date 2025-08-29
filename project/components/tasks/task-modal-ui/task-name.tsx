@@ -52,7 +52,7 @@ export function TaskName({ activeTask, project_id }: TaskNameProps) {
             />
           </form>
           <div className="flex gap-3 mt-0 md:mt-0.5 justify-center items-start">
-            <Button form="task-title-form" type="submit" size="sm" variant="save" disabled={isUpdateTaskNewLoading}>
+            <Button form="task-title-form" type="submit" size="sm" variant="default" disabled={isUpdateTaskNewLoading}>
               <LoadingButtonContent isLoading={isUpdateTaskNewLoading} displayText="Save" />
             </Button>
             <Button

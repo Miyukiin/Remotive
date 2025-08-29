@@ -25,7 +25,7 @@ const TaskOptions: FC<TaskOptionsProps> = ({ task_id, list_id, project_id, class
         <Button
           variant="ghost"
           size="sm"
-          className="text-secondary-foreground/75 hover:bg-foreground/10 hover:text-foreground active:bg-foreground/10 active:text-foreground rounded-md "
+          className="text-secondary-foreground/75 hover:bg-accent hover:text-foreground active:bg-accent active:text-foreground rounded-md "
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();

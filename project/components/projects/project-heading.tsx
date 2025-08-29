@@ -134,7 +134,7 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
                     className={`p-2 rounded-lg transition-colors ${
                       itm.current
                         ? "bg-emerald-600 dark:bg-emerald-800 text-white "
-                        : "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
+                        : "text-foreground/70 hover:bg-accent hover:text-foreground"
                     }`}
                   >
                     <itm.icon size={20} />

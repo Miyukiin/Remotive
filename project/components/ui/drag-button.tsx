@@ -17,7 +17,7 @@ function DragButton({ listeners, attributes, iconSize }: Props) {
       }}
       {...listeners}
       {...attributes}
-      className="touch-none p-1 text-secondary-foreground/50 hover:bg-foreground/10 hover:text-foreground active:bg-foreground/10 active:text-foreground rounded-md cursor-grab transition-all"
+      className="touch-none p-1 text-secondary-foreground/50 hover:bg-accent hover:text-foreground active:bg-accent active:text-foreground rounded-md cursor-grab transition-all"
     >
       <GripVertical size={iconSize} />
     </button>

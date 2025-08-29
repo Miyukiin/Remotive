@@ -222,7 +222,7 @@ export function ProjectGeneralSettings({ project_id }: ProjectGeneralSettingsPro
             />
 
             <div className="flex justify-end">
-              <Button type="submit" variant="save" disabled={isProjectUpdateLoading}>
+              <Button type="submit" variant="default" disabled={isProjectUpdateLoading}>
                 <LoadingButtonContent isLoading={isProjectUpdateLoading} displayText="Update" />
               </Button>
             </div>
