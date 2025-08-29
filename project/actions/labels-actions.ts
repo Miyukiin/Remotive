@@ -78,8 +78,6 @@ export async function updateLabelAction(
     ...res.data,
     ...labelFormData,
     isDefault: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   };
 
   // Zod strips unknown keys.
