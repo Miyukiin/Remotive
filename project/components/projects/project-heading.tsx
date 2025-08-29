@@ -78,7 +78,7 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
     <div className="flex flex-col gap-y-8">
       {/* Breadcrumbs */}
       <div className="flex gap-2 items-center">
-        <Link href="/projects" className="p-2 hover:bg-foreground/10 rounded-lg transition-colors">
+        <Link href="/projects" className="p-2 hover:bg-accent rounded-lg transition-colors">
           <ArrowLeft size={16} />
         </Link>
         <Breadcrumb>
