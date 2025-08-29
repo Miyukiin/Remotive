@@ -79,6 +79,9 @@ interface UIState {
   isUpdateLabelModalOpen: boolean;
   setUpdateLabelModalOpen: (val: boolean) => void;
 
+  isCreateTeamModalOpen: boolean;
+  setCreateTeamModalOpen: (val: boolean) => void;
+
   isSideBarOpen: boolean;
   setSideBarOpen: (val: boolean) => void;
 }
@@ -110,6 +113,9 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isUpdateLabelModalOpen: false,
   setUpdateLabelModalOpen: (val) => set(() => ({ isUpdateLabelModalOpen: val })),
+
+  isCreateTeamModalOpen: false,
+  setCreateTeamModalOpen: (val) => set(() => ({ isCreateTeamModalOpen: val })),
 
   isSideBarOpen: false,
   setSideBarOpen: (val) => set(() => ({ isSideBarOpen: val })),
