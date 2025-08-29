@@ -24,7 +24,7 @@ export default function RootLayout({
     <ClerkProvider>
     <html lang="en" /*className="dark"*/ suppressHydrationWarning>
       <body className={inter.className}>
-        <Toaster position="top-center"/>
+        <Toaster richColors position="top-right"/>
         <ThemeProvider><Providers>{children}</Providers></ThemeProvider>
       </body>
     </html>
