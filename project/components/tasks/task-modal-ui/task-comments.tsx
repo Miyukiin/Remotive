@@ -40,8 +40,23 @@ type CommentBlocksProps = {
 };
 
 function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
-  const { taskComments, taskCommentsIsLoading, deleteComment, isCommentDeletionLoading } = useComments(activeTask.id);
+  const {
+    taskComments,
+    taskCommentsIsLoading,
+    deleteComment,
+    isCommentDeletionLoading,
+    updateComment,
+    isCommentUpdateLoading,
+  } = useComments(activeTask.id);
+
   const [commentAuthors, setCommentAuthors] = useState<Record<number, UserSelect>>({});
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  // form for editing a single comment at a time
+  const editForm = useForm<CommentCreateForm>({
+    resolver: zodResolver(commentSchemaForm),
+    defaultValues: { content: "" },
+  });
 
   const authorIds = useMemo(() => Array.from(new Set((taskComments ?? []).map((c) => c.authorId))), [taskComments]);
 
@@ -76,6 +91,7 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
     };
   }, [authorIds, commentAuthors]);
 
+  // initial/empty/error states
   if ((taskCommentsIsLoading && !taskComments?.length) || Object.keys(commentAuthors).length === 0)
     return (
       <div className="flex justify-center items-center py-10 text-muted-foreground gap-2">
@@ -98,6 +114,27 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
       </div>
     );
 
+  // handlers for edit flow
+  function startEdit(commentId: number, currentContent: string | null) {
+    setEditingId(commentId);
+    editForm.reset({ content: currentContent ?? "" });
+  }
+
+  function cancelEdit(originalContent: string | null) {
+    editForm.reset({ content: originalContent ?? "" });
+    setEditingId(null);
+  }
+
+  const submitEdit = (commentId: number) =>
+    editForm.handleSubmit(async (values) => {
+      await updateComment({
+        task_id: activeTask.id,
+        comment_id: commentId,
+        commentFormData: values,
+      });
+      setEditingId(null);
+    });
+
   return (
     <div className="flex gap-4">
       <div className="flex w-full flex-col gap-4">
@@ -105,6 +142,7 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
           const commentAuthor = commentAuthors[c.authorId];
           if (!commentAuthor) return null;
           const formattedTime = format(c.createdAt, "EEEE, MMM d yyyy | h:mm a");
+          const isEditing = editingId === c.id;
 
           return (
             <div key={c.id} className="flex w-full gap-3">
@@ -114,6 +152,7 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
                   <AvatarFallback className="text-sm">{initials(commentAuthor.name)}</AvatarFallback>
                 </Avatar>
               )}
+
               <div className="w-full rounded-md border border-emerald-900/40 dark:border-emerald-400/20">
                 {/* Header */}
                 <div className="flex items-center gap-2 px-3 py-2 border-b bg-emerald-100/5 dark:bg-emerald-400/5 rounded-t-md border-emerald-900/40 dark:border-emerald-400/20">
@@ -139,6 +178,7 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
                       )}
                     </div>
                   </div>
+
                   <div className="shrink-0">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -147,11 +187,14 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {}}>
+                        <DropdownMenuItem
+                          disabled={isEditing || isCommentDeletionLoading || isCommentUpdateLoading}
+                          onClick={() => startEdit(c.id, c.content)}
+                        >
                           <SquarePen /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          disabled={isCommentDeletionLoading}
+                          disabled={isCommentDeletionLoading || isEditing}
                           variant="destructive"
                           onClick={() => {
                             deleteComment({ task_id: activeTask.id, comment_id: c.id });
@@ -167,7 +210,46 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
 
                 {/* Content */}
                 <div className="p-3 w-full">
-                  <ContentRenderer content={c.content} />
+                  {isEditing ? (
+                    <form className="space-y-3" onSubmit={submitEdit(c.id)} id={`comment-edit-form-${c.id}`}>
+                      <Controller
+                        name="content"
+                        control={editForm.control}
+                        render={({ field }) => (
+                          <QuillEditor
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            placeholder="Edit your comment…"
+                            className="min-h-32"
+                          />
+                        )}
+                      />
+
+                      {editForm.formState.errors.content ? (
+                        <p className="px-1 text-xs text-destructive">
+                          {String(editForm.formState.errors.content.message)}
+                        </p>
+                      ) : null}
+
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => cancelEdit(c.content)}
+                          disabled={isCommentUpdateLoading}
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="submit" size="sm" disabled={isCommentUpdateLoading}>
+                          {isCommentUpdateLoading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+                          Save
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <ContentRenderer content={c.content} />
+                  )}
                 </div>
               </div>
             </div>
