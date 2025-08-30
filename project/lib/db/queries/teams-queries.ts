@@ -2,7 +2,7 @@ import * as types from "../../../types/index";
 import { db } from "../db-index";
 import * as schema from "../schema";
 import { and, eq } from "drizzle-orm";
-import { failResponse, getBaseFields, successResponse } from "./query_utils";
+import { failResponse, successResponse } from "./query_utils";
 
 export const teams = {
   getById: async (teamId: number): Promise<types.QueryResponse<types.TeamsSelect>> => {

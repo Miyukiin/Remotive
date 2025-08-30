@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import type { TeamsSelect } from "@/types";
 import { useTeams } from "@/hooks/use-teams";
@@ -10,6 +10,8 @@ import MembersAvatars from "@/components/ui/members-avatars";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Folder, Users } from "lucide-react";
+import { getProjectsForTeamAction } from "@/actions/teams-actions";
+import { toast } from "sonner";
 
 type TeamsCardProps = {
   teamData: TeamsSelect;
@@ -17,12 +19,33 @@ type TeamsCardProps = {
 
 const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
   const { teamMembers, isTeamMembersLoading, teamMembersError } = useTeams(teamData.id);
+  const [projectCount, setProjectCount] = useState(0);
+
+  useEffect(() => {
+    async function getProjectCount() {
+      const projects = await getProjectsForTeamAction(teamData.id);
+      if (!projects.success) throw new Error(projects.message ?? "Unable to retrieve project count");
+      setProjectCount(projects.data.length);
+    }
+
+    getProjectCount().catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error("Error", { description: message });
+    });
+  }, [teamData.id]);
 
   const membersText = isTeamMembersLoading
     ? "Loading…"
     : teamMembersError
       ? "Unable to load members"
       : `${teamMembers?.length} members`;
+
+  const projectCountText =
+    projectCount === 0
+      ? "No active projects"
+      : projectCount === 1
+        ? "1 active project"
+        : `${projectCount} active projects`;
 
   return (
     <Link href={`/teams/${teamData.id}`} className="group block" aria-label={`Open team ${teamData.teamName}`}>
@@ -50,7 +73,7 @@ const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
           <div className="flex flex-col gap-2 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2">
               <Folder className="h-4 w-4" aria-hidden="true" />
-              <span aria-live="polite">4 active projects</span>
+              <span aria-live="polite"> {projectCountText}</span>
             </div>
 
             <div>
