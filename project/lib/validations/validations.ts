@@ -247,7 +247,7 @@ export const taskSchema = z
     id: z.int().min(1, errorTemplates.idMinError),
     title: z.string().trim().min(1, errorTemplates.titleMinError).max(50, errorTemplates.titleMaxError),
     description: z.string().trim().max(200, errorTemplates.descriptionMaxError).nullable(),
-    content: z.string().max(500_000).nullable(),
+    content: z.string().trim().max(500_000).nullable(),
     creatorId: z.int().min(1, errorTemplates.idMinError),
     listId: z.int().min(1, errorTemplates.idMinError),
     priority: z.enum(priorityTuple),
@@ -306,7 +306,7 @@ export const taskSchemaEditForm = taskSchema
 export const commentSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
-    content: z.string(),
+    content: z.string().trim(),
     taskId: z.int().min(1, errorTemplates.idMinError),
     parentCommentId: z.int().min(1, errorTemplates.idMinError).nullable(),
     authorId: z.int().min(1, errorTemplates.idMinError),
