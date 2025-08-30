@@ -328,4 +328,18 @@ export const teams = {
       return failResponse(`Unable to retrieve team's projects`, e);
     }
   },
+  getProjectsForTeamMember: async (member_id: number): Promise<types.QueryResponse<types.ProjectMembersSelect[]>> => {
+    try {
+      const result = await db
+        .select()
+        .from(schema.project_members)
+        .where(eq(schema.project_members.user_id, member_id));
+
+      if (result.length === 0) return successResponse(`Member has no assigned projects.`, []);
+
+      return successResponse(`Successfully retrieved team's projects`, result);
+    } catch (e) {
+      return failResponse(`Unable to retrieve team's projects`, e);
+    }
+  },
 };

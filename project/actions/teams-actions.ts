@@ -72,6 +72,17 @@ export async function getProjectsForTeamAction(team_id: number): Promise<ServerA
   return await queries.teams.getProjectsForTeam(team_id);
 }
 
+export async function getProjectsCountForMemberAction(
+  member_id: number,
+): Promise<ServerActionResponse<types.ProjectMembersSelect[]>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: member_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  return await queries.teams.getProjectsForTeamMember(member_id);
+}
+
 export async function getUsersForTeam(team_id: number): Promise<ServerActionResponse<types.UserSelect[]>> {
   await checkAuthenticationStatus();
 
