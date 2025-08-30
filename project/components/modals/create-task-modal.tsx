@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -27,6 +27,7 @@ import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { formatDate } from "@/lib/utils";
 import { TaskCreateForm } from "@/types";
+import { QuillEditor } from "../ui/rich-text-editor";
 
 type CreateTaskModalProps = {
   list_id: number;
@@ -37,7 +38,7 @@ type CreateTaskModalProps = {
 const CreateTaskModal: FC<CreateTaskModalProps> = ({ list_id, project_id, position }) => {
   const { isCreateTaskModalOpen, setCreateTaskModalOpen } = useUIStore();
   const { setListToAddTo } = useTaskStore();
-  const [ isCalendarOpen, setCalendarOpen ] = useState(false);
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
 
   const form = useForm<TaskCreateForm>({
     resolver: zodResolver(taskSchemaForm),
@@ -110,7 +111,7 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ list_id, project_id, positi
                     <Textarea
                       value={field.value ?? ""} // textarea can't take null
                       onChange={(e) => field.onChange(e.target.value)}
-                      className="resize-y max-h-[150px] min-h-[100px]"
+                      className="scrollbar-custom resize-y max-h-[100px] min-h-[100px]"
                       placeholder="A short description of what your task is about."
                       disabled={isCreateTaskLoading}
                     />
@@ -121,7 +122,7 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ list_id, project_id, positi
             />
 
             {/* Content */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name="content"
               render={({ field }) => (
@@ -138,6 +139,19 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ list_id, project_id, positi
                   </FormControl>
                   <FormMessage />
                 </FormItem>
+              )}
+            /> */}
+
+            <Controller
+              name="content"
+              control={form.control}
+              render={({ field }) => (
+                <QuillEditor
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  placeholder="Content of your task."
+                  className="scrollbar-custom overflow-y-scroll max-h-[150px] min-h-[100px]"
+                />
               )}
             />
 
@@ -206,7 +220,7 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ list_id, project_id, positi
                 return (
                   <FormItem>
                     <FormLabel>Due Date</FormLabel>
-                      <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
+                    <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
                       <PopoverTrigger asChild>
                         <Button
                           type="button"
