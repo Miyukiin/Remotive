@@ -8,7 +8,7 @@ import { commentSchemaForm } from "@/lib/validations/validations";
 import { useComments } from "@/hooks/use-comments";
 import { getUserId, getUserObjectById } from "@/actions/user-actions";
 import { toast } from "sonner";
-import { Ellipsis, Loader2Icon } from "lucide-react";
+import { Ellipsis, Loader2Icon, SquarePen, Trash } from "lucide-react";
 import { initials } from "@/lib/utils";
 import { format } from "date-fns";
 import {
@@ -147,7 +147,13 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {}}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {}}>
+                          <SquarePen /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem variant="destructive" onClick={() => {}}>
+                          <Trash />
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
