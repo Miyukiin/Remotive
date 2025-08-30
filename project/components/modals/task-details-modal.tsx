@@ -3,7 +3,6 @@ import { Drawer, DrawerTitle, DrawerContent } from "@/components/ui/drawer";
 import { FC } from "react";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useScreenWidth } from "@/lib/client-utils";
 import { Separator } from "../ui/separator";
 
