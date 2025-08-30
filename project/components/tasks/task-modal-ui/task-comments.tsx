@@ -40,7 +40,7 @@ type CommentBlocksProps = {
 };
 
 function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
-  const { taskComments, taskCommentsIsLoading } = useComments(activeTask.id);
+  const { taskComments, taskCommentsIsLoading, deleteComment, isCommentDeletionLoading } = useComments(activeTask.id);
   const [commentAuthors, setCommentAuthors] = useState<Record<number, UserSelect>>({});
 
   const authorIds = useMemo(() => Array.from(new Set((taskComments ?? []).map((c) => c.authorId))), [taskComments]);
@@ -76,7 +76,7 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
     };
   }, [authorIds, commentAuthors]);
 
-  if (taskCommentsIsLoading)
+  if (taskCommentsIsLoading && !taskComments?.length)
     return (
       <div className="flex justify-center items-center py-10 text-muted-foreground gap-2">
         <Loader2Icon className="animate-spin" /> <p>Loading the discussion...</p>
@@ -150,7 +150,13 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
                         <DropdownMenuItem onClick={() => {}}>
                           <SquarePen /> Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem variant="destructive" onClick={() => {}}>
+                        <DropdownMenuItem
+                          disabled={isCommentDeletionLoading}
+                          variant="destructive"
+                          onClick={() => {
+                            deleteComment({ task_id: activeTask.id, comment_id: c.id });
+                          }}
+                        >
                           <Trash />
                           Delete
                         </DropdownMenuItem>

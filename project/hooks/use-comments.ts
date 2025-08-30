@@ -84,19 +84,19 @@ export function useComments(task_id: number) {
       // Rollback
       queryClient.setQueryData(["comments", task_id], context?.previousTaskComments);
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: () => {
       // queryClient.invalidateQueries({ queryKey: ["comments", context?.task_id] });
     },
   });
 
   // Delete comment
   const deleteComment = useMutation({
-    mutationFn: async (comment_id: number) => {
+    mutationFn: async ({ task_id, comment_id }: { task_id: number; comment_id: number }) => {
       const res = await deleteCommentAction(comment_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
-    onMutate: async (comment_id: number) => {
+    onMutate: async ({ task_id, comment_id }: { task_id: number; comment_id: number }) => {
       queryClient.cancelQueries({ queryKey: ["comments", comment_id] });
 
       const previousComments = queryClient.getQueryData<CommentSelect[]>(["comments", comment_id]);
@@ -105,17 +105,17 @@ export function useComments(task_id: number) {
         old ? old.filter((c) => c.id != comment_id) : old,
       );
 
-      return { previousComments, comment_id };
+      return { previousComments, task_id };
     },
     onSuccess: () => {
       toast.success("Success", { description: "Successfully deleted the comment." });
     },
-    onError: (error, comment_id, context) => {
+    onError: (error, data, context) => {
       toast.error("Error", { description: error.message });
-      queryClient.setQueryData(["comments", comment_id], context?.previousComments);
+      queryClient.setQueryData(["comments", context?.task_id], context?.previousComments);
     },
-    onSettled: (data, error, comment_id) => {
-      queryClient.invalidateQueries({ queryKey: ["comments", comment_id] });
+    onSettled: (data, error, context) => {
+      queryClient.invalidateQueries({ queryKey: ["comments", context?.task_id] });
     },
   });
 
