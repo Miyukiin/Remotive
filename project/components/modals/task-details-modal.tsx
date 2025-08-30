@@ -98,6 +98,7 @@ const TaskDetailsModal: FC<{ project_id: number }> = ({ project_id }) => {
           {/* Content of Task */}
           <TaskContent activeTask={activeTask} isMobile={isMobile} project_id={project_id} />
 
+          <Separator className="my-5" />
           {/* Comment Section */}
           <TaskComments activeTask={activeTask} isMobile={isMobile} />
         </div>

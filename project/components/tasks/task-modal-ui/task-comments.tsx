@@ -3,13 +3,22 @@ import { Button } from "@/components/ui/button";
 import { QuillEditor } from "@/components/ui/rich-text-editor";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { CommentCreateForm, TaskSelect } from "@/types";
+import { CommentCreateForm, TaskSelect, UserSelect } from "@/types";
 import { commentSchemaForm } from "@/lib/validations/validations";
 import { useComments } from "@/hooks/use-comments";
-import { getUserId } from "@/actions/user-actions";
+import { getUserId, getUserObjectById } from "@/actions/user-actions";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { Ellipsis, Loader2Icon } from "lucide-react";
+import { initials } from "@/lib/utils";
+import { format } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ContentRenderer } from "./content-renderer";
+import { useEffect, useMemo, useState } from "react";
 
 type TaskCommentsProps = {
   activeTask: TaskSelect;
@@ -18,20 +27,143 @@ type TaskCommentsProps = {
 
 export function TaskComments({ activeTask, isMobile }: TaskCommentsProps) {
   return (
-    <div>
-      <CommentBlocks activeTask={activeTask} />
-      <CommentArea activeTask={activeTask} isMobile={isMobile} />;
+    <div className="flex flex-col gap-5">
+      <CommentBlocks activeTask={activeTask} isMobile={isMobile} />
+      <CommentArea activeTask={activeTask} isMobile={isMobile} />
     </div>
   );
 }
 
 type CommentBlocksProps = {
   activeTask: TaskSelect;
+  isMobile: boolean;
 };
 
-function CommentBlocks({ activeTask }: CommentBlocksProps) {
+function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
   const { taskComments, taskCommentsIsLoading } = useComments(activeTask.id);
-  return <></>;
+  const [commentAuthors, setCommentAuthors] = useState<Record<number, UserSelect>>({});
+
+  const authorIds = useMemo(() => Array.from(new Set((taskComments ?? []).map((c) => c.authorId))), [taskComments]);
+
+  useEffect(() => {
+    if (!authorIds.length) return; // If no authorIds, return
+    const missing = authorIds.filter((id) => !commentAuthors[id]); // Get authors we do not yet have.
+    if (!missing.length) return; // If no one is missing, return
+
+    let alive = true; // flag to avoid setting state after unmount
+    (async () => {
+      try {
+        // Retrieve our missing authors data objects
+        const pairs = await Promise.all(
+          missing.map(async (id) => {
+            const res = await getUserObjectById(id);
+            return res.success ? [id, res.data] : null;
+          }),
+        );
+        if (!alive) return;
+        // add our missing authors to the existing set of comment authors
+        setCommentAuthors((prev) => ({
+          ...prev,
+          ...Object.fromEntries(pairs.filter(Boolean) as [number, UserSelect][]),
+        }));
+      } catch {
+        toast.error("Error", { description: "Unable to retrieve some comments." });
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [authorIds, commentAuthors]);
+
+  if (taskCommentsIsLoading)
+    return (
+      <div className="flex justify-center items-center py-10 text-muted-foreground gap-2">
+        <Loader2Icon className="animate-spin" /> <p>Loading the discussion...</p>
+      </div>
+    );
+
+  if (taskComments && taskComments.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-sm text-muted-foreground">No comments yet — be the first to chime in</p>
+      </div>
+    );
+  }
+
+  if (!taskComments)
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-sm text-muted-foreground">Unable to retrieve comments.</p>
+      </div>
+    );
+
+  return (
+    <div className="flex gap-4">
+      <div className="flex w-full flex-col gap-4">
+        {taskComments.map((c) => {
+          const commentAuthor = commentAuthors[c.authorId];
+          if (!commentAuthor) return null;
+          const formattedTime = format(c.createdAt, "EEEE, MMM d yyyy | h:mm a");
+
+          return (
+            <div key={c.id} className="flex w-full gap-3">
+              {!isMobile && (
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src={commentAuthor.image_url} />
+                  <AvatarFallback className="text-sm">{initials(commentAuthor.name)}</AvatarFallback>
+                </Avatar>
+              )}
+              <div className="w-full rounded-md border border-emerald-900/40 dark:border-emerald-400/20">
+                {/* Header */}
+                <div className="flex items-center gap-2 px-3 py-2 border-b bg-emerald-100/5 dark:bg-emerald-400/5 rounded-t-md border-emerald-900/40 dark:border-emerald-400/20">
+                  <div className="flex items-center gap-2 flex-1 basis-0 min-w-0">
+                    {isMobile && (
+                      <Avatar className="w-6 h-6">
+                        <AvatarImage src={commentAuthor.image_url} />
+                        <AvatarFallback className="text-sm">{initials(commentAuthor.name)}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div className="flex-1 basis-0 min-w-0 overflow-hidden">
+                      <div className="flex items-center gap-1 min-w-0">
+                        <p className="text-xs font-medium truncate min-w-0">{commentAuthor.name}</p>
+                        {!isMobile && (
+                          <span className="font-light text-xs text-foreground/70 shrink-0">
+                            left on {formattedTime}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate min-w-0">{commentAuthor.email}</p>
+                      {isMobile && (
+                        <span className="font-light text-xs text-foreground/70 shrink-0">left on {formattedTime}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                          <Ellipsis />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => {}}>Edit</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-3 w-full">
+                  <ContentRenderer content={c.content} />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 type CommentAreaProps = {
@@ -40,7 +172,7 @@ type CommentAreaProps = {
 };
 
 function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
-  const { createComment, isCommentCreationLoading, taskComments, taskCommentsIsLoading } = useComments(activeTask.id);
+  const { createComment, isCommentCreationLoading } = useComments(activeTask.id);
 
   const form = useForm<CommentCreateForm>({
     resolver: zodResolver(commentSchemaForm),
@@ -72,7 +204,7 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
   }
 
   return (
-    <div className="flex w-full gap-3 mt-10">
+    <div className="flex w-full gap-3 mt-5">
       {!isMobile && (
         <Avatar className="w-12 h-12">
           <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
@@ -87,7 +219,7 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           )}
-          <p> Add a comment </p>
+          <p className="text-sm md:text-base"> Add something to the discussion </p>
         </div>
 
         <div className="w-full rounded-md border border-green/400 dark:border-green-200/10">
@@ -97,7 +229,7 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
               name="content"
               control={form.control}
               render={({ field }) => (
-                <QuillEditor value={field.value} onChange={field.onChange} placeholder="Write your comment…" />
+                <QuillEditor value={field.value} onChange={field.onChange} placeholder="Discuss…" />
               )}
             />
 
@@ -123,7 +255,7 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
                     Clear
                   </Button>
                   <Button type="submit" size="sm" disabled={isSubmitDisabled}>
-                    {isCommentCreationLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isCommentCreationLoading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
                     Comment
                   </Button>
                 </div>

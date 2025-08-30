@@ -21,3 +21,9 @@ export async function getUserId(): Promise<ServerActionResponse<types.UserSelect
 
   return await queries.users.getByClerkId(userId);
 }
+
+export async function getUserObjectById(id: number): Promise<ServerActionResponse<types.UserSelect>> {
+  await checkAuthenticationStatus();
+
+  return await queries.users.getById(id);
+}

@@ -85,7 +85,7 @@ export function useComments(task_id: number) {
       queryClient.setQueryData(["comments", task_id], context?.previousTaskComments);
     },
     onSettled: (data, error, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ["comments", context?.task_id] });
+      // queryClient.invalidateQueries({ queryKey: ["comments", context?.task_id] });
     },
   });
 
