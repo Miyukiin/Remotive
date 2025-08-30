@@ -76,7 +76,7 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
     };
   }, [authorIds, commentAuthors]);
 
-  if (taskCommentsIsLoading && !taskComments?.length)
+  if ((taskCommentsIsLoading && !taskComments?.length) || Object.keys(commentAuthors).length === 0)
     return (
       <div className="flex justify-center items-center py-10 text-muted-foreground gap-2">
         <Loader2Icon className="animate-spin" /> <p>Loading the discussion...</p>
