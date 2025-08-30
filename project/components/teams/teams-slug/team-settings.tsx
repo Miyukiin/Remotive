@@ -1,10 +1,10 @@
 import { Separator } from "@/components/ui/separator";
 import { TeamsSelect } from "@/types";
 import { FC } from "react";
-import TeamName from "../team-name";
 import { Button } from "@/components/ui/button";
 import { Loader2Icon, Trash } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
+import TeamGeneralSettings from "../team-general-settings";
 
 type TeamSettingsProps = {
   team: TeamsSelect;
@@ -20,11 +20,7 @@ const TeamSettings: FC<TeamSettingsProps> = ({ team }) => {
   return (
     <>
       {/* General Settings */}
-      <div className="flex flex-col gap-2">
-        <p className="text-xl">General</p>
-        <Separator className="mb-4" />
-        <TeamName teamData={team} />
-      </div>
+      <TeamGeneralSettings team={team} />
       {/* Danger Settings */}
       <div className="flex flex-col gap-2">
         <p className="text-xl">Danger Zone</p>

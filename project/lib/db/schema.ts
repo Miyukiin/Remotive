@@ -73,6 +73,7 @@ export const teams = pgTable(
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
     teamName: varchar("teamName").notNull().unique(),
+    description: text("description").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -317,7 +318,5 @@ export const labels_to_tasks = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.task_id, table.label_id] }),
-  ],
+  (table) => [primaryKey({ columns: [table.task_id, table.label_id] })],
 );

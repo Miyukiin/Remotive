@@ -164,14 +164,16 @@ export async function removeUserFromTeamAction(
   return successResponse("Successfully removed users as members", true);
 }
 
-export async function createTeamAction(teamName: string): Promise<ServerActionResponse<types.TeamsSelect>> {
+export async function createTeamAction(
+  teamFormData: z.infer<typeof teamSchemaForm>,
+): Promise<ServerActionResponse<types.TeamsSelect>> {
   await checkAuthenticationStatus();
 
   const user = await getUserId();
   if (!user.success) return user;
 
   const teamObject: types.TeamsInsert = {
-    teamName,
+    ...teamFormData,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

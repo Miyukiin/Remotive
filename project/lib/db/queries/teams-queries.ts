@@ -44,7 +44,10 @@ export const teams = {
       return failResponse(`Unable to retrieve user's teams`, e);
     }
   },
-  updateTeam: async (teamId: number, incomingTeamData: types.TeamsInsert): Promise<types.QueryResponse<types.TeamsSelect>> => {
+  updateTeam: async (
+    teamId: number,
+    incomingTeamData: types.TeamsInsert,
+  ): Promise<types.QueryResponse<types.TeamsSelect>> => {
     try {
       const res = await teams.getById(teamId);
       if (!res.success) throw new Error(res.message);
@@ -55,8 +58,9 @@ export const teams = {
 
       if (existingTeamData.teamName !== incomingTeamData.teamName) changed.teamName = incomingTeamData.teamName;
 
+      const { id, ...base } = existingTeamData;
       const finalUpdatedTeamData = {
-        ...getBaseFields(existingTeamData),
+        ...base,
         ...changed,
         ...(Object.keys(changed).length > 0 ? { updatedAt: new Date() } : {}),
       };

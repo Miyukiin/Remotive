@@ -386,6 +386,7 @@ export const teamSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
     teamName: z.string().trim().min(1, errorTemplates.teamNameMinError).max(50, errorTemplates.teamNameMaxError),
+    description: z.string().trim().max(200, errorTemplates.descriptionMaxError),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
