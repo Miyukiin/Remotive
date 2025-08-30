@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, Folder, Users } from "lucide-react";
 import { getProjectsForTeamAction } from "@/actions/teams-actions";
 import { toast } from "sonner";
+import TeamOptions from "./teams-options";
 
 type TeamsCardProps = {
   teamData: TeamsSelect;
@@ -53,7 +54,7 @@ const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
         <CardHeader className="space-y-1">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg md:text-xl line-clamp-1">{teamData.teamName}</CardTitle>
-            {/* <TeamOptions team_id={teamData.id} /> */}
+            <TeamOptions team_id={teamData.id} />
           </div>
           <CardDescription className="line-clamp-2">{teamData.description}</CardDescription>
         </CardHeader>
