@@ -53,8 +53,10 @@ export const comments = {
       const changed: Partial<types.CommentInsert> = {};
       if (existingCommentData.content != incomingCommentData.content) changed.content = incomingCommentData.content;
 
+      const { id, ...base } = existingCommentData;
+
       const finalUpdatedCommentData = {
-        ...getBaseFields(existingCommentData),
+        ...base,
         ...changed,
         ...(Object.keys(changed).length > 0 ? { updatedAt: new Date() } : {}),
       };

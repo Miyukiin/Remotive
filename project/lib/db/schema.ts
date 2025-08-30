@@ -168,7 +168,7 @@ export const comments = pgTable(
   "comments",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
-    content: text("content"),
+    content: text("content").notNull(),
     taskId: integer("taskId")
       .references(() => tasks.id, { onDelete: "cascade" })
       .notNull(),
