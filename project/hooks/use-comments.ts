@@ -143,15 +143,15 @@ export function useComments(task_id: number) {
       comment_id: number;
       commentFormData: z.infer<typeof commentSchemaForm>;
     }) => {
-      await queryClient.cancelQueries({ queryKey: ["comments", comment_id] });
+      await queryClient.cancelQueries({ queryKey: ["comments", task_id] });
 
-      const previousComments = queryClient.getQueryData<CommentSelect[]>(["comments", comment_id]);
+      const previousComments = queryClient.getQueryData<CommentSelect[]>(["comments", task_id]);
 
-      queryClient.setQueryData<CommentSelect[]>(["comments", comment_id], (old) =>
+      queryClient.setQueryData<CommentSelect[]>(["comments", task_id], (old) =>
         old ? old.map((c) => (c.id != comment_id ? { ...c, commentFormData } : c)) : old,
       );
 
-      return { previousComments, comment_id };
+      return { previousComments, task_id };
     },
     onSuccess: () => {
       toast.success("Success", { description: "Successfully updated the comment." });
