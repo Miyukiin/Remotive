@@ -16,6 +16,7 @@ import { LoadingButtonContent } from "../ui/loading-button-content";
 import { Separator } from "../ui/separator";
 import { Badge } from "../ui/badge";
 import { projectStatusColor } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 type ProjectGeneralSettingsProps = {
   project_id: number;
@@ -86,7 +87,8 @@ export function ProjectGeneralSettings({ project_id }: ProjectGeneralSettingsPro
                 <FormItem>
                   <FormLabel>Project Description</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
+                      className="scrollbar-custom min-h-[100px] resize-y max-h-[300px]"
                       placeholder="Enter project description"
                       disabled={isProjectUpdateLoading}
                       value={field.value ?? ""}

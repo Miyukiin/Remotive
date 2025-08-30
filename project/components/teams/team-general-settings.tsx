@@ -86,7 +86,7 @@ const TeamGeneralSettings: FC<Props> = ({ team }) => {
                   <Textarea
                     id="teamDescription"
                     placeholder="Briefly describe this team (scope, responsibilities, etc.)"
-                    className="min-h-[100px] resize-y max-h-[300px]"
+                    className="scrollbar-custom min-h-[100px] resize-y max-h-[300px]"
                     disabled={isTeamUpdateLoading}
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}

@@ -220,7 +220,7 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
                             value={field.value ?? ""}
                             onChange={field.onChange}
                             placeholder="Edit your comment…"
-                            className="min-h-32"
+                            className="scrollbar-custom overflow-y-scroll min-h-40 max-h-[500px]"
                           />
                         )}
                       />
@@ -323,7 +323,7 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
               name="content"
               control={form.control}
               render={({ field }) => (
-                <QuillEditor value={field.value} onChange={field.onChange} placeholder="Discuss…" />
+                <QuillEditor className="scrollbar-custom overflow-y-scroll min-h-40 max-h-[500px]" value={field.value} onChange={field.onChange} placeholder="Discuss…" />
               )}
             />
 

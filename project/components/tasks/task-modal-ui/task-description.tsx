@@ -65,7 +65,7 @@ export function TaskDescription({ activeTask, project_id }: TaskDescriptionProps
                       value={field.value ?? ""}
                       disabled={isUpdateTaskNewLoading}
                       placeholder="Add a short description (max 200 chars)…"
-                      className="text-xs md:text-base min-h-24 resize-none max-h-24"
+                      className="scrollbar-custom text-xs md:text-base min-h-24 resize-none max-h-24"
                     />
                   </FormControl>
                   <div className="flex items-center justify-between">

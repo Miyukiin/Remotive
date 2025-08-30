@@ -137,7 +137,7 @@ export function TaskContent({ activeTask, isMobile, project_id }: TaskContentPro
                     value={field.value ?? ""}
                     onChange={field.onChange}
                     placeholder="Write task details…"
-                    className="min-h-40"
+                    className="scrollbar-custom overflow-y-scroll min-h-40 max-h-[500px]"
                   />
                 )}
               />
