@@ -4,7 +4,7 @@ import { TaskSelect } from "@/types";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 import MembersAvatars from "../ui/members-avatars";
-import { FC, useMemo } from "react";
+import { FC, useMemo, useState } from "react";
 import { calculateOverdueInfo, capitalize, getContrastYIQ, taskPriorityColor } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 import TaskOptions from "./task-options";
@@ -17,6 +17,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { useUIStore } from "@/stores/ui-store";
 import { useTaskStore } from "@/stores/task-store";
 import { useLabels } from "@/hooks/use-labels";
+import { useComments } from "@/hooks/use-comments";
 
 /*
 TODO: Implementation Notes for Interns:
@@ -71,11 +72,13 @@ export interface TaskDragData {
 const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   const { taskMembers, isTaskMembersLoading, getTaskMembersError } = useTasks({ task_id: task.id });
   const { taskLabels = [], isTaskLabelsLoading } = useLabels({ project_id, task_id: task.id });
+  const { taskComments, taskCommentsIsLoading } = useComments(task.id);
   const { setTaskDetailsModalOpen } = useUIStore();
   const { setActiveTask } = useTaskStore();
   
+
   const LABEL_LIMIT = 4;
-  const displayedLabels = useMemo(() => taskLabels.slice(0, LABEL_LIMIT),[LABEL_LIMIT, taskLabels]) 
+  const displayedLabels = useMemo(() => taskLabels.slice(0, LABEL_LIMIT), [LABEL_LIMIT, taskLabels]);
 
   const { isOverdue, daysOverdue, isDueToday } = calculateOverdueInfo(task.dueDate);
 
@@ -133,7 +136,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
             <div className="flex justify-between gap-4">
               <div className="inline-flex gap-1">
                 <MessageCircleMore size={14} className="text-foreground/65" />
-                <p className="font-base text-muted-foreground text-xs  "> 14</p>
+                <p className="font-base text-muted-foreground text-xs  ">{taskComments?.length ?? "N/A"}</p>
               </div>
               <div className="inline-flex gap-1">
                 <Calendar size={14} className="text-foreground/65" />
