@@ -1,5 +1,5 @@
 "use client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Folder } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,30 +9,43 @@ import { Calendar } from "@/components/calendar/calendar";
 import React, { useEffect, useState } from "react";
 import { View } from "react-big-calendar";
 import { format, addDays, addWeeks, addMonths, startOfWeek, endOfWeek } from "date-fns";
-import { fetchCalendarEvents } from "@/actions/calendar-actions";
+import { fetchCalendarEvents, fetchUpcomingDeadlines } from "@/actions/calendar-actions";
 import { toast } from "sonner";
-import { CalendarEvent } from "@/types";
+import { CalendarEvent, UpcomingDeadlineEvent } from "@/types";
+import Link from "next/link";
 
 export default function CalendarPage() {
   const now = new Date();
   const [view, setView] = useState<View>("month");
   const [date, setDate] = useState(now);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingDeadlineEvent[]>([]);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(true);
+
+  async function loadCalendarEvents() {
+    const res = await fetchCalendarEvents();
+    if (res.success) {
+      // Dates already are Date objects — no spread, no rehydrate
+      setCalendarEvents(res.data ?? []);
+    } else {
+      toast.error("Error", { description: "Unable to retrieve calendar events." });
+    }
+  }
+
+  async function loadUpcoming() {
+    setLoadingUpcoming(true);
+    const res = await fetchUpcomingDeadlines();
+    if (res.success) {
+      setUpcomingEvents(res.data ?? []);
+    } else {
+      toast.error("Error", { description: "Unable to retrieve upcoming events." });
+    }
+    setLoadingUpcoming(false);
+  }
 
   useEffect(() => {
-    async function fetchEvents() {
-      const res = await fetchCalendarEvents();
-      if (res.success) {
-        setCalendarEvents(res.data);
-        console.log(res.data)
-      } else {
-        toast.error("Error", { description: "Unable to retrieve calendar events" });
-      }
-    }
-
-    return () => {
-      fetchEvents();
-    };
+    loadCalendarEvents();
+    loadUpcoming();
   }, []);
 
   function onViewChange(next: View) {
@@ -127,23 +140,47 @@ export default function CalendarPage() {
           <CardDescription>What’s coming up next</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[
-            { title: "Website Redesign", date: "Dec 15, 2024", type: "Project Deadline" },
-            { title: "Team Meeting", date: "Dec 18, 2024", type: "Meeting" },
-            { title: "Mobile App Launch", date: "Dec 22, 2024", type: "Milestone" },
-          ].map((event, idx) => (
-            <div key={idx} className="flex items-center justify-between rounded-md border bg-card p-3">
-              <div className="min-w-0">
-                <div className="font-medium truncate">{event.title}</div>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="secondary" className="w-fit">
-                    {event.type}
-                  </Badge>
+          {loadingUpcoming ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex items-center justify-between rounded-md border bg-card p-3 animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <div className="h-5 w-5 rounded-full bg-muted" />
+                    <div className="h-4 w-40 bg-muted rounded" />
+                  </div>
+                  <div className="h-4 w-24 bg-muted rounded" />
                 </div>
-              </div>
-              <div className="text-sm text-muted-foreground shrink-0">{event.date}</div>
+              ))}
             </div>
-          ))}
+          ) : upcomingEvents.length === 0 ? (
+            <div className="flex items-center justify-center rounded-md border bg-card p-6 text-muted-foreground gap-3">
+              <CalendarDays className="h-5 w-5" />
+              <span>No upcoming events.</span>
+            </div>
+          ) : (
+            upcomingEvents.map((ev) => (
+              <Link key={ev.id} href={`/projects/${ev.project_id}`} className="flex flex-col gap-3">
+                <div key={ev.id} className="flex items-center justify-between rounded-md border bg-card p-3">
+                  <div className="min-w-0 flex items-center gap-3">
+                    {ev.type === "Project" ? (
+                      <Folder className="h-5 w-5 md:h-6 md:w-6 text-emerald-800 dark:text-primary shrink-0" />
+                    ) : (
+                      <ClipboardList className="h-5 w-5 md:h-6 md:w-6 text-emerald-800 dark:text-primary shrink-0" />
+                    )}
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">{ev.title}</div>
+                      <div className="mt-1">
+                        <Badge variant="secondary" className="bg-white-smoke-100/70 dark:bg-dark-grey-50/40 w-fit">
+                          {ev.type}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground shrink-0">{format(ev.dueDate, "MMM d, yyyy")}</div>
+                </div>
+              </Link>
+            ))
+          )}
         </CardContent>
       </Card>
     </div>

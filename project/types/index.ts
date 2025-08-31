@@ -123,3 +123,11 @@ export type CalendarEvent = {
   start: Date;
   end: Date;
 };
+
+export type UpcomingDeadlineEvent = {
+  id: number;
+  project_id: number;
+  title: string;
+  type: "Project" | "Task";
+  dueDate: Date;
+};
