@@ -1,33 +1,59 @@
 "use client";
 import { FC } from "react";
 import { Button } from "../ui/button";
-import { EllipsisVertical } from "lucide-react";
+import { ClipboardCheck, EllipsisVertical, SquarePen, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useLists } from "@/hooks/use-lists";
+import { useUIStore } from "@/stores/ui-store";
+import { ListSelect } from "@/types";
+import { useKanbanStore } from "@/stores/kanban-store";
 
 type KanbanListOptionsProps = {
   project_id: number;
-  list_id: number;
-  onEdit: () => void;
+  list: ListSelect;
+  isDone: boolean;
 };
 
-const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list_id, onEdit }) => {
-  const { deleteList, isListDeleteLoading } = useLists();
+const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list, isDone }) => {
+  const { updateListsStatus } = useLists(project_id);
+  const { setUpdateKanbanModalOpen, setDeleteKanbanModalOpen, isDeleteKanbanModalOpen } = useUIStore();
+  const { setActiveList, setListToDelete } = useKanbanStore();
 
   function onClick() {
-    deleteList({ project_id, list_id });
+    setListToDelete(list);
+    setDeleteKanbanModalOpen(true);
+  }
+
+  function setAsDone() {
+    updateListsStatus({ new_done_list_id: list.id });
+  }
+
+  function onEdit() {
+    setActiveList(list);
+    setUpdateKanbanModalOpen(true);
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-secondary-foreground/75 hover:bg-accent hover:text-foreground active:bg-accent active:text-foreground rounded-md "
+        >
           <EllipsisVertical />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem>
-        <DropdownMenuItem disabled={isListDeleteLoading} variant="destructive" onClick={onClick}>
+        <DropdownMenuItem onClick={onEdit}>
+          <SquarePen /> Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={setAsDone} disabled={isDone}>
+          <ClipboardCheck />
+          {isDone ? "Already the Done Column" : "Set as Done Column"}
+        </DropdownMenuItem>
+        <DropdownMenuItem disabled={isDeleteKanbanModalOpen} variant="destructive" onClick={onClick}>
+          <Trash />
           Delete List
         </DropdownMenuItem>
       </DropdownMenuContent>

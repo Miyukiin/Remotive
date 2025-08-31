@@ -63,12 +63,34 @@ export const projects = {
           name: name,
           projectId: insertedProject.id,
           position: idx + 1,
+          isDone: name === "Done" ? true : false,
           createdAt: now,
           updatedAt: now,
         }));
 
         const insertedLists = await tx.insert(schema.lists).values(listsToInsert).returning();
         if (insertedLists.length !== defaultColumns.length) throw new Error("Not all default columns were created.");
+
+        // Insert default project labels
+        const defaultLabels: { name: string; color: string }[] = [
+          { name: "Bug", color: "#DC2626" }, // Red
+          { name: "Feature", color: "#2563EB" }, // Blue
+          { name: "Improvement", color: "#16A34A" }, // Green
+          { name: "Chore", color: "#6B7280" }, // Gray
+          { name: "Urgent", color: "#F59E0B" }, // Amber
+        ];
+
+        const labelsToInsert: types.LabelInsert[] = defaultLabels.map((label) => ({
+          project_id: insertedProject.id,
+          name: label.name,
+          color: label.color,
+          isDefault: true,
+          createdAt: now,
+          updatedAt: now,
+        }));
+
+        const insertedLabels = await tx.insert(schema.project_labels).values(labelsToInsert).returning();
+        if (insertedLabels.length !== defaultLabels.length) throw new Error("Not all default labels were created.");
 
         return successResponse(`Created project successfully.`, insertedProject);
       });
@@ -96,6 +118,7 @@ export const projects = {
       if (existingProject.description !== incomingProject.description)
         changed.description = incomingProject.description;
       if (existingProject.dueDate !== incomingProject.dueDate) changed.dueDate = incomingProject.dueDate;
+      if (existingProject.status !== incomingProject.status) changed.status = incomingProject.status;
 
       const finalUpdatedObjectData = {
         ...getBaseFields(existingProject),

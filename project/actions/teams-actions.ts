@@ -72,6 +72,17 @@ export async function getProjectsForTeamAction(team_id: number): Promise<ServerA
   return await queries.teams.getProjectsForTeam(team_id);
 }
 
+export async function getProjectsCountForMemberAction(
+  member_id: number,
+): Promise<ServerActionResponse<types.ProjectMembersSelect[]>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: member_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  return await queries.teams.getProjectsForTeamMember(member_id);
+}
+
 export async function getUsersForTeam(team_id: number): Promise<ServerActionResponse<types.UserSelect[]>> {
   await checkAuthenticationStatus();
 
@@ -138,8 +149,7 @@ export async function addUsersToTeamAction(
   team_id: number,
 ): Promise<ServerActionResponse<boolean>> {
   await checkAuthenticationStatus();
-
-  const parsed = addUsersToTeamSchema.safeParse({ users_ids, team_id });
+  const parsed = addUsersToTeamSchema.safeParse({ user_Ids: users_ids, team_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
   for (const user_id of users_ids) {
@@ -165,14 +175,16 @@ export async function removeUserFromTeamAction(
   return successResponse("Successfully removed users as members", true);
 }
 
-export async function createTeamAction(teamName: string): Promise<ServerActionResponse<types.TeamsSelect>> {
+export async function createTeamAction(
+  teamFormData: z.infer<typeof teamSchemaForm>,
+): Promise<ServerActionResponse<types.TeamsSelect>> {
   await checkAuthenticationStatus();
 
   const user = await getUserId();
   if (!user.success) return user;
 
   const teamObject: types.TeamsInsert = {
-    teamName,
+    ...teamFormData,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

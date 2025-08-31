@@ -1,22 +1,19 @@
 "use client";
 import { FC } from "react";
 import { Button } from "../ui/button";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Settings } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { useProjects } from "@/hooks/use-projects";
+import { redirect } from "next/navigation";
 
 type ProjectOptionsProps = {
   project_id: number;
-  setEditModalOpen: (val: boolean) => void;
 };
 
-const ProjectOptions: FC<ProjectOptionsProps> = ({ project_id, setEditModalOpen }) => {
-  const { deleteProject, isProjectDeleteLoading } = useProjects();
-
+const ProjectOptions: FC<ProjectOptionsProps> = ({ project_id }) => {
   function onClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     e.preventDefault();
     e.stopPropagation(); // Prevent clicks on dropdown from redirecting to the project card slug page.
-    deleteProject(project_id);
+    redirect(`/projects/${project_id}/settings`);
   }
 
   return (
@@ -39,16 +36,9 @@ const ProjectOptions: FC<ProjectOptionsProps> = ({ project_id, setEditModalOpen 
           e.stopPropagation();
         }}
       >
-        <DropdownMenuItem
-          variant="default"
-          onClick={() => {
-            setEditModalOpen(true);
-          }}
-        >
-          Edit
-        </DropdownMenuItem>
-        <DropdownMenuItem disabled={isProjectDeleteLoading} variant="destructive" onClick={(e) => onClick(e)}>
-          Delete Project
+        <DropdownMenuItem variant="default" onClick={(e) => onClick(e)}>
+          <Settings />
+          View Settings
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

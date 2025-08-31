@@ -1,111 +1,135 @@
 "use client";
-import { FC, useEffect, useRef, useState } from "react";
+
+import { FC, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { teamSchemaForm } from "@/lib/validations/validations";
 import z from "zod";
-import { Loader2Icon, XIcon } from "lucide-react";
+import { X } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
+
+import { teamSchemaForm } from "@/lib/validations/validations";
 import { checkTeamNameUnique } from "@/actions/teams-actions";
 import { useTeams } from "@/hooks/use-teams";
 
-type TeamModalProps = {
-  isModalOpen: boolean;
-  setIsModalOpen: (value: boolean) => void;
-};
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useUIStore } from "@/stores/ui-store";
+import { LoadingButtonContent } from "../ui/loading-button-content";
 
-const CreateTeamModal: FC<TeamModalProps> = ({ isModalOpen, setIsModalOpen }) => {
-  // Disable scrolling when modal is open.
-  useEffect(() => {
-    if (isModalOpen) {
-      // Account for layout shift due to hiding the scrollbar. Usually 15px
-      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.classList.add("overflow-hidden");
-      document.body.style.paddingRight = `${scrollBarWidth}px`;
-    } else {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    }
-    // Cleanup function on unmount
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    };
-  }, [isModalOpen]);
+type TeamForm = z.infer<typeof teamSchemaForm>;
 
-  // Form Handling
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors },
-  } = useForm<z.infer<typeof teamSchemaForm>>({
+const CreateTeamModal: FC = () => {
+  const { user } = useUser();
+  const { isCreateTeamModalOpen, setCreateTeamModalOpen } = useUIStore();
+  const { createTeam, isTeamCreateLoading } = useTeams();
+
+  const form = useForm<TeamForm>({
     resolver: zodResolver(teamSchemaForm),
+    defaultValues: { teamName: "", description: "" },
+    mode: "onSubmit",
   });
 
-  const { createTeam, isTeamCreateLoading } = useTeams();
-  const { user } = useUser();
+  // Reset the form every time the modal closes
+  useEffect(() => {
+    if (!isCreateTeamModalOpen) {
+      form.reset({ teamName: "", description: "" });
+    }
+  }, [isCreateTeamModalOpen, form]);
 
   if (!user) return null;
 
-  // Will only run if there is no zod validation errors.
-  const onSubmit = async (values: z.infer<typeof teamSchemaForm>) => {
-    // Check if Team name is unique among active teams.
+  const onSubmit = async (values: TeamForm) => {
     const result = await checkTeamNameUnique(values.teamName);
-    // Unable to check for uniqueness | Team name is not unique
+
     if (!result.success || (result.success && !result.data)) {
-      setError("teamName", {
-        type: "manual",
-        message: result.message,
-      });
+      form.setError("teamName", { type: "manual", message: result.message });
       return;
     }
+    await createTeam({ teamName: values.teamName, description: values.description });
 
-    createTeam(values.teamName);
-    setIsModalOpen(false);
+    setCreateTeamModalOpen(false);
   };
 
   return (
-    <>
-      {/* Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"
-          onMouseDown={() => setIsModalOpen(false)}
+    <Dialog open={isCreateTeamModalOpen} onOpenChange={setCreateTeamModalOpen}>
+      <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>Create a New Team</DialogTitle>
+          <DialogDescription className="sr-only">
+            Create a team to collaborate with members on projects and tasks.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Team Name */}
+            <FormField
+              control={form.control}
+              name="teamName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Team Name</FormLabel>
+                  <FormControl>
+                    <Input id="teamName" placeholder="e.g. Platform Team" autoComplete="off" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      id="teamDescription"
+                      placeholder="Briefly describe this team (scope, responsibilities, etc.)"
+                      className="min-h-[100px] resize-y max-h-[300px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  Cancel
+                </Button>
+              </DialogClose>
+
+              <Button type="submit" disabled={isTeamCreateLoading}>
+                <LoadingButtonContent isLoading={isTeamCreateLoading} displayText="Create" />
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+
+        <DialogClose
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          aria-label="Close"
         >
-          <div
-            className="bg-white dark:bg-gray-900 p-6 rounded-lg w-full mx-4 md:mx-0 max-w-md shadow-xl"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-semibold text-dark-grey-600 dark:text-gray-100">Create a New Team</h2>
-              <button onClick={() => setIsModalOpen(!isModalOpen)} className="hover: " aria-label="Close">
-                <XIcon className="text-dark-grey-600 w-full h-full" />
-              </button>
-            </div>
-            {/* Form */}
-            <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-              <label htmlFor="teamName" className="mb-2">
-                {" "}
-                Team Name
-              </label>
-              <input id="teamName" className="outline-1 px-2 rounded-sm " {...register("teamName")}></input>
-              {errors.teamName && <p className="text-red-500 text-sm mt-1">{errors.teamName.message}</p>}
-              <div className="w-full flex justify-end mt-4">
-                {isTeamCreateLoading ? (
-                  <div className="bg-emerald-400 rounded-sm text-white w-[100px] flex items-center justify-center px-2 py-1 gap-2 ">
-                    {" "}
-                    <Loader2Icon className="animate-spin" /> Loading{" "}
-                  </div>
-                ) : (
-                  <input className="bg-emerald-400 text-white  rounded-sm w-[100px]" type="submit" />
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+          <X className="h-4 w-4" />
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
   );
 };
 

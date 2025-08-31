@@ -1,114 +1,24 @@
 "use client";
 
-import { useProjectMembers, useProjects } from "@/hooks/use-projects";
-import { formatDate, projectStatusColor } from "@/lib/utils";
-import { ProjectSelect } from "@/types";
-import { Calendar, Users } from "lucide-react";
 import Link from "next/link";
-import { FC, useState } from "react";
+import { FC, useMemo } from "react";
+import { Calendar, Users } from "lucide-react";
+
+import { useProjectMembers, useProjects } from "@/hooks/use-projects";
+import { formatDate } from "@/lib/utils";
+import { calculateOverdueInfo, cn } from "@/lib/utils";
+import { projectStatusColor } from "@/lib/utils"; // keeps your existing status color map
+import type { ProjectSelect } from "@/types";
+
 import ProjectOptions from "./project-options";
-import UpdateProjectModal from "../modals/update-project-modal";
-import { differenceInDays, isValid } from "date-fns";
 import MembersAvatars from "../ui/members-avatars";
-import { Skeleton } from "../ui/skeleton";
 
-// TODO: Task 4.5 - Design and implement project cards and layouts
-/*
-TODO: Implementation Notes for Interns:
-
-This component should display:
-- Project name and description
-- Progress indicator
-- Team member count
-- Due date
-- Status badge
-- Actions menu (edit, delete, etc.)
-
-Props interface:
-interface ProjectCardProps {
-  project: {
-    id: string
-    name: string
-    description?: string
-    progress: number
-    memberCount: number
-    dueDate?: Date
-    status: 'active' | 'completed' | 'on-hold'
-  }
-  onEdit?: (id: string) => void
-  onDelete?: (id: string) => void
-}
-
-Features to implement:
-- Hover effects
-- Click to navigate to project board
-- Responsive design
-- Loading states
-- Error states
-*/
-
-const projectsDummy = [
-  {
-    id: "1",
-    name: "Website Redesign",
-    description: "Complete overhaul of company website with modern design and improved UX",
-    progress: 75,
-    members: 5,
-    dueDate: "2024-02-15",
-    status: "In Progress",
-    color: "bg-blue_munsell-500",
-  },
-  {
-    id: "2",
-    name: "Mobile App Development",
-    description: "iOS and Android app development for customer portal",
-    progress: 45,
-    members: 8,
-    dueDate: "2024-03-20",
-    status: "In Progress",
-    color: "bg-green-500",
-  },
-  {
-    id: "3",
-    name: "Marketing Campaign",
-    description: "Q1 marketing campaign planning and execution",
-    progress: 90,
-    members: 3,
-    dueDate: "2024-01-30",
-    status: "Review",
-    color: "bg-purple-500",
-  },
-  {
-    id: "4",
-    name: "Database Migration",
-    description: "Migrate legacy database to new cloud infrastructure",
-    progress: 30,
-    members: 4,
-    dueDate: "2024-04-10",
-    status: "Planning",
-    color: "bg-orange-500",
-  },
-  {
-    id: "5",
-    name: "Security Audit",
-    description: "Comprehensive security audit and vulnerability assessment",
-    progress: 60,
-    members: 2,
-    dueDate: "2024-02-28",
-    status: "In Progress",
-    color: "bg-red-500",
-  },
-  {
-    id: "6",
-    name: "API Documentation",
-    description: "Create comprehensive API documentation for developers",
-    progress: 85,
-    members: 3,
-    dueDate: "2024-02-05",
-    status: "Review",
-    color: "bg-indigo-500",
-  },
-];
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
 interface ProjectCardProps {
   project: ProjectSelect;
@@ -117,97 +27,116 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
-  const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(
-    project.id,
-  );
+  const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(project.id);
   const { taskCount, isTaskCountLoading, taskCountError } = useProjects(project.id);
 
-  const [isEditModalOpen, setIsModalOpen] = useState(false);
-  const daysLeft =
-    project.dueDate && isValid(new Date(project.dueDate))
-      ? differenceInDays(new Date(project.dueDate), new Date())
-      : null;
+  const overdueInfo = useMemo(() => {
+    const due = project.dueDate ? new Date(project.dueDate) : null;
+    return calculateOverdueInfo(due);
+  }, [project.dueDate]);
+
+  const progress =
+    "progress" in project && typeof project.progress === "number" ? Math.min(100, Math.max(0, project.progress)) : 0;
+
+  const membersText = isProjectMembersLoading
+    ? "Loading…"
+    : projectMembersError
+      ? "Unable to load members"
+      : projectMembers
+        ? `${projectMembers.length === 0 ? "No" : projectMembers.length} members`
+        : "No members";
+
+  const tasksText = isTaskCountLoading
+    ? "Loading…"
+    : taskCountError && taskCount == null
+      ? "Unable to load task count"
+      : `${taskCount === 0 ? "No" : taskCount} tasks`;
+
+  const taskOverdueText = overdueInfo.isDueToday
+    ? "Due Today"
+    : overdueInfo.isOverdue
+      ? `${Math.abs(overdueInfo.daysOverdue)} day${Math.abs(overdueInfo.daysOverdue) === 1 ? "" : "s"} overdue`
+      : `${overdueInfo.daysLeft} day${overdueInfo.daysLeft === 1 ? "" : "s"} left`;
 
   return (
-    <>
-      {isEditModalOpen && (
-        <UpdateProjectModal projectData={project} isModalOpen={isEditModalOpen} setIsModalOpen={setIsModalOpen} />
-      )}
-      <Link href={`projects/${project.id}`}>
-        <div className="bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6 hover:shadow-lg transition-shadow">
-          <div className="flex justify-between">
-            <h3 className="text-xl font-semibold text-outer_space-500 dark:text-platinum-500 mb-2">{project.name}</h3>
-            <ProjectOptions project_id={project.id} setEditModalOpen={setIsModalOpen} />
+    <Link href={`/projects/${project.id}`} className="block group">
+      <Card className="transition-all hover:shadow-lg hover:ring-1 hover:ring-border">
+        <CardHeader className="space-y-1">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-lg md:text-xl line-clamp-1">{project.name}</CardTitle>
+            <ProjectOptions project_id={project.id} />
           </div>
+          {project.description ? (
+            <CardDescription className="line-clamp-2">{project.description}</CardDescription>
+          ) : null}
+        </CardHeader>
 
-          <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400 mb-4 line-clamp-2">
-            {project.description}
-          </p>
-
-          <div className="flex items-center justify-between text-sm text-payne's_gray-500 dark:text-french_gray-400 mb-4">
-            <div className="flex items-center">
-              <Users size={16} className="mr-1" />
-
-              {isProjectMembersLoading
-                ? "Loading"
-                : !projectMembersError && projectMembers
-                  ? `${projectMembers.length === 0 ? "No" : projectMembers.length} members`
-                  : "Unable to load members."}
+        <CardContent className="space-y-4">
+          {/* Meta row */}
+          <div className="flex flex-col gap-2 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" aria-hidden="true" />
+              <span aria-live="polite">{membersText}</span>
             </div>
-            <div className="flex items-center">
-              <Calendar size={16} className="mr-1" />
-              {project.dueDate ? formatDate(project.dueDate) : "No Deadline Set"}
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" aria-hidden="true" />
+              <span>{project.dueDate ? formatDate(project.dueDate) : "No deadline set"}</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-payne's_gray-500 dark:text-french_gray-400 mb-4">
-            <span>
-              {isTaskCountLoading
-                ? "Loading"
-                : taskCountError && !taskCount
-                  ? "Unable to load task count"
-                  : `${taskCount === 0 ? "No" : taskCount} tasks `}
+          <Separator />
+
+          {/* Progress */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Progress</span>
+              <span className="font-medium">{progress}%</span>
+            </div>
+            <Progress value={progress} />
+          </div>
+
+          {/* Tasks + Days Left */}
+          <div className={`flex items-center justify-between text-sm  text-muted-foreground}`}>
+            <span aria-live="polite">{tasksText}</span>
+            <span className={`${overdueInfo.isOverdue ? "text-destructive" : "text-muted-foreground"}`}>
+              {taskOverdueText}
             </span>
-
-            <div className="text-sm text-payne's_gray-500 dark:text-french_gray-400">
-              {daysLeft !== null
-                ? daysLeft >= 0
-                  ? `${daysLeft} days left`
-                  : `${Math.abs(daysLeft)} days overdue`
-                : "N/A"}
-            </div>
           </div>
+        </CardContent>
 
-          <div className="mb-4">
-            <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-payne's_gray-500 dark:text-french_gray-400">Progress</span>
-              <span className="text-outer_space-500 dark:text-platinum-500 font-medium">
-                {projectsDummy[0].progress}%
-              </span>
-            </div>
-            <div className="w-full bg-french_gray-300 dark:bg-payne's_gray-400 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all duration-300 ${projectsDummy[0].color}`}
-                style={{ width: `${projectsDummy[0].progress}%` }}
-              />
-            </div>
-          </div>
+        <CardFooter className="flex items-center justify-between">
+          <Badge
+            variant="outline"
+            className={cn(
+              "capitalize",
 
-          <div className="flex items-center justify-between">
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${projectStatusColor[project.status]}`}>
-              {project.status}
-            </span>
-            {isProjectMembersLoading ? (
-              <Skeleton height="6" width="20" />
-            ) : projectMembers && !projectMembersError ? (
-              <MembersAvatars members={projectMembers} max_visible={5} size={6} />
-            ) : (
-              <p>Unable to load members.</p>
+              projectStatusColor[project.status],
             )}
-          </div>
-        </div>
-      </Link>
-    </>
+          >
+            {String(project.status).replace(/[_-]/g, " ")}
+          </Badge>
+
+          {isProjectMembersLoading ? (
+            <Skeleton height="6" width="20" />
+          ) : projectMembers && !projectMembersError ? (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <MembersAvatars members={projectMembers} max_visible={5} size={6} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Project members</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <span className="text-xs text-muted-foreground">Unable to load members</span>
+          )}
+        </CardFooter>
+      </Card>
+    </Link>
   );
 };
 

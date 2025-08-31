@@ -87,13 +87,13 @@ export function useTeams(team_id?: number) {
   });
 
   const createTeam = useMutation({
-    mutationFn: async (teamName: string) => {
-      const res = await createTeamAction(teamName);
+    mutationFn: async (teamFormData: z.infer<typeof teamSchemaForm>) => {
+      const res = await createTeamAction(teamFormData);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
 
-    onMutate: async (teamName) => {
+    onMutate: async (teamFormData) => {
       await queryClient.cancelQueries({ queryKey: ["teams"] });
 
       const previousTeams = queryClient.getQueryData<TeamsSelect[]>(["teams"]);
@@ -104,7 +104,8 @@ export function useTeams(team_id?: number) {
       const now = new Date();
       const optimisticTeam: TeamsSelect = {
         id: tempId,
-        teamName: teamName,
+        teamName: teamFormData.teamName,
+        description: teamFormData.description,
         createdAt: now,
         updatedAt: now,
       };
@@ -383,7 +384,7 @@ export function useTeams(team_id?: number) {
     teamMembersError: teamMembers.error,
 
     // mutations
-    deleteTeam: deleteTeam.mutate,
+    deleteTeam: deleteTeam.mutateAsync,
     isTeamDeleteLoading: deleteTeam.isPending,
     deleteTeamError: deleteTeam.error,
 

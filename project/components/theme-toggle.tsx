@@ -1,18 +1,22 @@
-"use client"
+"use client";
 
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "./theme-provider"
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "./theme-provider";
+import { Button } from "./ui/button";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
 
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="p-2 rounded-lg bg-platinum-500 dark:bg-payne's_gray-500 text-outer_space-500 dark:text-platinum-500 hover:bg-french_gray-500 dark:hover:bg-payne's_gray-400 transition-colors border border-french_gray-300 dark:border-payne's_gray-400"
-      aria-label="Toggle theme"
+      size="icon"
+      className="active:bg-accent lg:p-5 "
     >
-      {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
-    </button>
-  )
+      <Sun className="h-5 w-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 duration-500" />
+      <Moon className="absolute h-5 w-5  scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 duration-500" />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
+  );
 }

@@ -1,198 +1,200 @@
 "use client";
 
-import type React from "react";
-
-import { useState, Suspense, useEffect } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  Home,
-  FolderOpen,
-  Users,
-  Settings,
-  Menu,
-  X,
-  BarChart3,
-  Calendar,
-  Bell,
-  Search,
-  Loader2Icon,
-} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { Menu, Bell, Search, Loader2 } from "lucide-react";
+
+import { ThemeToggle } from "@/components/theme-toggle";
 import LoadingUI from "@/components/ui/loading-ui";
-import { usePathname } from "next/navigation";
+import { navigationItems } from "@/lib/utils";
+import { useUIStore } from "@/stores/ui-store";
 
-const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: Home, current: false },
-  { name: "Projects", href: "/projects", icon: FolderOpen, current: false },
-  { name: "Teams", href: "/teams", icon: Users, current: false },
-  // { name: "Analytics", href: "/analytics", icon: BarChart3, current: false },
-  // { name: "Calendar", href: "/calendar", icon: Calendar, current: false },
-  // { name: "Settings", href: "/settings", icon: Settings, current: false },
-];
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useScreenWidth } from "@/lib/client-utils";
+import Image from "next/image";
+import { useTheme } from "@/components/theme-provider";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+type Props = { children: ReactNode };
+
+export default function DashboardLayout({ children }: Props) {
   const { isLoaded, isSignedIn } = useUser();
-  const [count, setCount] = useState(3);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [navItems, setNavItems] = useState(navigation);
   const router = useRouter();
   const pathname = usePathname();
 
-  const updateActiveNavigation = (navName: string) => {
-    const updated = navItems.map((item) => ({
-      ...item,
-      current: item.name === navName,
-    }));
-    setNavItems(updated);
-  };
+  const [count, setCount] = useState(3);
+  const [navItems, setNavItems] = useState(navigationItems);
 
-  // Handle redirect countdown
+  const screenWidth = useScreenWidth();
+  const isMobile = screenWidth ? (screenWidth < 768 ? true : false) : false;
+
+  // Zustand for mobile sidebar
+  const { isSideBarOpen, setSideBarOpen } = useUIStore();
+
+  // Close mobileSidebar if we're on desktop and sideBarOpen
+  useEffect(() => {
+    if (!isMobile && isSideBarOpen) setSideBarOpen(false);
+  }, [isMobile, isSideBarOpen, setSideBarOpen]);
+
+  // Update active nav item based on current route
+  useEffect(() => {
+    if (isLoaded && isSignedIn && pathname) {
+      setNavItems((prev) =>
+        prev.map((item) => ({
+          ...item,
+          current: pathname.startsWith(item.href),
+        })),
+      );
+    }
+  }, [isLoaded, isSignedIn, pathname]);
+
+  // Redirect unauthenticated with countdown
   useEffect(() => {
     if (isLoaded && isSignedIn === false) {
-      const interval = setInterval(() => {
-        setCount((prev) => prev - 1);
-      }, 1000);
-
-      const timeout = setTimeout(() => {
-        router.push("/sign-in");
-      }, 3000);
-
+      const interval = setInterval(() => setCount((c) => c - 1), 1000);
+      const timeout = setTimeout(() => router.push("/sign-in"), 3000);
       return () => {
         clearInterval(interval);
         clearTimeout(timeout);
       };
     }
-    // Determine which navItem is currently active.
-    if (isLoaded && isSignedIn && pathname) {
-      const updated = navItems.map((item) => ({
-        ...item,
-        current: pathname.startsWith(item.href),
-      }));
-      setNavItems(updated);
-    }
-  }, [isLoaded, isSignedIn, router, pathname]);
+  }, [isLoaded, isSignedIn, router]);
 
-  // Just display loading screen while waiting for clerk.
-  if (!isLoaded) {
-    return <LoadingUI />;
-  }
+  if (!isLoaded) return <LoadingUI />;
 
-  if (isLoaded && isSignedIn == false) {
+  if (isLoaded && isSignedIn === false) {
     return (
-      <div className="w-full h-[100vh] flex flex-col justify-center items-center gap-y-3">
-        {" "}
-        <p className="font-bold text-2xl">
-          {`You must be signed in to view this page.`}
-        </p>
-        <p>{`Redirecting in ${count}`}</p>
+      <div className="flex h-[100vh] w-full flex-col items-center justify-center gap-2">
+        <p className="text-2xl font-semibold">You must be signed in to view this page.</p>
+        <p className="text-muted-foreground">Redirecting in {count}</p>
       </div>
     );
   }
 
+  // Logo
+  const Brand = (
+    <Link href="/" className="group text-xl font-bold tracking-tight">
+      <Image
+        src={`/light-logo.png`}
+        width={150}
+        height={150}
+        alt="remotive-logo"
+        className="absolute transition-all opacity-100 dark:opacity-0 duration-300 group-hover:drop-shadow-[0_0_6px_var(--color-emerald-500)]"
+      />
+      <Image
+        src={`/dark-logo.png`}
+        width={150}
+        height={150}
+        alt="remotive-logo"
+        className="transition-all opacity-0 dark:opacity-100 duration-300 group-hover:drop-shadow-[0_0_6px_var(--color-emerald-500)]"
+      />
+    </Link>
+  );
+
+  // NavBarList
+  const NavList = ({ onItemClick }: { onItemClick?: () => void }) => (
+    <ul className="space-y-1">
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <li key={item.name}>
+            <Link
+              href={item.href}
+              onClick={() => {
+                setNavItems((prev) => prev.map((it) => ({ ...it, current: it.name === item.name })));
+                onItemClick?.();
+              }}
+              className={`
+                flex items-center rounded-md px-3 py-2 text-sm hover:text-accent-foreground
+                ${item.current ? "bg-primary text-accent-foreground" : "text-muted-foreground transition-colors hover:bg-sidebar-accent  "},
+              `}
+            >
+              <Icon className="mr-3 h-4 w-4" />
+              <span className="truncate">{item.name}</span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   return (
-    <div className="min-h-screen bg-platinum-900 dark:bg-outer_space-600">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-outer_space-500 border-r border-french_gray-300 dark:border-payne's_gray-400 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <div className="flex items-center justify-between h-16 px-6 border-b border-french_gray-300 dark:border-payne's_gray-400">
-          <Link href="/" className="text-2xl font-bold text-blue_munsell-500">
-            Remotive
-          </Link>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-platinum-500 dark:hover:bg-payne's_gray-400"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <nav className="mt-6 px-3">
-          <ul className="space-y-1">
-            {navItems.map((item) => (
-              <li
-                onClick={() => updateActiveNavigation(item.name)}
-                key={item.name}
-              >
-                <Link
-                  href={item.href}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    item.current
-                      ? "bg-blue_munsell-100 dark:bg-blue_munsell-900 text-blue_munsell-700 dark:text-blue_munsell-300"
-                      : "text-outer_space-500 dark:text-platinum-500 hover:bg-platinum-500 dark:hover:bg-payne's_gray-400"
-                  }`}
-                >
-                  <item.icon className="mr-3" size={20} />
-                  {item.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="min-h-screen bg-background">
+      {/* Desktop Sidebar */}
+      <div className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r bg-sidebar lg:block">
+        <div className="flex h-16 items-center justify-between border-b px-6">{Brand}</div>
+        <ScrollArea className="h-[calc(100vh-4rem)] px-3 py-4">
+          <NavList />
+        </ScrollArea>
       </div>
 
-      {/* Main content */}
+      {/* Main column */}
       <div className="lg:pl-64">
-        {/* Top bar */}
-        <div className="sticky top-0 z-30 flex h-16 items-center gap-x-4 border-b border-french_gray-300 dark:border-payne's_gray-400 bg-white dark:bg-outer_space-500 px-4 shadow-xs sm:gap-x-6 sm:px-6 lg:px-8">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-platinum-500 dark:hover:bg-payne's_gray-400"
-          >
-            <Menu size={20} />
-          </button>
+        {/* Top Bar */}
+        <div className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-sidebar px-4 sm:gap-4 sm:px-6 lg:px-8">
+          <div className="lg:hidden">
+            {/* Mobile Sidebar (Sheet) */}
+            <Sheet open={isSideBarOpen} onOpenChange={setSideBarOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0">
+                <SheetHeader className="border-b px-6 py-4">
+                  <SheetTitle className="text-left">{Brand}</SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100vh-4rem)] px-3 py-4">
+                  <NavList onItemClick={() => setSideBarOpen(false)} />
+                </ScrollArea>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            {/* Search bar placeholder */}
-            <div className="flex flex-1 items-center">
-              <div className="relative flex-1 max-w-md">
-                <Search
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-payne's_gray-500 dark:text-french_gray-400"
-                  size={16}
-                />
-                <input
-                  type="text"
-                  placeholder="Search projects, tasks..."
-                  className="w-full pl-10 pr-4 py-2 bg-platinum-500 dark:bg-payne's_gray-400 border border-french_gray-300 dark:border-payne's_gray-300 rounded-lg text-outer_space-500 dark:text-platinum-500 placeholder-payne's_gray-500 dark:placeholder-french_gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
-                />
-              </div>
+          {/* Search */}
+          <div className="flex flex-1 items-center">
+            <div className="relative w-full max-w-md">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input placeholder="Search projects, tasks…" className="pl-9" aria-label="Search" />
             </div>
+          </div>
 
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <button className="p-2 rounded-lg hover:bg-platinum-500 dark:hover:bg-payne's_gray-400">
-                <Bell size={20} />
-              </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" aria-label="Notifications">
+                      <Bell className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Notifications</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
               <ThemeToggle />
-              <UserButton />
             </div>
+
+            <UserButton />
           </div>
         </div>
 
         {/* Page content */}
-        <main className="py-8 px-4 sm:px-6 lg:px-8">
+        <main className="px-4 py-6 sm:px-6 lg:px-8">
           <Suspense
             fallback={
-              <div className="w-full h-[100vh] flex justify-center items-center gap-x-2">
-                {" "}
-                <Loader2Icon
-                  size={24}
-                  className="animate-spin"
-                ></Loader2Icon>{" "}
-                <p className="text-2xl"> Loading </p>
+              <div className="flex h-[60vh] w-full items-center justify-center gap-2 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-lg">Loading…</span>
               </div>
             }
           >

@@ -1,176 +1,177 @@
-// TODO: Task 4.4 - Build task creation and editing functionality
-// TODO: Task 5.6 - Create task detail modals and editing interfaces
-
-/*
-TODO: Implementation Notes for Interns:
-
-Modal for creating and editing tasks.
-
-Features to implement:
-- Task title and description
-- Priority selection
-- Assignee selection
-- Due date picker
-- Labels/tags
-- Attachments
-- Comments section (for edit mode)
-- Activity history (for edit mode)
-
-Form fields:
-- Title (required)
-- Description (rich text editor)
-- Priority (low/medium/high)
-- Assignee (team member selector)
-- Due date (date picker)
-- Labels (tag input)
-- Attachments (file upload)
-
-Integration:
-- Use task validation schema
-- Call task creation/update API
-- Update board state optimistically
-- Handle file uploads
-- Real-time updates for comments
-*/
-
 "use client";
-import { useTasks } from "@/hooks/use-tasks";
-import { taskSchemaForm } from "@/lib/validations/validations";
+
+import { FC, useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2Icon, X } from "lucide-react";
-import { FC, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { priorityTuple } from "@/lib/db/db-enums";
-import { capitalize } from "../../lib/utils";
+
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MultiSelect from "../ui/multi-select";
+import { LoadingButtonContent } from "@/components/ui/loading-button-content";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
+import { useTasks } from "@/hooks/use-tasks";
 import { useProjectMembers } from "@/hooks/use-projects";
-import { TaskFormInput, TaskFormOutput } from "@/types";
+import { useUIStore } from "@/stores/ui-store";
+
+import { taskSchemaForm } from "@/lib/validations/validations";
+import { priorityTuple } from "@/lib/db/db-enums";
+import { capitalize } from "@/lib/utils";
+
+import { useTaskStore } from "@/stores/task-store";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
+import { formatDate } from "@/lib/utils";
+import { TaskCreateForm } from "@/types";
+import { QuillEditor } from "../ui/rich-text-editor";
 
 type CreateTaskModalProps = {
-  isModalOpen: boolean;
-  setIsModalOpen: (val: boolean) => void;
   list_id: number;
   project_id: number;
   position: number;
 };
 
-const CreateTaskModal: FC<CreateTaskModalProps> = ({ isModalOpen, setIsModalOpen, list_id, project_id, position }) => {
-  // Disable scrolling when modal is open.
-  useEffect(() => {
-    if (isModalOpen) {
-      // Account for layout shift due to hiding the scrollbar. Usually 15px
-      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.classList.add("overflow-hidden");
-      document.body.style.paddingRight = `${scrollBarWidth}px`;
-    } else {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    }
-    // Cleanup function on unmount
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    };
-  }, [isModalOpen]);
+const CreateTaskModal: FC<CreateTaskModalProps> = ({ list_id, project_id, position }) => {
+  const { isCreateTaskModalOpen, setCreateTaskModalOpen } = useUIStore();
+  const { setListToAddTo } = useTaskStore();
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<TaskFormInput, undefined, TaskFormOutput>({
+  const form = useForm<TaskCreateForm>({
     resolver: zodResolver(taskSchemaForm),
     defaultValues: {
+      title: "",
+      description: "",
+      content: "",
+      priority: undefined, // let user pick
       assigneeIds: [],
+      dueDate: null,
     },
+    mode: "onSubmit",
   });
 
-  const { createTask, isCreateTaskLoading } = useTasks({ list_id: list_id });
+  // Reset form when dialog opens to ensure fresh state
+  useEffect(() => {
+    if (isCreateTaskModalOpen) {
+      form.reset({
+        title: "",
+        description: "",
+        content: "",
+        priority: undefined,
+        assigneeIds: [],
+        dueDate: null,
+      });
+    }
+  }, [isCreateTaskModalOpen, form]);
+
+  const { createTask, isCreateTaskLoading } = useTasks({ list_id });
   const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(project_id);
 
-  const onSubmit = async (values: TaskFormOutput) => {
-    createTask({ list_id, position, taskFormData: values });
-
-    setIsModalOpen(false);
+  const onSubmit = async (values: TaskCreateForm) => {
+    await createTask({ list_id, project_id, position, taskFormData: values });
+    setCreateTaskModalOpen(false);
+    setListToAddTo(null);
   };
 
   return (
-    <>
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"
-          onMouseDown={() => setIsModalOpen(false)}
-        >
-          <div
-            className="bg-white dark:bg-outer_space-500 rounded-lg p-6 w-full max-w-md mx-4"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-outer_space-500 dark:text-platinum-500">Create New Task</h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 hover:bg-platinum-500 dark:hover:bg-payne's_gray-400 rounded"
-              >
-                <X size={20} />
-              </button>
-            </div>
+    <Dialog open={isCreateTaskModalOpen} onOpenChange={setCreateTaskModalOpen}>
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Create New Task</DialogTitle>
+        </DialogHeader>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
-                >
-                  Task Name *
-                </label>
-                <input
-                  type="text"
-                  disabled={isCreateTaskLoading}
-                  className="w-full px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
-                  placeholder="Enter task name"
-                  {...register("title")}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Task Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter task name" disabled={isCreateTaskLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      value={field.value ?? ""} // textarea can't take null
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="scrollbar-custom resize-y max-h-[100px] min-h-[100px]"
+                      placeholder="A short description of what your task is about."
+                      disabled={isCreateTaskLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Content */}
+            {/* <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      value={field.value ?? ""} // textarea can't take null
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="resize-y max-h-[150px] min-h-[100px]"
+                      placeholder="The content of your task."
+                      disabled={isCreateTaskLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            <Controller
+              name="content"
+              control={form.control}
+              render={({ field }) => (
+                <QuillEditor
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  placeholder="Content of your task."
+                  className="scrollbar-custom overflow-y-scroll max-h-[150px] min-h-[100px]"
                 />
-                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
-              </div>
+              )}
+            />
 
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
-                >
-                  Description
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
-                  placeholder="Task description"
-                  {...register("description")}
-                  disabled={isCreateTaskLoading}
-                />
-                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="Priority"
-                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
-                >
-                  Priority *
-                </label>
-                <Controller
-                  name="priority"
-                  control={control}
-                  render={({ field }) => (
+            {/* Priority */}
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Priority *</FormLabel>
+                  <FormControl>
                     <Select
-                      value={field.value}
-                      onValueChange={(value) => field.onChange(value)}
+                      value={field.value ?? ""}
+                      onValueChange={(v) => field.onChange(v)}
                       disabled={isCreateTaskLoading}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger>
                         <SelectValue placeholder={isCreateTaskLoading ? "Loading..." : "Select"} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent align="start">
                         {priorityTuple.map((value) => (
                           <SelectItem key={value} value={value}>
                             {capitalize(value)}
@@ -178,20 +179,20 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ isModalOpen, setIsModalOpen
                         ))}
                       </SelectContent>
                     </Select>
-                  )}
-                />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                {errors.priority && <p className="text-red-500 text-sm mt-1">{errors.priority.message}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2">
-                  Assign Members
-                </label>
-                <Controller
-                  name="assigneeIds"
-                  control={control}
-                  render={({ field }) => (
+            {/* Assignees */}
+            <FormField
+              control={form.control}
+              name="assigneeIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Assign Members</FormLabel>
+                  <FormControl>
                     <MultiSelect
                       options={(projectMembers ?? []).map((m) => ({ label: m.name, value: m.id }))}
                       value={field.value ?? []}
@@ -202,66 +203,91 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ isModalOpen, setIsModalOpen
                         projectMembersError ? "Failed to load members" : "This project doesn't have any members yet."
                       }
                     />
-                  )}
-                />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                {errors.assigneeIds && <p className="text-red-500 text-sm mt-1">{errors.assigneeIds.message}</p>}
-              </div>
+            {/* Due Date */}
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => {
+                const value = field.value ?? null; // Date | null
+                const isDisabled = isCreateTaskLoading;
 
-              <div>
-                <label
-                  htmlFor="dueDate"
-                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
-                >
-                  Due Date
-                </label>
-                <input
-                  type="date"
-                  disabled={isCreateTaskLoading}
-                  className="w-full px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
-                  {...register("dueDate", {
-                    setValueAs: (value: string | null) => {
-                      if (value === "") {
-                        // If user cleared the selected date, or did not select a value, pass null because dueDate is optional.
-                        return null;
-                      } else if (value) {
-                        // If user selected a value, convert it to a date object for validation.
-                        return new Date(value);
-                      }
-                    },
-                  })} // Transform input string YYYY-MM-DD to desired date object before validation.
-                />
-                {errors.dueDate && <p className="text-red-500 text-sm mt-1">{errors.dueDate.message}</p>}
-              </div>
+                return (
+                  <FormItem>
+                    <FormLabel>Due Date</FormLabel>
+                    <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={isDisabled}
+                          className={`w-full justify-between ${!value ? "text-muted-foreground" : ""}`}
+                        >
+                          {value ? formatDate(value) : "Pick a date"}
+                          <CalendarIcon className="ml-2 h-4 w-4 opacity-60" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent align="start" className="p-0">
+                        <Calendar
+                          mode="single"
+                          selected={value ?? undefined}
+                          // Set null when user unselects via ESC, etc.
+                          onSelect={(d) => field.onChange(d ?? null)}
+                          // Only today & future:
+                          disabled={(date) => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const cmp = new Date(date);
+                            cmp.setHours(0, 0, 0, 0);
+                            return cmp < today;
+                          }}
+                          initialFocus
+                        />
 
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isCreateTaskLoading}
-                  className="px-4 py-2 text-payne's_gray-500 dark:text-french_gray-400 hover:bg-platinum-500 dark:hover:bg-payne's_gray-400 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isCreateTaskLoading}
-                  className="px-4 py-2 bg-blue_munsell-500 text-white rounded-lg hover:bg-blue_munsell-600 transition-colors"
-                >
-                  {isCreateTaskLoading ? (
-                    <div className="flex gap-2">
-                      <Loader2Icon className="animate-spin " /> Loading
-                    </div>
-                  ) : (
-                    "Create Task"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+                        <div className="flex gap-2 justify-between p-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => field.onChange(null)}
+                            disabled={isDisabled || !value}
+                          >
+                            Clear
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setCalendarOpen(false)}>
+                            Close
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setCreateTaskModalOpen(false)}
+                disabled={isCreateTaskLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isCreateTaskLoading}>
+                <LoadingButtonContent isLoading={isCreateTaskLoading} displayText="Create Task" />
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

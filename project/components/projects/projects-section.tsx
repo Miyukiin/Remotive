@@ -2,14 +2,15 @@
 import { FC, useMemo, useState } from "react";
 import ProjectsSearchFilter from "./projects-search-filter";
 import ProjectsGrid from "./project-grid";
-import { ProjectSelect } from "@/types";
+import { ProjectSelect, ProjectsFilterOptions } from "@/types";
 
 type ProjectsSectionProps = {
   projectsData: ProjectSelect[];
 };
+
 const ProjectsSection: FC<ProjectsSectionProps> = ({ projectsData }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterOption, setFilterOption] = useState("Ascending (A-Z)");
+  const [filterOption, setFilterOption] = useState<ProjectsFilterOptions>("Ascending (A-Z)");
 
   const filteredTeams = useMemo(() => {
     // Filter by search term

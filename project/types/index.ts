@@ -1,17 +1,32 @@
 import * as schema from "@/lib/db/schema";
-import { projectSchemaForm, projectSchemaUpdateForm, taskSchemaForm} from "@/lib/validations/validations";
+import { listColor, projectsFilterOptions } from "@/lib/utils";
+import {
+  commentSchemaForm,
+  labelSchemaForm,
+  labelSchemaUpdateForm,
+  listSchemaForm,
+  projectSchemaForm,
+  projectSchemaUpdateForm,
+  taskSchemaEditForm,
+  taskSchemaForm,
+} from "@/lib/validations/validations";
 import z from "zod";
+import { TaskStatus } from "../components/tasks/task-modal-ui/task-status";
 
-// For Project Creation and Update Form
-export type ProjectFormInput = z.input<typeof projectSchemaForm>; // This is because our input for duedate field accepts string.
-export type ProjectFormOutput = z.output<typeof projectSchemaForm>; // For after validation, dueDate output is a Date or null.
-export type ProjectFormInputUpdate = z.input<typeof projectSchemaUpdateForm>;
-export type ProjectFormOutputUpdate = z.output<typeof projectSchemaUpdateForm>;
+// Zod Form Types - Used in RHFs useForm and onSubmit values typing
+export type ProjectCreateForm = z.infer<typeof projectSchemaForm>;
+export type ProjectUpdateForm = z.infer<typeof projectSchemaUpdateForm>;
 
+export type TaskCreateForm = z.infer<typeof taskSchemaForm>;
+export type TaskUpdateForm = z.infer<typeof taskSchemaEditForm>;
 
-// for Task Creation and Update Form
-export type TaskFormInput = z.input<typeof taskSchemaForm>; // This is because our input for duedate field accepts string.
-export type TaskFormOutput = z.output<typeof taskSchemaForm>; // For after validation, dueDate output is a Date or null.
+export type ListFormInput = z.input<typeof listSchemaForm>;
+export type ListFormOutput = z.output<typeof listSchemaForm>;
+
+export type LabelCreateForm = z.infer<typeof labelSchemaForm>;
+export type LabelUpdateForm = z.infer<typeof labelSchemaUpdateForm>;
+
+export type CommentCreateForm = z.infer<typeof commentSchemaForm>;
 
 // Query Types
 export type QueryResponse<T> =
@@ -19,8 +34,8 @@ export type QueryResponse<T> =
   | { success: false; message: string; error: unknown };
 
 // Type Narrowing for create query utilities.
-export type ObjectInsert = UserInsert | ProjectInsert | ListInsert | TaskInsert | CommentInsert | TeamsInsert;
-export type ObjectSelect = UserSelect | ProjectSelect | ListSelect | TaskSelect | CommentSelect | TeamsSelect;
+export type ObjectInsert = UserInsert | ProjectInsert | ListInsert | TaskInsert | CommentInsert | TeamsInsert | LabelInsert;
+export type ObjectSelect = UserSelect | ProjectSelect | ListSelect | TaskSelect | CommentSelect | TeamsSelect | LabelSelect ;
 
 // Type Safety
 export type UserInsert = typeof schema.users.$inferInsert;
@@ -53,6 +68,12 @@ export type UsersToTasksSelect = typeof schema.users_to_tasks.$inferSelect;
 export type ProjectMembersInsert = typeof schema.project_members.$inferInsert;
 export type ProjectMembersSelect = typeof schema.project_members.$inferSelect;
 
+export type LabelSelect = typeof schema.project_labels.$inferSelect;
+export type LabelInsert = typeof schema.project_labels.$inferInsert;
+
+export type LabelsToTasksInsert = typeof schema.labels_to_tasks.$inferInsert
+export type LabelsToTasksSelect = typeof schema.labels_to_tasks.$inferSelect
+
 export type RecentProjects = {
   id: number;
   name: string;
@@ -63,3 +84,21 @@ export type RecentProjects = {
   memberCount: number;
   memberImages: string[];
 };
+
+export type ListPositionPayload = {
+  id: number;
+  position: number;
+};
+
+export type TaskPositionPayload = {
+  id: number;
+  list_id?: number;
+  position: number;
+};
+
+export type TaskStatus = { status: string; color: keyof typeof listColor };
+
+export type KanbanColor = keyof typeof listColor
+
+// Projects Filter Options Type
+export type ProjectsFilterOptions = (typeof projectsFilterOptions)[number];

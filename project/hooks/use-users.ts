@@ -1,8 +1,8 @@
 "use client";
-import { getAllUsers, getUserId } from "@/actions/user-actions";
+import { getAllUsers, getUserId, getUserObjectById } from "@/actions/user-actions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-export function useUsers() {
+export function useUsers(id?: number) {
   const queryClient = useQueryClient();
 
   const users = useQuery({
@@ -15,7 +15,18 @@ export function useUsers() {
   });
 
   const user = useQuery({
-    queryKey: ["user"],
+    queryKey: ["user", id],
+    enabled: typeof id === "number",
+    queryFn: async ({ queryKey }) => {
+      const [, id] = queryKey as ["user", number];
+      const res = await getUserObjectById(id);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
+  const current_user = useQuery({
+    queryKey: ["current_user"],
     queryFn: async () => {
       const res = await getUserId();
       if (!res.success) throw new Error(res.message);
@@ -30,6 +41,11 @@ export function useUsers() {
     getUsersError: users.isError,
 
     // Get current user
+    currentUser: current_user.data,
+    isCurrentUserLoading: current_user.isLoading,
+    getCurrentUserError: current_user.isError,
+
+    // Get user by id
     user: user.data,
     isUserLoading: user.isLoading,
     getUserError: user.isError,

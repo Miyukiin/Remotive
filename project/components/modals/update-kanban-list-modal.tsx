@@ -1,114 +1,157 @@
 "use client";
+
 import { FC, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { listSchemaForm } from "@/lib/validations/validations";
-import z from "zod";
-import { Loader2Icon, XIcon } from "lucide-react";
 import { useLists } from "@/hooks/use-lists";
-import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { LoadingButtonContent } from "@/components/ui/loading-button-content";
+import { useKanbanStore } from "@/stores/kanban-store";
+import { useUIStore } from "@/stores/ui-store";
+import { Textarea } from "../ui/textarea";
+import { ListFormInput, ListFormOutput } from "@/types";
+import { listColorTuple } from "@/lib/db/db-enums";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectItem,
+} from "@/components/ui/select";
+import { listColor } from "@/lib/utils";
 
 type UpdateKanbanModalProps = {
-  list_name: string;
-  list_id: number;
-  isModalOpen: boolean;
-  setIsModalOpen: (value: boolean) => void;
+  project_id: number;
 };
 
-const UpdateKanbanModal: FC<UpdateKanbanModalProps> = ({
-  list_name,
-  list_id,
-  isModalOpen,
-  setIsModalOpen,
-}) => {
-  // Disable scrolling when modal is open.
-  useEffect(() => {
-    if (isModalOpen) {
-      // Account for layout shift due to hiding the scrollbar. Usually 15px
-      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.classList.add("overflow-hidden");
-      document.body.style.paddingRight = `${scrollBarWidth}px`;
-    } else {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    }
-    // Cleanup function on unmount
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    };
-  }, [isModalOpen]);
+type ListColor = (typeof listColorTuple)[number];
 
-  // Form Handling
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<z.infer<typeof listSchemaForm>>({
+const UpdateKanbanModal: FC<UpdateKanbanModalProps> = ({ project_id }) => {
+  const { updateList, isListUpdateLoading } = useLists(project_id);
+  const { activeList } = useKanbanStore();
+  const { isUpdateKanbanModalOpen, setUpdateKanbanModalOpen } = useUIStore();
+
+  const form = useForm<ListFormInput, undefined, ListFormOutput>({
     resolver: zodResolver(listSchemaForm),
-    defaultValues: {
-      name: list_name,
-    },
+    defaultValues: { name: activeList?.name, description: activeList?.description ?? "", color: activeList?.color },
+    mode: "onSubmit",
   });
 
-  const { updateList, isListUpdateLoading } = useLists();
+  // Keep form in sync when opening with a different list
+  useEffect(() => {
+    if (isUpdateKanbanModalOpen) {
+      form.reset({
+        name: activeList?.name ?? "",
+        description: activeList?.description ?? "",
+        color: activeList?.color ?? "GRAY",
+      });
+    }
+  }, [isUpdateKanbanModalOpen, activeList, form]);
 
-  // Will only run if there is no zod validation errors.
-  const onSubmit = async (values: z.infer<typeof listSchemaForm>) => {
-    updateList({ list_id, listFormData: values });
-    setIsModalOpen(false);
+  const onSubmit = async (values: ListFormOutput) => {
+    const maybePromise = updateList({ list_id: activeList!.id, project_id, listFormData: values });
+    await maybePromise;
+    setUpdateKanbanModalOpen(false);
   };
 
   return (
-    <>
-      {/* Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"
-          onMouseDown={() => setIsModalOpen(false)}
-        >
-          <div
-            className="bg-white dark:bg-gray-900 p-6 rounded-lg w-full mx-4 md:mx-0 max-w-md shadow-xl"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-semibold text-dark-grey-600 dark:text-gray-100">Update Column</h2>
-              <button onClick={() => setIsModalOpen(false)} className="hover: " aria-label="Close">
-                <XIcon className="text-dark-grey-600 w-full h-full" />
-              </button>
-            </div>
-            {/* Form */}
-            <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-              <label htmlFor="name" className="mb-2">
-                {" "}
-                Label
-              </label>
-              <input id="name" className="outline-1 px-2 rounded-sm " {...register("name")}></input>
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isListUpdateLoading}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isListUpdateLoading}>
-                  {isListUpdateLoading ? (
-                    <div className="flex gap-2">
-                      <Loader2Icon className="animate-spin " /> Loading
-                    </div>
-                  ) : (
-                    "Update"
-                  )}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+    <Dialog open={isUpdateKanbanModalOpen} onOpenChange={setUpdateKanbanModalOpen}>
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Update Column</DialogTitle>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Label</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter column name" disabled={isListUpdateLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      value={field.value ?? ""} // Required as textarea does not accept null.
+                      onChange={(e) => field.onChange(e.target.value)} // Required as textarea does not accept null.
+                      className="resize-y max-h-[200px]"
+                      placeholder="Enter Description.."
+                      disabled={isListUpdateLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Color</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value ?? ""}
+                      onValueChange={(v) => field.onChange(v as ListColor)}
+                      disabled={isListUpdateLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pick a color" />
+                      </SelectTrigger>
+                      <SelectContent align="start">
+                        <SelectGroup>
+                          <SelectLabel>Color</SelectLabel>
+                          {listColorTuple.map((c) => (
+                            <SelectItem key={c} value={c}>
+                              <span className={`rounded-full w-4 h-4 ${listColor[c as ListColor]}`}> </span>
+                              {c}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setUpdateKanbanModalOpen(false)}
+                disabled={isListUpdateLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isListUpdateLoading}>
+                <LoadingButtonContent isLoading={isListUpdateLoading} displayText="Update" />
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

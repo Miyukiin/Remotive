@@ -1,7 +1,7 @@
-import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { drizzle as drizzleNeon } from 'drizzle-orm/neon-serverless';
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 import { Pool as pgPool } from "pg";
-import { neon } from "@neondatabase/serverless";
+import { Pool as neonPool} from '@neondatabase/serverless';
 import * as schema from "./schema";
 import * as relations from "./relations";
 
@@ -18,7 +18,7 @@ const dockerPgDatabaseURL = process.env.DOCKERPG_DATABASE_URL!;
 export const db =
   process.env.IS_USING_NEON === "true"
     ? drizzleNeon(
-        neon(neonDatabaseURL!), // No need for explicit pooling, as the neon dburl is already configured to have it enabled.
+        new neonPool({connectionString: neonDatabaseURL!}), 
         { schema: { ...schema, ...relations } },
       )
     : drizzlePg(new pgPool({ connectionString: dockerPgDatabaseURL! }), {

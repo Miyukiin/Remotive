@@ -44,6 +44,24 @@ export const tasks = {
       return failResponse(`Unable to get task count for project.`, e);
     }
   },
+  getByProject: async (projectId: number): Promise<types.QueryResponse<types.TaskSelect[]>> => {
+    try {
+      const result = await db
+        .select()
+        .from(schema.tasks)
+        .innerJoin(schema.lists, eq(schema.tasks.listId, schema.lists.id))
+        .where(eq(schema.lists.projectId, projectId))
+        .orderBy(schema.tasks.position);
+
+      const tasks = result.map((r) => r.tasks);
+
+      if (tasks.length >= 1) return successResponse(`All tasks retrieved.`, tasks);
+      else if (tasks.length === 0) return successResponse(`No tasks yet.`, tasks);
+      throw new Error(`No tasks retrieved.`);
+    } catch (e) {
+      return failResponse(`Unable to retrieve tasks.`, e);
+    }
+  },
   getByList: async (listId: number): Promise<types.QueryResponse<Array<types.TaskSelect>>> => {
     try {
       const tasks = await db
@@ -112,7 +130,9 @@ export const tasks = {
       const changed: Partial<types.TaskSelect> = {};
       if (existingTask.position != incomingTask.position) changed.position = incomingTask.position;
       if (existingTask.title != incomingTask.title) changed.title = incomingTask.title;
+      if (existingTask.listId != incomingTask.listId) changed.listId = incomingTask.listId;
       if (existingTask.description != incomingTask.description) changed.description = incomingTask.description;
+      if (existingTask.content != incomingTask.content) changed.content = incomingTask.content;
       if (existingTask.dueDate != incomingTask.dueDate) changed.dueDate = incomingTask.dueDate;
       if (existingTask.priority != incomingTask.priority) changed.priority = incomingTask.priority;
 
@@ -215,6 +235,102 @@ export const tasks = {
       return failResponse(`Unable to delete task.`, `Task database creation transaction failed.`);
     } catch (e) {
       return failResponse(`Unable to delete task.`, e);
+    }
+  },
+  updateTasksPositions: async (
+    tasksPayload: types.TaskPositionPayload[],
+    project_id: number,
+  ): Promise<types.QueryResponse<types.TaskSelect[]>> => {
+    try {
+      const txResult = await db.transaction<types.QueryResponse<types.TaskSelect[]>>(async (tx) => {
+        const now = new Date();
+        for (const task of tasksPayload) {
+          const [existingTask] = await tx.select().from(schema.tasks).where(eq(schema.tasks.id, task.id));
+
+          const changed: Partial<types.TaskInsert> = {};
+          if (existingTask.listId !== task.list_id && task.list_id !== undefined) changed.listId = task.list_id;
+
+          const updatedData = {
+            ...getBaseFields(existingTask),
+            ...changed,
+            position: task.position,
+            updatedAt: now,
+          };
+
+          const res = await tx.update(schema.tasks).set(updatedData).where(eq(schema.tasks.id, task.id)).returning();
+
+          if (!res) throw new Error("Unable to update a task position.");
+        }
+
+        // Return the new task order after updates
+        const result = await tx
+          .select()
+          .from(schema.tasks)
+          .innerJoin(schema.lists, eq(schema.lists.projectId, project_id))
+          .where(eq(schema.lists.projectId, project_id))
+          .orderBy(schema.tasks.position);
+
+        const newTasks = result.map((r) => r.tasks);
+
+        return successResponse(`Updated task positions successfully.`, newTasks);
+      });
+
+      if (txResult.success) return successResponse(txResult.message, txResult.data);
+      else return failResponse(`Unable to update task positions.`, `Database returned no result.`);
+    } catch (e) {
+      return failResponse(`Unable to update task positions.`, e);
+    }
+  },
+  getProjectIdentifier: async (task_id: number): Promise<types.QueryResponse<number>> => {
+    try {
+      const res = await db
+        .select({ projectId: schema.projects.id })
+        .from(schema.projects)
+        .innerJoin(schema.lists, eq(schema.lists.projectId, schema.projects.id))
+        .innerJoin(schema.tasks, eq(schema.lists.id, schema.tasks.listId))
+        .where(eq(schema.tasks.id, task_id))
+        .limit(1);
+
+      const projectId = res[0]?.projectId;
+      if (projectId === null) throw new Error("Database returned no matches.");
+
+      return successResponse(`Task's project identifier retrieved successfully.`, projectId);
+    } catch (e) {
+      return failResponse(`Unable to retrieve task's project identifier.`, e);
+    }
+  },
+  getTaskStatus: async (task_id: number): Promise<types.QueryResponse<types.TaskStatus>> => {
+    try {
+      const res = await db
+        .select({ status: schema.lists.name, color: schema.lists.color })
+        .from(schema.tasks)
+        .innerJoin(schema.lists, eq(schema.lists.id, schema.tasks.listId))
+        .where(eq(schema.tasks.id, task_id))
+        .limit(1);
+
+      const taskStatus = res[0];
+      if (taskStatus === null) throw new Error("Database returned no matches.");
+
+      return successResponse(`Task status retrieved successfully.`, taskStatus);
+    } catch (e) {
+      return failResponse(`Unable to retrieve task status.`, e);
+    }
+  },
+  getTaskCreator: async (task_id: number): Promise<types.QueryResponse<types.UserSelect>> => {
+    try {
+      const res = await db
+        .select({ users: schema.users })
+        .from(schema.users)
+        .innerJoin(schema.tasks, eq(schema.tasks.creatorId, schema.users.id))
+        .where(eq(schema.tasks.id, task_id))
+        .limit(1);
+
+      const taskCreator = res[0].users;
+      if (taskCreator === null) throw new Error("Database returned no matches.");
+
+      return successResponse(`Task creator retrieved successfully.`, taskCreator);
+    } catch (e) {
+      return failResponse(`Unable to retrieve task creator.`, e);
     }
   },
 };

@@ -2,7 +2,7 @@ import * as types from "../../../types/index";
 import { db } from "../db-index";
 import * as schema from "../schema";
 import { and, eq } from "drizzle-orm";
-import { failResponse, getBaseFields, successResponse } from "./query_utils";
+import { failResponse, successResponse } from "./query_utils";
 
 export const teams = {
   getById: async (teamId: number): Promise<types.QueryResponse<types.TeamsSelect>> => {
@@ -44,7 +44,10 @@ export const teams = {
       return failResponse(`Unable to retrieve user's teams`, e);
     }
   },
-  updateTeam: async (teamId: number, incomingTeamData: types.TeamsInsert): Promise<types.QueryResponse<types.TeamsSelect>> => {
+  updateTeam: async (
+    teamId: number,
+    incomingTeamData: types.TeamsInsert,
+  ): Promise<types.QueryResponse<types.TeamsSelect>> => {
     try {
       const res = await teams.getById(teamId);
       if (!res.success) throw new Error(res.message);
@@ -55,8 +58,9 @@ export const teams = {
 
       if (existingTeamData.teamName !== incomingTeamData.teamName) changed.teamName = incomingTeamData.teamName;
 
+      const { id, ...base } = existingTeamData;
       const finalUpdatedTeamData = {
-        ...getBaseFields(existingTeamData),
+        ...base,
         ...changed,
         ...(Object.keys(changed).length > 0 ? { updatedAt: new Date() } : {}),
       };
@@ -320,6 +324,20 @@ export const teams = {
       const projects = result.map((r) => r.project);
 
       return successResponse(`Successfully retrieved team's projects`, projects);
+    } catch (e) {
+      return failResponse(`Unable to retrieve team's projects`, e);
+    }
+  },
+  getProjectsForTeamMember: async (member_id: number): Promise<types.QueryResponse<types.ProjectMembersSelect[]>> => {
+    try {
+      const result = await db
+        .select()
+        .from(schema.project_members)
+        .where(eq(schema.project_members.user_id, member_id));
+
+      if (result.length === 0) return successResponse(`Member has no assigned projects.`, []);
+
+      return successResponse(`Successfully retrieved team's projects`, result);
     } catch (e) {
       return failResponse(`Unable to retrieve team's projects`, e);
     }

@@ -1,14 +1,18 @@
 import { relations } from "drizzle-orm/relations";
-import { lists, tasks, users, comments, projects, taskLabels, usersToTasks, teams, teamsToProjects, usersToTeams, projectMembers, roles } from "./schema";
+import { lists, tasks, users, comments, projects, projectLabels, usersToTasks, teams, teamsToProjects, labelsToTasks, usersToTeams, projectMembers, roles } from "./schema";
 
 export const tasksRelations = relations(tasks, ({one, many}) => ({
 	list: one(lists, {
 		fields: [tasks.listId],
 		references: [lists.id]
 	}),
+	user: one(users, {
+		fields: [tasks.creatorId],
+		references: [users.id]
+	}),
 	comments: many(comments),
-	taskLabels: many(taskLabels),
 	usersToTasks: many(usersToTasks),
+	labelsToTasks: many(labelsToTasks),
 }));
 
 export const listsRelations = relations(lists, ({one, many}) => ({
@@ -17,6 +21,15 @@ export const listsRelations = relations(lists, ({one, many}) => ({
 		fields: [lists.projectId],
 		references: [projects.id]
 	}),
+}));
+
+export const usersRelations = relations(users, ({many}) => ({
+	tasks: many(tasks),
+	comments: many(comments),
+	projects: many(projects),
+	usersToTasks: many(usersToTasks),
+	usersToTeams: many(usersToTeams),
+	projectMembers: many(projectMembers),
 }));
 
 export const commentsRelations = relations(comments, ({one, many}) => ({
@@ -38,29 +51,23 @@ export const commentsRelations = relations(comments, ({one, many}) => ({
 	}),
 }));
 
-export const usersRelations = relations(users, ({many}) => ({
-	comments: many(comments),
-	projects: many(projects),
-	usersToTasks: many(usersToTasks),
-	usersToTeams: many(usersToTeams),
-	projectMembers: many(projectMembers),
-}));
-
 export const projectsRelations = relations(projects, ({one, many}) => ({
 	user: one(users, {
 		fields: [projects.ownerId],
 		references: [users.id]
 	}),
 	lists: many(lists),
+	projectLabels: many(projectLabels),
 	teamsToProjects: many(teamsToProjects),
 	projectMembers: many(projectMembers),
 }));
 
-export const taskLabelsRelations = relations(taskLabels, ({one}) => ({
-	task: one(tasks, {
-		fields: [taskLabels.taskId],
-		references: [tasks.id]
+export const projectLabelsRelations = relations(projectLabels, ({one, many}) => ({
+	project: one(projects, {
+		fields: [projectLabels.projectId],
+		references: [projects.id]
 	}),
+	labelsToTasks: many(labelsToTasks),
 }));
 
 export const usersToTasksRelations = relations(usersToTasks, ({one}) => ({
@@ -89,6 +96,17 @@ export const teamsRelations = relations(teams, ({many}) => ({
 	teamsToProjects: many(teamsToProjects),
 	usersToTeams: many(usersToTeams),
 	projectMembers: many(projectMembers),
+}));
+
+export const labelsToTasksRelations = relations(labelsToTasks, ({one}) => ({
+	projectLabel: one(projectLabels, {
+		fields: [labelsToTasks.labelId],
+		references: [projectLabels.id]
+	}),
+	task: one(tasks, {
+		fields: [labelsToTasks.taskId],
+		references: [tasks.id]
+	}),
 }));
 
 export const usersToTeamsRelations = relations(usersToTeams, ({one}) => ({

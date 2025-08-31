@@ -1,8 +1,8 @@
 "use server";
-import { ListSelect } from "@/types";
+import { ListPositionPayload, ListSelect } from "@/types";
 import { ServerActionResponse } from "./actions-types";
 import { queries } from "@/lib/db/queries/queries";
-import { idSchema, listSchemaDB, listSchemaForm } from "@/lib/validations/validations";
+import { idSchema, listSchemaDB, listSchemaForm, listsPositionsPayloadSchema } from "@/lib/validations/validations";
 import z from "zod";
 import { checkAuthenticationStatus } from "./actions-utils";
 import { failResponse } from "@/lib/db/queries/query_utils";
@@ -27,7 +27,10 @@ export async function createListAction(
   const listDBData: z.infer<typeof listSchemaDB> = {
     name: "New Board",
     projectId: project_id,
+    description: "A New Board",
+    color: "GRAY",
     position: position,
+    isDone: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -51,6 +54,8 @@ export async function updateListAction(
   const listDBData: z.infer<typeof listSchemaDB> = {
     ...res.data,
     name: listFormData.name,
+    description: listFormData.description,
+    color: listFormData.color,
   };
 
   const parsed = listSchemaDB.safeParse(listDBData);
@@ -62,7 +67,31 @@ export async function updateListAction(
 export async function deleteListAction(list_id: number): Promise<ServerActionResponse<ListSelect>> {
   await checkAuthenticationStatus();
 
-  const parsed = idSchema.safeParse({id: list_id });
+  const parsed = idSchema.safeParse({ id: list_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
   return await queries.lists.delete(list_id);
+}
+
+export async function updateListsPositionsAction(
+  listsPayload: ListPositionPayload[],
+  project_id: number,
+): Promise<ServerActionResponse<ListSelect[]>> {
+  await checkAuthenticationStatus();
+
+  const parsed = listsPositionsPayloadSchema.safeParse(listsPayload);
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  const parsedId = idSchema.safeParse({ id: project_id });
+  if (!parsedId.success) return failResponse(`Zod Validation Error`, z.flattenError(parsedId.error));
+
+  return await queries.lists.updateListsPositions(listsPayload, project_id);
+}
+
+export async function updateListsStatusAction(new_done_list_id: number): Promise<ServerActionResponse<ListSelect>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: new_done_list_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  return await queries.lists.updateListsDoneStatus(new_done_list_id);
 }

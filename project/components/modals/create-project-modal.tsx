@@ -1,195 +1,185 @@
 "use client";
-import { checkProjectNameUnique } from "@/actions/project-actions";
-import { useProjects } from "@/hooks/use-projects";
-import { projectSchemaForm } from "@/lib/validations/validations";
-import { ProjectFormInput, ProjectFormOutput } from "@/types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2Icon, X } from "lucide-react";
-import { FC, useEffect } from "react";
+
+import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Controller } from "react-hook-form";
-import MultiSelect from "../ui/multi-select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarIcon } from "lucide-react";
+
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import MultiSelect from "@/components/ui/multi-select";
+import { LoadingButtonContent } from "@/components/ui/loading-button-content";
+
+import { useProjects } from "@/hooks/use-projects";
 import { useTeams } from "@/hooks/use-teams";
+import { checkProjectNameUnique } from "@/actions/project-actions";
 
-// TODO: Task 4.1 - Implement project CRUD operations
-// TODO: Task 4.4 - Build task creation and editing functionality
+import { projectSchemaForm } from "@/lib/validations/validations";
+import { ProjectCreateForm } from "@/types";
+import { useUIStore } from "@/stores/ui-store";
+import { formatDate } from "@/lib/utils";
 
-/*
-  TODO: Implementation Notes for Interns:
-
-  Modal for creating new projects with form validation.
-
-  Features to implement:
-  - Form with project name, description, due date
-  - Zod validation
-  - Error handling
-  - Loading states
-  - Success feedback
-  - Team member assignment
-  - Project template selection
-
-  Form fields:
-  - Name (required)
-  - Description (optional)
-  - Due date (optional)
-  - Team members (optional)
-  - Project template (optional)
-  - Privacy settings
-
-  Integration:
-  - Use project validation schema from lib/validations.ts
-  - Call project creation API
-  - Update project list optimistically
-  - Handle errors gracefully
-  */
-
-type CreateProjectModalProps = {
-  isModalOpen: boolean;
-  setIsModalOpen: (val: boolean) => void;
-};
-
-const CreateProjectModal: FC<CreateProjectModalProps> = ({ isModalOpen, setIsModalOpen }) => {
-  // Disable scrolling when modal is open.
-  useEffect(() => {
-    if (isModalOpen) {
-      // Account for layout shift due to hiding the scrollbar. Usually 15px
-      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.classList.add("overflow-hidden");
-      document.body.style.paddingRight = `${scrollBarWidth}px`;
-    } else {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    }
-    // Cleanup function on unmount
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.paddingRight = "";
-    };
-  }, [isModalOpen]);
-
-  const {
-    register,
-    handleSubmit,
-    setError,
-    control,
-    formState: { errors },
-  } = useForm<ProjectFormInput, undefined, ProjectFormOutput>({
+const CreateProjectModal: FC = () => {
+  const { isCreateProjectModalOpen, setCreateProjectModalOpen } = useUIStore();
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
+  const form = useForm<ProjectCreateForm>({
     resolver: zodResolver(projectSchemaForm),
-    defaultValues: { teamIds: [] },
+    defaultValues: {
+      name: "",
+      description: "",
+      dueDate: null,
+      teamIds: [],
+    },
+    mode: "onSubmit",
   });
 
-  const { createProject, isProjectCreationLoading } = useProjects();
+  // Fresh state each time it opens
+  useEffect(() => {
+    if (isCreateProjectModalOpen) {
+      form.reset({
+        name: "",
+        description: "",
+        dueDate: null,
+        teamIds: [],
+      });
+    }
+  }, [isCreateProjectModalOpen, form]);
 
+  const { createProject, isProjectCreationLoading } = useProjects();
   const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams();
 
-  const onSubmit = async (values: ProjectFormOutput) => {
-    // Check if project name is unique.
-    const checkProjectNameUniqueResult = await checkProjectNameUnique(values.name);
-    // Unable to check for uniqueness | Project name is not unique
-    if (
-      !checkProjectNameUniqueResult.success ||
-      (checkProjectNameUniqueResult.success && !checkProjectNameUniqueResult.data)
-    ) {
-      setError("name", {
-        type: "manual",
-        message: checkProjectNameUniqueResult.message,
-      });
+  const onSubmit = async (values: ProjectCreateForm) => {
+    // Server-side uniqueness check
+    const unique = await checkProjectNameUnique(values.name);
+    if (!unique.success || (unique.success && !unique.data)) {
+      form.setError("name", { type: "manual", message: unique.message });
       return;
     }
-    createProject(values);
-    setIsModalOpen(false);
+
+    await createProject(values);
+    setCreateProjectModalOpen(false);
   };
 
   return (
-    <>
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45"
-          onMouseDown={() => setIsModalOpen(false)}
-        >
-          <div
-            className="bg-white dark:bg-outer_space-500 rounded-lg p-6 w-full max-w-md mx-4"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-outer_space-500 dark:text-platinum-500">Create New Project</h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 hover:bg-platinum-500 dark:hover:bg-payne's_gray-400 rounded"
-              >
-                <X size={20} />
-              </button>
-            </div>
+    <Dialog open={isCreateProjectModalOpen} onOpenChange={setCreateProjectModalOpen}>
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Create New Project</DialogTitle>
+        </DialogHeader>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
-                >
-                  Project Name *
-                </label>
-                <input
-                  type="text"
-                  disabled={isProjectCreationLoading}
-                  className="w-full px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
-                  placeholder="Enter project name"
-                  {...register("name")}
-                />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
-              </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            {/* Name */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter project name" disabled={isProjectCreationLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
-                >
-                  Description
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
-                  placeholder="Project description"
-                  {...register("description")}
-                  disabled={isProjectCreationLoading}
-                />
-                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
-              </div>
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      placeholder="Project description"
+                      className="resize-y min-h-[100px] max-h-[150px]"
+                      disabled={isProjectCreationLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div>
-                <label
-                  htmlFor="dueDate"
-                  className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2"
-                >
-                  Due Date
-                </label>
-                <input
-                  type="date"
-                  disabled={isProjectCreationLoading}
-                  className="w-full px-3 py-2 border border-french_gray-300 dark:border-payne's_gray-400 rounded-lg bg-white dark:bg-outer_space-400 text-outer_space-500 dark:text-platinum-500 focus:outline-hidden focus:ring-2 focus:ring-blue_munsell-500"
-                  {...register("dueDate", {
-                    setValueAs: (value: string | null) => {
-                      if (value === "") {
-                        // If user cleared the selected date, or did not select a value, pass null because dueDate is optional.
-                        return null;
-                      } else if (value) {
-                        // If user selected a value, convert it to a date object for validation.
-                        return new Date(value);
-                      }
-                    },
-                  })} // Transform input string YYYY-MM-DD to desired date object before validation.
-                />
-                {errors.dueDate && <p className="text-red-500 text-sm mt-1">{errors.dueDate.message}</p>}
-              </div>
+            {/* Due Date */}
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => {
+                const value = field.value ?? null; // Date | null
+                const isDisabled = isProjectCreationLoading;
 
-              <div>
-                <label className="block text-sm font-medium text-outer_space-500 dark:text-platinum-500 mb-2">
-                  Assign Teams *
-                </label>
-                <Controller
-                  name="teamIds"
-                  control={control}
-                  render={({ field }) => (
+                return (
+                  <FormItem>
+                    <FormLabel>Due Date</FormLabel>
+                    <Popover open={isCalendarOpen} onOpenChange={setCalendarOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={isDisabled}
+                          className={`w-full justify-between ${!value ? "text-muted-foreground" : ""}`}
+                        >
+                          {value ? formatDate(value) : "Pick a date"}
+                          <CalendarIcon className="ml-2 h-4 w-4 opacity-60" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent align="start" className="p-0">
+                        <Calendar
+                          mode="single"
+                          selected={value ?? undefined}
+                          // Set null when user unselects via ESC, etc.
+                          onSelect={(d) => field.onChange(d ?? null)}
+                          // Only today & future:
+                          disabled={(date) => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const cmp = new Date(date);
+                            cmp.setHours(0, 0, 0, 0);
+                            return cmp < today;
+                          }}
+                          initialFocus
+                        />
+
+                        <div className="flex gap-2 justify-between p-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => field.onChange(null)}
+                            disabled={isDisabled || !value}
+                          >
+                            Clear
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setCalendarOpen(false)}>
+                            Close
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+
+            {/* Teams */}
+            <FormField
+              control={form.control}
+              name="teamIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Assign Teams *</FormLabel>
+                  <FormControl>
                     <MultiSelect
                       options={(userTeams.data ?? []).map((t) => ({ label: t.teamName, value: t.id }))}
                       value={field.value ?? []}
@@ -198,40 +188,29 @@ const CreateProjectModal: FC<CreateProjectModalProps> = ({ isModalOpen, setIsMod
                       placeholder={isUserTeamsLoading ? "Loading teams..." : "Select teams"}
                       emptyText={getUserTeamsError ? "Failed to load teams" : "You are not in any teams."}
                     />
-                  )}
-                />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                {errors.teamIds && <p className="text-red-500 text-sm mt-1">{errors.teamIds.message}</p>}
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isProjectCreationLoading}
-                  className="px-4 py-2 text-payne's_gray-500 dark:text-french_gray-400 hover:bg-platinum-500 dark:hover:bg-payne's_gray-400 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isProjectCreationLoading}
-                  className="px-4 py-2 bg-blue_munsell-500 text-white rounded-lg hover:bg-blue_munsell-600 transition-colors"
-                >
-                  {isProjectCreationLoading ? (
-                    <div className="flex gap-2">
-                      <Loader2Icon className="animate-spin " /> Loading
-                    </div>
-                  ) : (
-                    "Create Project"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setCreateProjectModalOpen(false)}
+                disabled={isProjectCreationLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isProjectCreationLoading}>
+                <LoadingButtonContent isLoading={isProjectCreationLoading} displayText="Create Project" />
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

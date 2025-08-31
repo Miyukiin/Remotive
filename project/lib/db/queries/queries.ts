@@ -4,6 +4,7 @@ import { projects } from "./project-queries";
 import { lists } from "./list-queries";
 import { tasks } from "./task-queries";
 import { comments } from "./comment-queries";
+import { labels } from "./labels-queries";
 
 // Note: CRUD queries expect ZOD validated data.
 
@@ -14,4 +15,5 @@ export const queries = {
   tasks: tasks,
   comments: comments,
   teams: teams,
+  labels: labels,
 };

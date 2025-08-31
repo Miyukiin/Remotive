@@ -43,7 +43,7 @@ const MultiSelect: FC<MultiSelectProps> = ({
   const selectedOptions = options.filter((o) => value.includes(o.value));
 
   return (
-    <div className="w-full">
+    <div className="flex">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -52,9 +52,12 @@ const MultiSelect: FC<MultiSelectProps> = ({
             role="combobox"
             aria-expanded={open}
             disabled={disabled}
-            className={cn("w-full justify-between bg-white", selectedOptions.length === 0 && "text-muted-foreground")}
+            className={cn(
+              "w-full justify-between items-center min-w-0 truncate h-12",
+              selectedOptions.length === 0 && "text-muted-foreground",
+            )}
           >
-            <div className="flex flex-wrap items-center">
+            <div className="scrollbar-custom flex gap-1 min-w-0 truncate overflow-x-auto">
               {selectedOptions.length > 0 ? (
                 selectedOptions.map((opt) => (
                   <Badge key={opt.value} variant="secondary" className="flex items-center mr-1 p-1">
@@ -88,9 +91,12 @@ const MultiSelect: FC<MultiSelectProps> = ({
             </CommandList>
           </Command>
           {value.length > 0 && (
-            <div className="flex justify-end p-2">
+            <div className="flex justify-end p-2 gap-2">
               <Button type="button" variant="ghost" size="sm" onClick={clearAll}>
                 Clear
+              </Button>
+              <Button type="button" variant="default" size="sm" onClick={() => setOpen(false)}>
+                Done
               </Button>
             </div>
           )}

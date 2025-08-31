@@ -48,9 +48,9 @@ import {
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
-import { priorityEnum, rolesEnum, statusEnum } from "./db-enums";
+import { priorityEnum, rolesEnum, statusEnum, listColorEnum } from "./db-enums";
 import { sql } from "drizzle-orm";
-export { priorityEnum, rolesEnum, statusEnum } from "./db-enums";
+export { priorityEnum, rolesEnum, statusEnum, listColorEnum } from "./db-enums";
 
 export const users = pgTable(
   "users",
@@ -73,6 +73,7 @@ export const teams = pgTable(
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
     teamName: varchar("teamName").notNull().unique(),
+    description: text("description").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -116,14 +117,22 @@ export const lists = pgTable(
     projectId: integer("projectId")
       .references(() => projects.id, { onDelete: "cascade" })
       .notNull(),
+    description: text("description"),
+    color: listColorEnum().notNull().default("GRAY"),
     position: integer("position").notNull(),
+    isDone: boolean("isDone").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => ({
     idxProject: index("idx_lists_project").on(t.projectId), // Joins
     idxProjectPos: index("idx_lists_project_pos").on(t.projectId, t.position), // Fast lookups for positions.
-    uxProjectPos: uniqueIndex("ux_lists_project_pos").on(t.projectId, t.position), // Prevents same list positions
+    uxIsDone: uniqueIndex("uxIsDone")
+      .on(t.projectId)
+      .where(sql`${t.isDone} = true`), // Only one isDone column for project id
+    // uxProjectPos: uniqueIndex("ux_lists_project_pos").on(t.projectId, t.position), // Prevents same list positions,
+    // Commented out as during position updates, there are cases that lists can have same position before being updated to their new position.
+    // E.g List 1 pos 1 list 2 pos 2, during update if list 1 and list 2 switch pos, list 1 is temporarily pos 2 while list 2 is pos 2.
   }),
 );
 
@@ -133,6 +142,10 @@ export const tasks = pgTable(
     id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
     title: varchar("title").notNull(),
     description: text("description"),
+    content: text("content"),
+    creatorId: integer("creatorId")
+      .references(() => users.id, { onDelete: "restrict" })
+      .notNull(),
     listId: integer("listId")
       .references(() => lists.id, { onDelete: "cascade" })
       .notNull(),
@@ -143,9 +156,10 @@ export const tasks = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => ({
+    idxOwner: index("idx_projects_creator").on(t.creatorId),
     idxList: index("idx_tasks_list").on(t.listId), // Joins
     idxListPos: index("idx_tasks_list_pos").on(t.listId, t.position), // fast lookups for positions
-    uxListPos: uniqueIndex("ux_tasks_list_pos").on(t.listId, t.position), // Prevents same task positions
+    // uxListPos: uniqueIndex("ux_tasks_list_pos").on(t.listId, t.position), // Prevents same task positions
     idxPriority: index("idx_tasks_priority").on(t.priority), // filters
     idxDue: index("idx_tasks_due").on(t.dueDate), // filters
   }),
@@ -155,7 +169,7 @@ export const comments = pgTable(
   "comments",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
-    content: text("content"),
+    content: text("content").notNull(),
     taskId: integer("taskId")
       .references(() => tasks.id, { onDelete: "cascade" })
       .notNull(),
@@ -181,23 +195,22 @@ export const comments = pgTable(
   ],
 );
 
-export const task_labels = pgTable(
-  "task_labels",
+export const project_labels = pgTable(
+  "project_labels",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
-    taskId: integer("taskId")
-      .references(() => tasks.id, { onDelete: "cascade" })
+    project_id: integer("project_id")
+      .references(() => projects.id, { onDelete: "cascade" })
       .notNull(),
     name: varchar("name").notNull(),
-    category: varchar("category").notNull(),
     color: varchar("color").notNull(),
     isDefault: boolean("is_default").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (t) => ({
-    idxTask: index("idx_task_labels_task").on(t.taskId), // fetch per task
-    uxTaskName: uniqueIndex("ux_task_labels_task_name").on(t.taskId, t.name), // Prevent duplicates for same task
+    idxProject: index("idx_project_labels_task").on(t.project_id), // fetch per task
+    idxProjectColor: index("idx_project_labels_project_color").on(t.project_id, t.color),
   }),
 );
 
@@ -291,4 +304,19 @@ export const project_members = pgTable(
     index("idx_pm_project_user").on(table.project_id, table.user_id), // Permissions
     index("idx_pm_project_role").on(table.project_id, table.role), // Roles
   ],
+);
+
+export const labels_to_tasks = pgTable(
+  "labels_to_tasks",
+  {
+    label_id: integer("label_id")
+      .references(() => project_labels.id, { onDelete: "cascade" })
+      .notNull(),
+    task_id: integer("task_id")
+      .references(() => tasks.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.task_id, table.label_id] })],
 );

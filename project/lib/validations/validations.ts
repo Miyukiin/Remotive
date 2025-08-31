@@ -1,6 +1,73 @@
 import { priorityTuple, rolesTuple, statusTuple } from "@/lib/db/db-enums";
-import { errorTemplates, today } from "./validations-utils";
+import { errorTemplates, htmlToText } from "./validations-utils";
 import * as z from "zod";
+import { listColorTuple } from "../db/db-enums";
+import sanitizeHtml from "sanitize-html";
+
+export const labelSchema = z
+  .object({
+    id: z.int().min(1, errorTemplates.idMinError),
+    project_id: z.int().min(1, errorTemplates.idMinError),
+    name: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-zÀ-ÿ'\- ]+$/, errorTemplates.nameFormatError)
+      .min(1, errorTemplates.nameMinError)
+      .max(100, errorTemplates.nameMaxError),
+    color: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, {
+      message: "Invalid hexadecimal color code.",
+    }),
+    isDefault: z.boolean(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+  })
+  .superRefine((data, ctx) => {
+    const now = new Date();
+    const nowTime = now.getTime();
+
+    if (data.createdAt.getTime() > nowTime) {
+      ctx.addIssue({
+        path: ["createdAt"],
+        code: "too_big",
+        maximum: nowTime,
+        inclusive: true,
+        origin: "date",
+        message: "createdAt cannot be in the future.",
+      });
+    }
+
+    if (data.updatedAt.getTime() > nowTime) {
+      ctx.addIssue({
+        path: ["updatedAt"],
+        code: "too_big",
+        maximum: nowTime,
+        inclusive: true,
+        origin: "date",
+        message: "updatedAt cannot be in the future.",
+      });
+    }
+  });
+
+export const labelSchemaDB = labelSchema.omit({
+  id: true,
+});
+
+export const labelSchemaForm = labelSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  isDefault: true,
+  project_id: true,
+});
+
+export const labelSchemaUpdateForm = labelSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    isDefault: true,
+  })
+  .partial();
 
 export const userSchema = z
   .object({
@@ -64,13 +131,8 @@ export const projectSchema = z
     description: z.string().trim().max(200, errorTemplates.descriptionMaxError).nullable(),
     status: z.enum(statusTuple),
     ownerId: z.int().min(1, errorTemplates.idMinError),
-    dueDate: z.union([
-      z
-        .string()
-        .transform((val) => new Date(val))
-        .pipe(z.date().min(today, errorTemplates.dueDateMinError)),
-      z.date().min(today, errorTemplates.dueDateMinError).nullable(),
-    ]), // Allow only Today or Future dates
+    dueDate: z.date().nullable(),
+    // Allow only Today or Future dates
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -117,20 +179,27 @@ export const projectSchemaForm = projectSchema
     teamIds: z.array(z.int()).min(1, "Select at least one team"), // Because on project creation, we must have a team assigned.
   });
 
-export const projectSchemaUpdateForm = projectSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  ownerId: true,
-  status: true,
-});
+export const projectSchemaUpdateForm = projectSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    ownerId: true,
+  })
+  .partial();
 
 export const listSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
     name: z.string().trim().min(1, errorTemplates.nameMinError).max(100, errorTemplates.nameMaxError),
+    description: z.preprocess(
+      (v: string | null) => (v == null ? "" : v),
+      z.string().trim().max(200, errorTemplates.descriptionMaxError),
+    ),
+    color: z.enum(listColorTuple),
     projectId: z.int().min(1, errorTemplates.idMinError),
     position: z.int().min(0, errorTemplates.positionMinError),
+    isDone: z.boolean(),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -171,6 +240,7 @@ export const listSchemaForm = listSchema.omit({
   updatedAt: true,
   projectId: true,
   position: true,
+  isDone: true,
 });
 
 export const taskSchema = z
@@ -178,15 +248,16 @@ export const taskSchema = z
     id: z.int().min(1, errorTemplates.idMinError),
     title: z.string().trim().min(1, errorTemplates.titleMinError).max(50, errorTemplates.titleMaxError),
     description: z.string().trim().max(200, errorTemplates.descriptionMaxError).nullable(),
+    content: z
+      .string()
+      .trim()
+      .max(500_000)
+      .nullable()
+      .transform((val) => (val !== null ? sanitizeHtml(val) : val)), // Sanitize html input,
+    creatorId: z.int().min(1, errorTemplates.idMinError),
     listId: z.int().min(1, errorTemplates.idMinError),
     priority: z.enum(priorityTuple),
-    dueDate: z.union([
-      z
-        .string()
-        .transform((val) => new Date(val))
-        .pipe(z.date().min(today, errorTemplates.dueDateMinError)),
-      z.date().min(today, errorTemplates.dueDateMinError).nullable(),
-    ]), // Allow only Today or Future dates
+    dueDate: z.date().nullable(), // Allow only Today or Future dates
     position: z.int().min(0, errorTemplates.positionMinError),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -229,15 +300,21 @@ export const taskSchemaForm = taskSchema
     updatedAt: true,
     position: true,
     listId: true,
+    creatorId: true,
   })
   .extend({ assigneeIds: z.array(z.int()).nullable() }); // Because on task creation and update, we can assign zero, one or more members.
+
+export const taskSchemaEditForm = taskSchema
+  .omit({ id: true, createdAt: true, updatedAt: true, creatorId: true })
+  .extend({ assigneeIds: z.array(z.int()).nullable() })
+  .partial(); // All fields are optional, for updating task data piecemeal in the task drawer.
 
 export const commentSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
-    content: z.string().min(15, errorTemplates.contentMinError).nullable(), // https://ux.stackexchange.com/questions/98672/what-is-the-ideal-maximum-of-the-length-of-a-comment-or-reply
+    content: z.string().trim(),
     taskId: z.int().min(1, errorTemplates.idMinError),
-    parentCommentId: z.int().min(1, errorTemplates.idMinError),
+    parentCommentId: z.int().min(1, errorTemplates.idMinError).nullable(),
     authorId: z.int().min(1, errorTemplates.idMinError),
     createdAt: z.date(),
     updatedAt: z.date(),
@@ -273,16 +350,50 @@ export const commentSchemaDB = commentSchema.omit({
   id: true,
 });
 
-export const commentSchemaForm = commentSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const commentSchemaForm = commentSchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    taskId: true,
+    parentCommentId: true,
+    authorId: true,
+  })
+  .superRefine((data, ctx) => {
+    // This is because we take in react quill as html content, so this strips away html tags and only validates the text content.
+    const text = htmlToText(data.content);
+
+    if (text.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["content"],
+        message: "Comment cannot be empty.",
+      });
+    }
+
+    if (text.length < 15) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["content"],
+        message: "Comment must be at least 15 characters.",
+      });
+    }
+
+    if (text.length > 5000) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["content"],
+        message: "Comment is too long (max 5000 characters).",
+      });
+    }
+  })
+  .transform((val) => sanitizeHtml(val.content)); // Sanitize html input
 
 export const teamSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
     teamName: z.string().trim().min(1, errorTemplates.teamNameMinError).max(50, errorTemplates.teamNameMaxError),
+    description: z.string().trim().max(200, errorTemplates.descriptionMaxError),
     createdAt: z.date(),
     updatedAt: z.date(),
   })
@@ -389,3 +500,23 @@ export const teamNameSchema = teamSchema.pick({
 export const idSchema = userSchema.pick({
   id: true,
 });
+
+export const listPositionPayloadSchema = listSchema.pick({
+  id: true,
+  position: true,
+});
+
+export const listsPositionsPayloadSchema = z.array(listPositionPayloadSchema); // https://stackoverflow.com/questions/74967542/zod-validation-for-an-array-of-objects
+
+export const taskPositionPayloadSchema = taskSchema
+  .pick({
+    id: true,
+    position: true,
+  })
+  .extend({
+    listId: z.int().min(1, errorTemplates.idMinError).optional(),
+  });
+
+export const tasksPositionsPayloadSchema = z.array(taskPositionPayloadSchema);
+
+export const updateTasksLabelsPayloadSchema = z.array(labelSchema);
