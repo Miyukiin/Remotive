@@ -4,6 +4,9 @@ import { Calendar as ReactBigCalendar, View, dateFnsLocalizer } from "react-big-
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
 
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import "./shadcn-big-calendar.css";
+
 import { useCallback } from "react";
 import { CalendarEvent } from "@/types";
 

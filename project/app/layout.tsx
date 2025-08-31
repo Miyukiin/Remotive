@@ -5,7 +5,6 @@ import { ClerkProvider } from "@clerk/nextjs"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
 import Providers from "@/components/providers"
-import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./globals.css";                                   
 
 const inter = Inter({ subsets: ["latin"] })
