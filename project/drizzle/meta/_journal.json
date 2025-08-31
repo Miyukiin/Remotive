@@ -169,6 +169,13 @@
       "when": 1756646901685,
       "tag": "0023_flippant_gorgon",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1756648691065,
+      "tag": "0024_certain_mister_fear",
+      "breakpoints": true
     }
   ]
 }
