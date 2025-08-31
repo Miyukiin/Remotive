@@ -21,9 +21,15 @@ export const teams = {
       const res = await teams.getById(teamId);
       if (res.success === false) throw new Error(res.message);
 
-      const [result] = await db.delete(schema.teams).where(eq(schema.teams.id, teamId)).returning();
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.TeamsSelect>> => {
+        const [team] = await tx.delete(schema.teams).where(eq(schema.teams.id, teamId)).returning();
+        if (!team) throw new Error("Database returned no result.");
 
-      if (result) return successResponse(`Team deleted successfully.`, result);
+        await logAction(tx, { entity_id: team.id, entity_type: "team", action: "TEAM_DELETED" });
+        return successResponse(`Deleted team successfully`, team);
+      });
+
+      if (txResult.success) return txResult;
       else return failResponse(`Unable to delete team`, `Database returned no result.`);
     } catch (e) {
       return failResponse(`Unable to delete team`, e);
