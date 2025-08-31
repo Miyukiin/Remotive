@@ -312,7 +312,7 @@ export const taskSchemaEditForm = taskSchema
 export const commentSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
-    content: z.string().trim(),
+    content: z.string().trim().transform((val) => sanitizeHtml(val)), // Sanitize html input,
     taskId: z.int().min(1, errorTemplates.idMinError),
     parentCommentId: z.int().min(1, errorTemplates.idMinError).nullable(),
     authorId: z.int().min(1, errorTemplates.idMinError),
@@ -387,7 +387,7 @@ export const commentSchemaForm = commentSchema
       });
     }
   })
-  .transform((val) => sanitizeHtml(val.content)); // Sanitize html input
+  
 
 export const teamSchema = z
   .object({
