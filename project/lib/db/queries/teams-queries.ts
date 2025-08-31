@@ -355,6 +355,15 @@ export const teams = {
 
         if (!promoted) throw new Error("Failed to set new leader's isLeader flag to true.");
 
+        // AUDIT: team leader reassigned (subject is the new leader)
+        await logAction(trx, {
+          entity_type: "team",
+          entity_id: team_id,
+          action: "TEAM_LEADER_REASSIGNED",
+          subject_user_id: new_leader_id, // Only the previous leader can perform the reassign so we can get the old leader id from the actor id.
+          team_id: team_id,
+        });
+
         return successResponse(`Successfully reassigned team leader.`, promoted);
       });
 
