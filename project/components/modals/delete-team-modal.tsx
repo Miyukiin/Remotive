@@ -1,3 +1,4 @@
+"use client";
 import { useUIStore } from "@/stores/ui-store";
 import {
   AlertDialog,
@@ -11,13 +12,14 @@ import {
 import { Button } from "../ui/button";
 import { LoadingButtonContent } from "../ui/loading-button-content";
 import { useTeams } from "@/hooks/use-teams";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type DeleteTeamModalProps = { team_id: number };
 
 export function DeleteTeamModal({ team_id }: DeleteTeamModalProps) {
   const { isDeleteTeamModalOpen, setDeleteTeamModalOpen } = useUIStore();
-  const { deleteTeam, isTeamDeleteLoading} = useTeams(team_id);
+  const { deleteTeam, isTeamDeleteLoading } = useTeams(team_id);
+  const router = useRouter();
 
   function onCancelClick() {
     setDeleteTeamModalOpen(false);
@@ -25,9 +27,8 @@ export function DeleteTeamModal({ team_id }: DeleteTeamModalProps) {
 
   async function onDeleteClick() {
     try {
-      await deleteTeam(team_id);
-      setDeleteTeamModalOpen(false);
-      redirect("/teams");
+      const res = await deleteTeam(team_id);
+      if (res) router.push("/teams");
     } catch {
       // Catch the error thrown by deleteTeam, this try catch prevents redirects since execution doesn't get that far.
     }
