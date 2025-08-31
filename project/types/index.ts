@@ -12,6 +12,7 @@ import {
 } from "@/lib/validations/validations";
 import z from "zod";
 import { TaskStatus } from "../components/tasks/task-modal-ui/task-status";
+import { db } from "@/lib/db/db-index";
 
 // Zod Form Types - Used in RHFs useForm and onSubmit values typing
 export type ProjectCreateForm = z.infer<typeof projectSchemaForm>;
@@ -132,3 +133,7 @@ export type UpcomingDeadlineEvent = {
   type: "Project" | "Task";
   dueDate: Date;
 };
+
+// Typing Transaction https://github.com/drizzle-team/drizzle-orm/discussions/3271
+export type DatabaseType = typeof db;
+export type TransactionType = Parameters<Parameters<DatabaseType["transaction"]>[0]>[0];

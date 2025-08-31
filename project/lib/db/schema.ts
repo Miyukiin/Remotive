@@ -48,9 +48,9 @@ import {
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
-import { priorityEnum, rolesEnum, statusEnum, listColorEnum } from "./db-enums";
+import { priorityEnum, rolesEnum, statusEnum, listColorEnum, auditEntityEnum, auditActionEnum } from "./db-enums";
 import { sql } from "drizzle-orm";
-export { priorityEnum, rolesEnum, statusEnum, listColorEnum } from "./db-enums";
+export { priorityEnum, rolesEnum, statusEnum, listColorEnum, auditEntityEnum, auditActionEnum } from "./db-enums";
 
 export const users = pgTable(
   "users",
@@ -319,4 +319,42 @@ export const labels_to_tasks = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.task_id, table.label_id] })],
+);
+
+
+// Audit Table
+export const auditLogs = pgTable(
+  "audit_logs",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
+    actor_user_id: integer("actor_user_id")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    entity_type: auditEntityEnum("entity_type").notNull(),
+    entity_id: integer("entity_id").notNull(),
+    action: auditActionEnum("action").notNull(),
+    created_at: timestamp("created_at").defaultNow().notNull(),
+
+    /** denormalized context for fast filtering (nullable) */
+    team_id: integer("team_id").references(() => teams.id, { onDelete: "set null" }),
+    project_id: integer("project_id").references(() => projects.id, { onDelete: "set null" }),
+    list_id: integer("list_id").references(() => lists.id, { onDelete: "set null" }),
+    task_id: integer("task_id").references(() => tasks.id, { onDelete: "set null" }),
+    comment_id: integer("comment_id").references(() => comments.id, { onDelete: "set null" }),
+
+  },
+  (t) => ({
+    byEntity: index("audit_by_entity").on(t.entity_type, t.entity_id, t.created_at),
+    byProject: index("audit_by_project").on(t.project_id, t.created_at),
+    byTask: index("audit_by_task").on(t.task_id, t.created_at),
+    byActor: index("audit_by_actor").on(t.actor_user_id, t.created_at),
+    /** dedupe identical rows inserted at the same instant */
+    uniqExact: uniqueIndex("audit_unique_exact").on(
+      t.actor_user_id,
+      t.entity_type,
+      t.entity_id,
+      t.action,
+      t.created_at
+    ),
+  })
 );

@@ -235,19 +235,3 @@ export const calendarDummyDates = [
     allDay: true,
   },
 ];
-
-// Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.
-// To be used within update query utilities to identify changed fields to be updated.
-// export function getDataDiff<T>(existingData: T, newData: T): Partial<T> {
-//   const changed: Partial<T> = {};
-
-//   for (const [key, oldValue] of Object.entries(existingData)) {
-//     const newValue = (newData as any)[key];
-
-//     if (oldValue !== newValue) {
-//       (changed as any)[key] = newValue;
-//     }
-//   }
-
-//   return changed;
-// }

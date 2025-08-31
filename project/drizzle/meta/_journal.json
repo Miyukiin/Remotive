@@ -155,6 +155,13 @@
       "when": 1756549962981,
       "tag": "0021_careless_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1756643393135,
+      "tag": "0022_lean_loa",
+      "breakpoints": true
     }
   ]
 }

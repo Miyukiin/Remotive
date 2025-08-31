@@ -3,6 +3,7 @@ import { db } from "../db-index";
 import * as schema from "../schema";
 import { and, eq } from "drizzle-orm";
 import { failResponse, successResponse } from "./query_utils";
+import { logAction } from "@/lib/audit/audit.utils";
 
 export const teams = {
   getById: async (teamId: number): Promise<types.QueryResponse<types.TeamsSelect>> => {
@@ -81,10 +82,16 @@ export const teams = {
   },
   createTeam: async (teamObject: types.TeamsInsert): Promise<types.QueryResponse<types.TeamsSelect>> => {
     try {
-      const [team] = await db.insert(schema.teams).values(teamObject).returning();
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.TeamsSelect>> => {
+        const [team] = await tx.insert(schema.teams).values(teamObject).returning();
+        if (!team) throw new Error("Database returned no result.");
 
-      if (team) return successResponse(`Created team successfully`, team);
-      else return failResponse(`Unable to create team.`, `Database returned no result.`);
+        await logAction(tx, { entity_id: team.id, entity_type: "team", action: "TEAM_CREATED", team_id: team.id });
+        return successResponse(`Created team successfully`, team);
+      });
+
+      if (txResult.success) return txResult;
+      else return failResponse(`Unable to create team.`, txResult.error);
     } catch (e) {
       return failResponse(`Unable to create team.`, e);
     }
