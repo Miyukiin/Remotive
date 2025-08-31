@@ -34,8 +34,22 @@ export type QueryResponse<T> =
   | { success: false; message: string; error: unknown };
 
 // Type Narrowing for create query utilities.
-export type ObjectInsert = UserInsert | ProjectInsert | ListInsert | TaskInsert | CommentInsert | TeamsInsert | LabelInsert;
-export type ObjectSelect = UserSelect | ProjectSelect | ListSelect | TaskSelect | CommentSelect | TeamsSelect | LabelSelect ;
+export type ObjectInsert =
+  | UserInsert
+  | ProjectInsert
+  | ListInsert
+  | TaskInsert
+  | CommentInsert
+  | TeamsInsert
+  | LabelInsert;
+export type ObjectSelect =
+  | UserSelect
+  | ProjectSelect
+  | ListSelect
+  | TaskSelect
+  | CommentSelect
+  | TeamsSelect
+  | LabelSelect;
 
 // Type Safety
 export type UserInsert = typeof schema.users.$inferInsert;
@@ -71,8 +85,8 @@ export type ProjectMembersSelect = typeof schema.project_members.$inferSelect;
 export type LabelSelect = typeof schema.project_labels.$inferSelect;
 export type LabelInsert = typeof schema.project_labels.$inferInsert;
 
-export type LabelsToTasksInsert = typeof schema.labels_to_tasks.$inferInsert
-export type LabelsToTasksSelect = typeof schema.labels_to_tasks.$inferSelect
+export type LabelsToTasksInsert = typeof schema.labels_to_tasks.$inferInsert;
+export type LabelsToTasksSelect = typeof schema.labels_to_tasks.$inferSelect;
 
 export type RecentProjects = {
   id: number;
@@ -98,7 +112,15 @@ export type TaskPositionPayload = {
 
 export type TaskStatus = { status: string; color: keyof typeof listColor };
 
-export type KanbanColor = keyof typeof listColor
+export type KanbanColor = keyof typeof listColor;
 
 // Projects Filter Options Type
 export type ProjectsFilterOptions = (typeof projectsFilterOptions)[number];
+
+export type CalendarEvent = {
+  id: number;
+  title: string;
+  start: Date;
+  end: Date;
+  allDay: boolean;
+};
