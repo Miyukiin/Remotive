@@ -128,7 +128,9 @@ export async function fetchUpcomingDeadlines(): Promise<ServerActionResponse<Upc
 
     upcomingDeadlineEvents.push(...taskEvents);
 
-    return successResponse("Successfully retrieved user upcoming deadline events.", upcomingDeadlineEvents);
+    
+
+    return successResponse("Successfully retrieved user upcoming deadline events.", upcomingDeadlineEvents.slice(0,5));
   } catch (e: unknown) {
     const errorMessage = e instanceof Error ? e.message : (e as string);
     return failResponse(errorMessage, e);
