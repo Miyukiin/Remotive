@@ -119,6 +119,7 @@ export type ProjectsFilterOptions = (typeof projectsFilterOptions)[number];
 
 export type CalendarEvent = {
   id: number;
+  project_id: number;
   title: string;
   start: Date;
   end: Date;

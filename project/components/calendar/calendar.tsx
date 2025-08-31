@@ -9,6 +9,7 @@ import "./shadcn-big-calendar.css";
 
 import { useCallback } from "react";
 import { CalendarEvent } from "@/types";
+import { redirect } from "next/navigation";
 
 const locales = { "en-US": enUS };
 
@@ -46,6 +47,7 @@ export function Calendar({ view, setView, date, setDate, events }: CalendarProps
         views={["month", "week", "day"]}
         toolbar={false}
         style={{ height: "100%" }}
+        onSelectEvent={(event) => redirect(`/projects/${event.project_id}`)}
       />
     </div>
   );

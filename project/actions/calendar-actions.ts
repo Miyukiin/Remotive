@@ -29,7 +29,8 @@ export async function fetchCalendarEvents(): Promise<ServerActionResponse<Calend
     userProjects.forEach((p) => {
       if (p.dueDate) {
         calendarEvents.push({
-          id: p.ownerId,
+          id: p.id,
+          project_id: p.id,
           title: p.name,
           start: p.createdAt,
           end: p.dueDate,
@@ -44,17 +45,24 @@ export async function fetchCalendarEvents(): Promise<ServerActionResponse<Calend
     const userTasks = response.data;
     const OFFSET = 10000;
 
-    // Add to calendarEvents if dueDate is not null
-    userTasks.forEach((t) => {
-      if (t.dueDate) {
-        calendarEvents.push({
-          id: t.id + OFFSET,
-          title: t.title,
-          start: t.createdAt,
-          end: t.dueDate,
-        });
-      }
-    });
+    // Map returns a promise, which is resolved all at the same time,
+    const taskEvents = await Promise.all(
+      userTasks
+        .filter((t) => !!t.dueDate)
+        .map(async (t) => {
+          const res = await queries.lists.getById(t.listId);
+          if (!res.success) throw new Error(res.message);
+          return {
+            id: t.id + OFFSET,
+            project_id: res.data.projectId,
+            title: t.title,
+            start: t.createdAt,
+            end: t.dueDate!,
+          };
+        }),
+    );
+
+    calendarEvents.push(...taskEvents);
 
     return successResponse("Successfully retrieved user calendar events", calendarEvents);
   } catch (e: unknown) {
