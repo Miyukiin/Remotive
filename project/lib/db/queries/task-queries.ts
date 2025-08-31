@@ -1,3 +1,4 @@
+import { logAction } from "@/lib/audit/audit.utils";
 import * as types from "../../../types/index";
 import { db } from "../db-index";
 import * as schema from "../schema";
@@ -112,6 +113,26 @@ export const tasks = {
         const [insertedTask] = await tx.insert(schema.tasks).values(newTask).returning();
         if (!insertedTask) throw new Error(`Database did not a result.`);
 
+        // Resolve project context for audit logs using the task's listId
+        const [listRow] = await tx
+          .select({ id: schema.lists.id, projectId: schema.lists.projectId })
+          .from(schema.lists)
+          .where(eq(schema.lists.id, newTask.listId))
+          .limit(1);
+
+        if (!listRow) throw new Error("Unable to resolve list for task creation (audit context).");
+
+        const project_id = listRow.projectId;
+
+        // AUDIT: task created
+        await logAction(tx, {
+          entity_type: "task",
+          entity_id: insertedTask.id,
+          action: "TASK_CREATED",
+          task_id: insertedTask.id,
+          project_id,
+        });
+
         // Assign members, if any.
         if (assignedIds && assignedIds.length > 0) {
           const membersToAssign: types.UsersToTasksSelect[] = assignedIds.map((id) => ({
@@ -171,6 +192,27 @@ export const tasks = {
           .where(eq(schema.tasks.id, task_id))
           .returning();
 
+        // AUDIT: task updated
+        if (Object.keys(changed).length > 0) {
+          const [listRow] = await tx
+            .select({ id: schema.lists.id, projectId: schema.lists.projectId })
+            .from(schema.lists)
+            .where(eq(schema.lists.id, result.listId))
+            .limit(1);
+
+          if (!listRow) throw new Error("Unable to resolve list for task update (audit context).");
+
+          const project_id = listRow.projectId;
+
+          await logAction(tx, {
+            entity_type: "task",
+            entity_id: task_id,
+            action: "TASK_UPDATED",
+            task_id: result.id,
+            project_id,
+          });
+        }
+
         // Update assigned members, only if assignedIds is present, and different from existingMembers
         if (assignedIds === null) return successResponse(`Updated task successfully.`, result);
 
@@ -197,6 +239,33 @@ export const tasks = {
           await tx
             .delete(schema.users_to_tasks)
             .where(and(eq(schema.users_to_tasks.task_id, task_id), inArray(schema.users_to_tasks.user_id, toRemove)));
+
+          // AUDIT: members removed
+          // Resolve project/team context once for these logs
+          const [listRow] = await tx
+            .select({ projectId: schema.lists.projectId })
+            .from(schema.lists)
+            .where(
+              eq(
+                schema.lists.id,
+                (Object.keys(changed).length > 0 ? finalUpdatedTaskData.listId : existingTask.listId) ??
+                  existingTask.listId,
+              ),
+            )
+            .limit(1);
+
+          const project_id_for_members = listRow.projectId;
+
+          for (const user_id of toRemove) {
+            await logAction(tx, {
+              entity_type: "task",
+              entity_id: task_id,
+              action: "TASK_MEMBER_REMOVED",
+              subject_user_id: user_id,
+              task_id: result.id,
+              project_id: project_id_for_members,
+            });
+          }
         }
 
         // Add member
@@ -210,6 +279,32 @@ export const tasks = {
           }));
 
           await tx.insert(schema.users_to_tasks).values(rows);
+
+          // AUDIT: members added
+          const [listRow2] = await tx
+            .select({ projectId: schema.lists.projectId })
+            .from(schema.lists)
+            .where(
+              eq(
+                schema.lists.id,
+                (Object.keys(changed).length > 0 ? finalUpdatedTaskData.listId : existingTask.listId) ??
+                  existingTask.listId,
+              ),
+            )
+            .limit(1);
+
+          const project_id_for_members2 = listRow2?.projectId ?? undefined;
+
+          for (const user_id of toAdd) {
+            await logAction(tx, {
+              entity_type: "task",
+              entity_id: task_id,
+              action: "TASK_MEMBER_ASSIGNED",
+              subject_user_id: user_id,
+              project_id: project_id_for_members2,
+              task_id: result.id,
+            });
+          }
         }
         return successResponse(`Successfully updated task`, result);
       });
@@ -224,7 +319,6 @@ export const tasks = {
   delete: async (id: number): Promise<types.QueryResponse<types.TaskSelect>> => {
     try {
       const txResult = await db.transaction<types.QueryResponse<types.TaskSelect>>(async (tx) => {
-        // 1) Re-fetch inside the transaction to ensure consistency
         const toDelete = await tx.query.tasks.findFirst({
           where: eq(schema.tasks.id, id),
           columns: { id: true, position: true, listId: true },
@@ -234,18 +328,29 @@ export const tasks = {
 
         const { position: deletedPos, listId } = toDelete;
 
-        // 2) Delete the row
         const [deleted] = await tx.delete(schema.tasks).where(eq(schema.tasks.id, id)).returning();
 
         if (!deleted) throw new Error("Database returned no result.");
 
-        // 3) Close the gap: shift positions > deletedPos down by 1 (same project only)
+        // AUDIT: task deleted
+        const [listRow] = await tx
+          .select({ projectId: schema.lists.projectId })
+          .from(schema.lists)
+          .where(eq(schema.lists.id, listId))
+          .limit(1);
+
+        await logAction(tx, {
+          entity_type: "task",
+          entity_id: id,
+          action: "TASK_DELETED",
+          project_id: listRow.projectId,
+        });
+
         await tx
           .update(schema.tasks)
           .set({ position: sql`${schema.tasks.position} - 1` })
           .where(and(eq(schema.tasks.listId, listId), gt(schema.tasks.position, deletedPos)));
 
-        // 4) Return.
         return successResponse(`Deleted task successfully.`, deleted);
       });
 
@@ -262,8 +367,12 @@ export const tasks = {
     try {
       const txResult = await db.transaction<types.QueryResponse<types.TaskSelect[]>>(async (tx) => {
         const now = new Date();
+
         for (const task of tasksPayload) {
           const [existingTask] = await tx.select().from(schema.tasks).where(eq(schema.tasks.id, task.id));
+
+          const fromListId = existingTask.listId;
+          const fromPosition = existingTask.position;
 
           const changed: Partial<types.TaskInsert> = {};
           if (existingTask.listId !== task.list_id && task.list_id !== undefined) changed.listId = task.list_id;
@@ -276,8 +385,30 @@ export const tasks = {
           };
 
           const res = await tx.update(schema.tasks).set(updatedData).where(eq(schema.tasks.id, task.id)).returning();
-
           if (!res) throw new Error("Unable to update a task position.");
+
+          const movedLists = changed.listId !== undefined && changed.listId !== fromListId;
+          const positionChanged = fromPosition !== task.position;
+
+          // audit according to cross list or same list
+          if (movedLists) {
+            await logAction(tx, {
+              entity_type: "task",
+              entity_id: task.id,
+              action: "TASK_MOVED",
+              task_id: task.id,
+              list_id: changed.listId,
+              project_id,
+            });
+          } else if (positionChanged) {
+            await logAction(tx, {
+              entity_type: "task",
+              entity_id: task.id,
+              action: "TASK_MOVED",
+              task_id: task.id,
+              project_id,
+            });
+          }
         }
 
         // Return the new task order after updates
