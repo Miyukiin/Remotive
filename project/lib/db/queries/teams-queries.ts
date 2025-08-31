@@ -64,6 +64,7 @@ export const teams = {
       const changed: Partial<types.TeamsInsert> = {};
 
       if (existingTeamData.teamName !== incomingTeamData.teamName) changed.teamName = incomingTeamData.teamName;
+      if (existingTeamData.description !== incomingTeamData.description) changed.description = incomingTeamData.description;
 
       const { id, ...base } = existingTeamData;
       const finalUpdatedTeamData = {
