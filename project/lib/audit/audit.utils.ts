@@ -49,6 +49,7 @@ export async function logAction(
     entity_type: EntityType;
     entity_id: number;
     action: AuditAction;
+    subject_user_id?: number;
 
     // Pass what is relevant
     team_id?: number | null;
@@ -62,6 +63,7 @@ export async function logAction(
     entity_type,
     entity_id,
     action,
+    subject_user_id = null,
     team_id = null,
     project_id = null,
     list_id = null,
@@ -81,6 +83,7 @@ export async function logAction(
     .insert(auditLogs)
     .values({
       actor_user_id,
+      subject_user_id,
       entity_type,
       entity_id,
       action,

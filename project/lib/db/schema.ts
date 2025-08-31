@@ -321,7 +321,6 @@ export const labels_to_tasks = pgTable(
   (table) => [primaryKey({ columns: [table.task_id, table.label_id] })],
 );
 
-
 // Audit Table
 export const auditLogs = pgTable(
   "audit_logs",
@@ -330,6 +329,7 @@ export const auditLogs = pgTable(
     actor_user_id: integer("actor_user_id")
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
+    subject_user_id: integer("subject_user_id").references(() => users.id, { onDelete: "set null" }),
     entity_type: auditEntityEnum("entity_type").notNull(),
     entity_id: integer("entity_id").notNull(),
     action: auditActionEnum("action").notNull(),
@@ -341,10 +341,10 @@ export const auditLogs = pgTable(
     list_id: integer("list_id").references(() => lists.id, { onDelete: "set null" }),
     task_id: integer("task_id").references(() => tasks.id, { onDelete: "set null" }),
     comment_id: integer("comment_id").references(() => comments.id, { onDelete: "set null" }),
-
   },
   (t) => ({
     byEntity: index("audit_by_entity").on(t.entity_type, t.entity_id, t.created_at),
+    bySubject: index("audit_by_subject").on(t.subject_user_id, t.created_at),
     byProject: index("audit_by_project").on(t.project_id, t.created_at),
     byTask: index("audit_by_task").on(t.task_id, t.created_at),
     byActor: index("audit_by_actor").on(t.actor_user_id, t.created_at),
@@ -354,7 +354,7 @@ export const auditLogs = pgTable(
       t.entity_type,
       t.entity_id,
       t.action,
-      t.created_at
+      t.created_at,
     ),
-  })
+  }),
 );
