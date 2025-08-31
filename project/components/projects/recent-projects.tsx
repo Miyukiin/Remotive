@@ -13,8 +13,10 @@ export default async function RecentProjectsCard() {
 
   if (!res.success) {
     return (
-      <Card>
-        <CardContent className="py-10 text-center text-muted-foreground">Unable to load data.</CardContent>
+      <Card className="flex-1">
+        <CardContent className="flex h-full items-center justify-center text-center text-muted-foreground">
+          <p>Unable to load data.</p>
+        </CardContent>
       </Card>
     );
   }
@@ -23,8 +25,8 @@ export default async function RecentProjectsCard() {
 
   if (projects.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-10 text-center text-muted-foreground">
+      <Card className="flex-1 items-center">
+        <CardContent className="flex h-full items-center justify-center text-center text-muted-foreground">
           <p>No projects found.</p>
           <p>Get invited to or create one.</p>
         </CardContent>
