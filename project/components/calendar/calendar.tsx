@@ -3,10 +3,9 @@
 import { Calendar as ReactBigCalendar, View, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
-import { calendarDummyDates } from "@/lib/utils";
-
 
 import { useCallback } from "react";
+import { CalendarEvent } from "@/types";
 
 const locales = { "en-US": enUS };
 
@@ -23,9 +22,10 @@ type CalendarProps = {
   setView: (val: View) => void;
   date: Date;
   setDate: (val: Date) => void;
+  events: CalendarEvent[];
 };
 
-export function Calendar({ view, setView, date, setDate }: CalendarProps) {
+export function Calendar({ view, setView, date, setDate, events }: CalendarProps) {
   const onNavigate = useCallback((newDate: Date) => setDate(newDate), [setDate]);
   const onView = useCallback((newView: View) => setView(newView), [setView]);
 
@@ -33,7 +33,7 @@ export function Calendar({ view, setView, date, setDate }: CalendarProps) {
     <div className="rbc-tailwind! w-full h-full rounded-md border">
       <ReactBigCalendar
         localizer={localizer}
-        events={calendarDummyDates}
+        events={events}
         startAccessor="start"
         endAccessor="end"
         date={date}

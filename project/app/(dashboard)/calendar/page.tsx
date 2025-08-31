@@ -6,14 +6,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/calendar/calendar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-big-calendar";
 import { format, addDays, addWeeks, addMonths, startOfWeek, endOfWeek } from "date-fns";
+import { fetchCalendarEvents } from "@/actions/calendar-actions";
+import { toast } from "sonner";
+import { CalendarEvent } from "@/types";
 
 export default function CalendarPage() {
   const now = new Date();
   const [view, setView] = useState<View>("month");
   const [date, setDate] = useState(now);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      const res = await fetchCalendarEvents();
+      if (res.success) {
+        setCalendarEvents(res.data);
+        console.log(res.data)
+      } else {
+        toast.error("Error", { description: "Unable to retrieve calendar events" });
+      }
+    }
+
+    return () => {
+      fetchEvents();
+    };
+  }, []);
 
   function onViewChange(next: View) {
     setView(next);
@@ -95,7 +115,7 @@ export default function CalendarPage() {
 
         <CardContent>
           <div className="h-[600px] w-full rounded-md border bg-muted/40">
-            <Calendar view={view} setView={setView} date={date} setDate={setDate} />
+            <Calendar view={view} setView={setView} date={date} setDate={setDate} events={calendarEvents} />
           </div>
         </CardContent>
       </Card>
