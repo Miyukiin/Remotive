@@ -28,6 +28,7 @@ import { Calendar } from "../ui/calendar";
 import { formatDate } from "@/lib/utils";
 import { TaskCreateForm } from "@/types";
 import { QuillEditor } from "../ui/rich-text-editor";
+import { Label } from "../ui/label";
 
 type CreateTaskModalProps = {
   list_id: number;
@@ -146,14 +147,22 @@ const CreateTaskModal: FC<CreateTaskModalProps> = ({ list_id, project_id, positi
               name="content"
               control={form.control}
               render={({ field }) => (
-                <QuillEditor
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                  placeholder="Content of your task."
-                  className="scrollbar-custom overflow-y-scroll max-h-[150px] min-h-[100px]"
-                />
+                <div>
+                  <Label className="mb-2">Content</Label>
+                  <QuillEditor
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    placeholder="Content of your task."
+                    className="scrollbar-custom overflow-y-scroll max-h-[150px] min-h-[100px]"
+                  />
+                </div>
               )}
             />
+
+            {/* Validation error */}
+            {form.formState.errors.content ? (
+              <p className="px-3 py-2 text-xs text-destructive">{String(form.formState.errors.content.message)}</p>
+            ) : null}
 
             {/* Priority */}
             <FormField
