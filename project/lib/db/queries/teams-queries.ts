@@ -64,7 +64,8 @@ export const teams = {
       const changed: Partial<types.TeamsInsert> = {};
 
       if (existingTeamData.teamName !== incomingTeamData.teamName) changed.teamName = incomingTeamData.teamName;
-      if (existingTeamData.description !== incomingTeamData.description) changed.description = incomingTeamData.description;
+      if (existingTeamData.description !== incomingTeamData.description)
+        changed.description = incomingTeamData.description;
 
       const { id, ...base } = existingTeamData;
       const finalUpdatedTeamData = {
@@ -75,13 +76,19 @@ export const teams = {
 
       if (Object.keys(changed).length === 0) return successResponse(`No changes detected.`, existingTeamData);
 
-      const [result] = await db
-        .update(schema.teams)
-        .set(finalUpdatedTeamData)
-        .where(eq(schema.teams.id, teamId))
-        .returning();
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.TeamsSelect>> => {
+        const [team] = await tx
+          .update(schema.teams)
+          .set(finalUpdatedTeamData)
+          .where(eq(schema.teams.id, teamId))
+          .returning();
+        if (!team) throw new Error("Database returned no result.");
 
-      if (result) return successResponse(`Updated team successfully.`, existingTeamData);
+        await logAction(tx, { entity_id: team.id, entity_type: "team", action: "TEAM_UPDATED", team_id: team.id });
+        return successResponse(`Updated team successfully.`, team);
+      });
+
+      if (txResult.success) return txResult;
       else return failResponse(`Unable to update team.`, `Database returned no result.`);
     } catch (e) {
       return failResponse(`Unable to update team.`, e);
