@@ -192,6 +192,15 @@ export const teams = {
 
         if (!response) throw new Error("Unable to delete users to teams entry.");
 
+        // AUDIT: user removed from team (subject is the user being removed)
+        await logAction(tx, {
+          entity_type: "team",
+          entity_id: teamId,
+          action: "TEAM_MEMBER_REMOVED",
+          subject_user_id: userId,
+          team_id: teamId,
+        });
+
         // Remove user's project member entries for all assigned projects of the team.
         const res = await teams.getProjectsForTeam(teamId);
         if (!res.success) throw new Error(res.message);
@@ -211,6 +220,16 @@ export const teams = {
             )
             .returning();
           if (!removedMember) throw new Error(`Unable to remove user as member of project ${project.name}.`);
+
+          // AUDIT: user removed from team projects as member (subject is the user being removed)
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project.id,
+            action: "PROJECT_MEMBER_REMOVED",
+            subject_user_id: userId,
+            project_id: project.id,
+            team_id: teamId,
+          });
         }
         return successResponse(`Successfully removed user ${userId} from team ${teamId}`, response);
       });
