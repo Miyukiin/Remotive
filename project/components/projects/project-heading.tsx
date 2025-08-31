@@ -1,5 +1,5 @@
 import { ProjectSelect } from "@/types";
-import { ArrowLeft, Calendar, LucideIcon, PanelsTopLeft, Settings, Users } from "lucide-react";
+import { ArrowLeft, LucideIcon, PanelsTopLeft, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FC, useMemo } from "react";
@@ -43,13 +43,13 @@ const ProjectHeading: FC<ProjectHeadingProps> = ({ project }) => {
       current: false,
       description: "Manage your project's members",
     },
-    {
-      name: "Calendar",
-      href: "calendar",
-      icon: Calendar,
-      current: false,
-      description: "View your project's tasks calendar-style",
-    },
+    // {
+    //   name: "Calendar",
+    //   href: "calendar",
+    //   icon: Calendar,
+    //   current: false,
+    //   description: "View your project's tasks calendar-style",
+    // },
     {
       name: "Settings",
       href: "settings",

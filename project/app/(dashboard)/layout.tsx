@@ -19,7 +19,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScreenWidth } from "@/lib/client-utils";
 import Image from "next/image";
-import { useTheme } from "@/components/theme-provider";
 
 type Props = { children: ReactNode };
 

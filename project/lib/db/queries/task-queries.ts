@@ -6,6 +6,24 @@ import { getObjectById, successResponse, failResponse, getBaseFields } from "./q
 import { inArray, eq, sql, and, gt } from "drizzle-orm";
 
 export const tasks = {
+  getUserTasks: async (user_id: number): Promise<types.QueryResponse<types.TaskSelect[]>> => {
+    try {
+      const result = await db
+        .select()
+        .from(schema.tasks)
+        .innerJoin(schema.users_to_tasks, eq(schema.users_to_tasks.task_id, schema.tasks.id))
+        .where(eq(schema.users_to_tasks.user_id, user_id))
+        .orderBy(schema.tasks.dueDate);
+
+      const tasks = result.map((r) => r.tasks);
+
+      if (tasks.length >= 1) return successResponse(`All user tasks retrieved.`, tasks);
+      else if (tasks.length === 0) return successResponse(`No user tasks yet.`, tasks);
+      throw new Error(`No user tasks retrieved.`);
+    } catch (e) {
+      return failResponse(`Unable to retrieve user tasks.`, e);
+    }
+  },
   getTaskMembers: async (task_id: number): Promise<types.QueryResponse<types.UserSelect[]>> => {
     try {
       const res = await db

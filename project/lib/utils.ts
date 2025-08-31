@@ -198,6 +198,44 @@ export const dirtyHtml = `
 <script>alert('top-level script tag')</script>
 `;
 
+export const calendarDummyDates = [
+  /* {
+    id: 0,
+    title: 'All Day Event very long title',
+    allDay: true,
+    start: new Date(2015, 3, 0),
+    end: new Date(2015, 3, 1),
+  }, */
+  {
+    id: 1,
+    title: "Long Event",
+    start: new Date(2025, 3, 7),
+    end: new Date(2025, 3, 10),
+  },
+
+  {
+    id: 2,
+    title: "DTS STARTS",
+    start: new Date(2025, 2, 13, 0, 0, 0),
+    end: new Date(2025, 2, 20, 0, 0, 0),
+  },
+
+  {
+    id: 3,
+    title: "DTS ENDS",
+    start: new Date(2025, 10, 6, 0, 0, 0),
+    end: new Date(2025, 10, 13, 0, 0, 0),
+  },
+
+  {
+    id: 4,
+    title: "Some Event",
+    start: new Date(2025, 3, 9, 0, 0, 0),
+    end: new Date(2025, 3, 9, 0, 0, 0),
+    allDay: true,
+  },
+];
+
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.
 // To be used within update query utilities to identify changed fields to be updated.
 // export function getDataDiff<T>(existingData: T, newData: T): Partial<T> {
