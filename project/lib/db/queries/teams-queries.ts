@@ -128,6 +128,15 @@ export const teams = {
         const usersToTeamsEntry = await tx.insert(schema.users_to_teams).values(usersToTeamsObject).returning();
         if (!usersToTeamsEntry) throw new Error("Unable to create users to teams entry.");
 
+        // AUDIT: user added to team (subject is the user being added)
+        await logAction(tx, {
+          entity_type: "team",
+          entity_id: teamId,
+          action: "TEAM_MEMBER_ADDED",
+          subject_user_id: userId,
+          team_id: teamId,
+        });
+
         // Create a project member entry for all assigned projects of the team.
         const res = await teams.getProjectsForTeam(teamId);
         if (!res.success) throw new Error(res.message);
@@ -149,6 +158,16 @@ export const teams = {
           // Assign this team member to the project.
           const assignedMember = await tx.insert(schema.project_members).values(memberToAssign).returning();
           if (!assignedMember) throw new Error(`Unable to assign user as member of project ${project.name}.`);
+
+          // AUDIT: user added to team projects as member (subject is the user being added)
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project.id,
+            action: "PROJECT_MEMBER_ADDED",
+            subject_user_id: userId,
+            project_id: project.id,
+            team_id: teamId,
+          });
         }
         return successResponse(`Successfully added user ${userId} to team ${teamId}`, usersToTeamsObject);
       });
