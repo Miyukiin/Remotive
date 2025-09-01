@@ -12,11 +12,8 @@ export const statusTuple = [
 ] as const;
 
 export const rolesTuple = [
-  "No Role Yet", // Default
   "Project Manager",
-  "Developer",
-  "QA Engineer",
-  "Designer",
+  "Project Member",
 ] as const;
 
 export const listColorTuple = ["BLUE", "GRAY", "GREEN", "ORANGE", "PINK", "PURPLE", "RED", "YELLOW"] as const;

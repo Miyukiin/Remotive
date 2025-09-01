@@ -137,3 +137,5 @@ export type UpcomingDeadlineEvent = {
 // Typing Transaction https://github.com/drizzle-team/drizzle-orm/discussions/3271
 export type DatabaseType = typeof db;
 export type TransactionType = Parameters<Parameters<DatabaseType["transaction"]>[0]>[0];
+
+export type ProjectRoles = (typeof schema.rolesEnum.enumValues)[number];

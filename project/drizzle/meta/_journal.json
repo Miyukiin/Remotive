@@ -176,6 +176,20 @@
       "when": 1756648691065,
       "tag": "0024_certain_mister_fear",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1756695485348,
+      "tag": "0025_dapper_richard_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1756695718822,
+      "tag": "0026_last_prism",
+      "breakpoints": true
     }
   ]
 }

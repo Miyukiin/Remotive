@@ -17,6 +17,11 @@ import z from "zod";
 import { getUserId } from "./user-actions";
 import { checkAuthenticationStatus } from "./actions-utils";
 import { failResponse, successResponse } from "@/lib/db/queries/query_utils";
+import { ProjectMember } from "@/components/projects/members/columns-data-table-project-members";
+import { db } from "@/lib/db/db-index";
+import * as schema from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { ROLE_RANK } from "@/lib/utils";
 
 // Utilities
 export async function checkUserIsLeaderAction(
@@ -108,6 +113,110 @@ export async function getTeamsForProject(project_id: number): Promise<ServerActi
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
   return await queries.teams.getTeamsForProject(project_id);
+}
+
+export async function getProjectMembersTableData(project_id: number): Promise<ServerActionResponse<ProjectMember[]>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: project_id });
+  if (!parsed.success) return failResponse("Zod Validation Error", z.flattenError(parsed.error));
+
+  try {
+    // Retrieve raw data per user, that we'll need
+    const rows = await db
+      .select({
+        // user
+        userId: schema.users.id,
+        clerkId: schema.users.clerkId,
+        email: schema.users.email,
+        name: schema.users.name,
+        image_url: schema.users.image_url,
+        userCreatedAt: schema.users.createdAt,
+        userUpdatedAt: schema.users.updatedAt,
+        // team
+        teamId: schema.teams.id,
+        teamName: schema.teams.teamName,
+        teamDescription: schema.teams.description,
+        teamCreatedAt: schema.teams.createdAt,
+        teamUpdatedAt: schema.teams.updatedAt,
+        // role
+        roleName: schema.roles.role_name,
+      })
+      .from(schema.project_members)
+      .innerJoin(schema.users, eq(schema.project_members.user_id, schema.users.id))
+      .innerJoin(schema.teams, eq(schema.project_members.team_id, schema.teams.id))
+      .innerJoin(schema.roles, eq(schema.project_members.role, schema.roles.id))
+      .where(eq(schema.project_members.project_id, project_id));
+
+    // Helper type to map the data we gathered to the expected shape
+    type Agg = {
+      user: ProjectMember["user"];
+      teams: ProjectMember["teams"];
+      teamIds: Set<number>;
+      chosenRole: types.ProjectRoles;
+      roleRank: number;
+    };
+
+    const byUser = new Map<number, Agg>();
+
+    // Map the data to shape
+    for (const r of rows) {
+      let agg = byUser.get(r.userId);
+      if (!agg) {
+        const role = r.roleName;
+        agg = {
+          user: {
+            id: r.userId,
+            clerkId: r.clerkId,
+            email: r.email,
+            name: r.name,
+            image_url: r.image_url,
+            createdAt: r.userCreatedAt,
+            updatedAt: r.userUpdatedAt,
+          },
+          teams: [],
+          teamIds: new Set<number>(),
+          chosenRole: role,
+          roleRank: ROLE_RANK[role],
+        };
+        byUser.set(r.userId, agg);
+      }
+
+      // dedupe teams
+      if (!agg.teamIds.has(r.teamId)) {
+        agg.teamIds.add(r.teamId);
+        agg.teams.push({
+          id: r.teamId,
+          teamName: r.teamName,
+          description: r.teamDescription,
+          createdAt: r.teamCreatedAt,
+          updatedAt: r.teamUpdatedAt,
+        });
+      }
+
+      // pick highest role seen
+      const role = r.roleName;
+      const rank = ROLE_RANK[role];
+      if (rank > agg.roleRank) {
+        agg.chosenRole = role;
+        agg.roleRank = rank;
+      }
+    }
+
+    // Mold to expected shape per member, with sotrings
+    const result: ProjectMember[] = Array.from(byUser.values()).map((v) => ({
+      user: v.user,
+      teams: v.teams.sort((a, b) => a.teamName.localeCompare(b.teamName)),
+      roles: v.chosenRole,
+    }));
+
+    // sort users by name
+    result.sort((a, b) => (a.user.name ?? "").localeCompare(b.user.name ?? ""));
+
+    return successResponse("Project members data retrieved successfully.", result);
+  } catch (e) {
+    return failResponse("Unable to retrieve project members data.", e);
+  }
 }
 
 // Mutations

@@ -74,6 +74,7 @@ import { getUserId } from "@/actions/user-actions";
 import { getTasksCountForProjectAction } from "@/actions/task-actions";
 import { ProjectSelect } from "@/types";
 import { getTempId } from "@/lib/utils";
+import { getProjectMembersTableData } from "@/actions/teams-actions";
 
 // Projects list
 export function useProjects(project_id?: number) {
@@ -291,9 +292,27 @@ export function useProjectMembers(projectId: number) {
     },
   });
 
+  const projectMembersDataTable = useQuery({
+    queryKey: ["project_members_data_table", projectId],
+    enabled: typeof projectId === "number",
+    queryFn: async ({ queryKey }) => {
+      const [, project_id] = queryKey as ["project_members_data_table", number];
+      const res = await getProjectMembersTableData(project_id);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
   return {
+    // Retrieve UserSelect data type project members
     projectMembers: projectMembers.data,
     isProjectMembersLoading: projectMembers.isLoading,
     projectMembersError: projectMembers.error,
+
+
+    // Retrieve project members data for data table of Type Project Member
+    projectMembersData: projectMembersDataTable.data,
+    isProjectMembersDataLoading: projectMembersDataTable.isLoading,
+    projectMembersDataError: projectMembersDataTable.error,
   };
 }

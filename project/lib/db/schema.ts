@@ -84,7 +84,7 @@ export const teams = pgTable(
 
 export const roles = pgTable("roles", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1 }),
-  role_name: rolesEnum("role_name").notNull().unique().default("No Role Yet"),
+  role_name: rolesEnum("role_name").notNull().unique().default("Project Member"),
 });
 
 export const projects = pgTable(
@@ -293,7 +293,7 @@ export const project_members = pgTable(
     role: integer("role")
       .references(() => roles.id, { onDelete: "restrict" })
       .notNull()
-      .default(1), // "No Role Yet" default
+      .default(1), // Project Member default
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
