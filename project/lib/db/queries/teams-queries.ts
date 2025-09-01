@@ -3,6 +3,7 @@ import { db } from "../db-index";
 import * as schema from "../schema";
 import { and, eq } from "drizzle-orm";
 import { failResponse, successResponse } from "./query_utils";
+import { logAction } from "@/lib/audit/audit.utils";
 
 export const teams = {
   getById: async (teamId: number): Promise<types.QueryResponse<types.TeamsSelect>> => {
@@ -20,9 +21,15 @@ export const teams = {
       const res = await teams.getById(teamId);
       if (res.success === false) throw new Error(res.message);
 
-      const [result] = await db.delete(schema.teams).where(eq(schema.teams.id, teamId)).returning();
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.TeamsSelect>> => {
+        const [team] = await tx.delete(schema.teams).where(eq(schema.teams.id, teamId)).returning();
+        if (!team) throw new Error("Database returned no result.");
 
-      if (result) return successResponse(`Team deleted successfully.`, result);
+        await logAction(tx, { entity_id: team.id, entity_type: "team", action: "TEAM_DELETED" });
+        return successResponse(`Deleted team successfully`, team);
+      });
+
+      if (txResult.success) return txResult;
       else return failResponse(`Unable to delete team`, `Database returned no result.`);
     } catch (e) {
       return failResponse(`Unable to delete team`, e);
@@ -57,6 +64,8 @@ export const teams = {
       const changed: Partial<types.TeamsInsert> = {};
 
       if (existingTeamData.teamName !== incomingTeamData.teamName) changed.teamName = incomingTeamData.teamName;
+      if (existingTeamData.description !== incomingTeamData.description)
+        changed.description = incomingTeamData.description;
 
       const { id, ...base } = existingTeamData;
       const finalUpdatedTeamData = {
@@ -67,13 +76,19 @@ export const teams = {
 
       if (Object.keys(changed).length === 0) return successResponse(`No changes detected.`, existingTeamData);
 
-      const [result] = await db
-        .update(schema.teams)
-        .set(finalUpdatedTeamData)
-        .where(eq(schema.teams.id, teamId))
-        .returning();
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.TeamsSelect>> => {
+        const [team] = await tx
+          .update(schema.teams)
+          .set(finalUpdatedTeamData)
+          .where(eq(schema.teams.id, teamId))
+          .returning();
+        if (!team) throw new Error("Database returned no result.");
 
-      if (result) return successResponse(`Updated team successfully.`, existingTeamData);
+        await logAction(tx, { entity_id: team.id, entity_type: "team", action: "TEAM_UPDATED", team_id: team.id });
+        return successResponse(`Updated team successfully.`, team);
+      });
+
+      if (txResult.success) return txResult;
       else return failResponse(`Unable to update team.`, `Database returned no result.`);
     } catch (e) {
       return failResponse(`Unable to update team.`, e);
@@ -81,10 +96,16 @@ export const teams = {
   },
   createTeam: async (teamObject: types.TeamsInsert): Promise<types.QueryResponse<types.TeamsSelect>> => {
     try {
-      const [team] = await db.insert(schema.teams).values(teamObject).returning();
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.TeamsSelect>> => {
+        const [team] = await tx.insert(schema.teams).values(teamObject).returning();
+        if (!team) throw new Error("Database returned no result.");
 
-      if (team) return successResponse(`Created team successfully`, team);
-      else return failResponse(`Unable to create team.`, `Database returned no result.`);
+        await logAction(tx, { entity_id: team.id, entity_type: "team", action: "TEAM_CREATED", team_id: team.id });
+        return successResponse(`Created team successfully`, team);
+      });
+
+      if (txResult.success) return txResult;
+      else return failResponse(`Unable to create team.`, txResult.error);
     } catch (e) {
       return failResponse(`Unable to create team.`, e);
     }
@@ -107,6 +128,15 @@ export const teams = {
         const usersToTeamsEntry = await tx.insert(schema.users_to_teams).values(usersToTeamsObject).returning();
         if (!usersToTeamsEntry) throw new Error("Unable to create users to teams entry.");
 
+        // AUDIT: user added to team (subject is the user being added)
+        await logAction(tx, {
+          entity_type: "team",
+          entity_id: teamId,
+          action: "TEAM_MEMBER_ADDED",
+          subject_user_id: userId,
+          team_id: teamId,
+        });
+
         // Create a project member entry for all assigned projects of the team.
         const res = await teams.getProjectsForTeam(teamId);
         if (!res.success) throw new Error(res.message);
@@ -128,6 +158,16 @@ export const teams = {
           // Assign this team member to the project.
           const assignedMember = await tx.insert(schema.project_members).values(memberToAssign).returning();
           if (!assignedMember) throw new Error(`Unable to assign user as member of project ${project.name}.`);
+
+          // AUDIT: user added to team projects as member (subject is the user being added)
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project.id,
+            action: "PROJECT_MEMBER_ADDED",
+            subject_user_id: userId,
+            project_id: project.id,
+            team_id: teamId,
+          });
         }
         return successResponse(`Successfully added user ${userId} to team ${teamId}`, usersToTeamsObject);
       });
@@ -152,6 +192,15 @@ export const teams = {
 
         if (!response) throw new Error("Unable to delete users to teams entry.");
 
+        // AUDIT: user removed from team (subject is the user being removed)
+        await logAction(tx, {
+          entity_type: "team",
+          entity_id: teamId,
+          action: "TEAM_MEMBER_REMOVED",
+          subject_user_id: userId,
+          team_id: teamId,
+        });
+
         // Remove user's project member entries for all assigned projects of the team.
         const res = await teams.getProjectsForTeam(teamId);
         if (!res.success) throw new Error(res.message);
@@ -171,6 +220,16 @@ export const teams = {
             )
             .returning();
           if (!removedMember) throw new Error(`Unable to remove user as member of project ${project.name}.`);
+
+          // AUDIT: user removed from team projects as member (subject is the user being removed)
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project.id,
+            action: "PROJECT_MEMBER_REMOVED",
+            subject_user_id: userId,
+            project_id: project.id,
+            team_id: teamId,
+          });
         }
         return successResponse(`Successfully removed user ${userId} from team ${teamId}`, response);
       });
@@ -296,6 +355,15 @@ export const teams = {
 
         if (!promoted) throw new Error("Failed to set new leader's isLeader flag to true.");
 
+        // AUDIT: team leader reassigned (subject is the new leader)
+        await logAction(trx, {
+          entity_type: "team",
+          entity_id: team_id,
+          action: "TEAM_LEADER_REASSIGNED",
+          subject_user_id: new_leader_id, // Only the previous leader can perform the reassign so we can get the old leader id from the actor id.
+          team_id: team_id,
+        });
+
         return successResponse(`Successfully reassigned team leader.`, promoted);
       });
 
@@ -340,6 +408,22 @@ export const teams = {
       return successResponse(`Successfully retrieved team's projects`, result);
     } catch (e) {
       return failResponse(`Unable to retrieve team's projects`, e);
+    }
+  },
+  getTeamsForProject: async (project_id: number): Promise<types.QueryResponse<types.TeamsSelect[]>> => {
+    try {
+      const result = await db
+        .select({ teams: schema.teams })
+        .from(schema.teams)
+        .innerJoin(schema.teams_to_projects, eq(schema.teams_to_projects.team_id, schema.teams.id))
+        .where(eq(schema.teams_to_projects.project_id, project_id))
+        .orderBy(schema.teams.teamName);
+
+      // Unwrap
+      const projectTeams = result.map((r) => r.teams);
+      return successResponse(`Task members retrieved successfully.`, projectTeams);
+    } catch (e) {
+      return failResponse(`Unable to retrieve project's teams`, e);
     }
   },
 };

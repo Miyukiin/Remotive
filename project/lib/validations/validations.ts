@@ -312,7 +312,10 @@ export const taskSchemaEditForm = taskSchema
 export const commentSchema = z
   .object({
     id: z.int().min(1, errorTemplates.idMinError),
-    content: z.string().trim().transform((val) => sanitizeHtml(val)), // Sanitize html input,
+    content: z
+      .string()
+      .trim()
+      .transform((val) => sanitizeHtml(val)), // Sanitize html input,
     taskId: z.int().min(1, errorTemplates.idMinError),
     parentCommentId: z.int().min(1, errorTemplates.idMinError).nullable(),
     authorId: z.int().min(1, errorTemplates.idMinError),
@@ -386,8 +389,7 @@ export const commentSchemaForm = commentSchema
         message: "Comment is too long (max 5000 characters).",
       });
     }
-  })
-  
+  });
 
 export const teamSchema = z
   .object({
@@ -520,3 +522,19 @@ export const taskPositionPayloadSchema = taskSchema
 export const tasksPositionsPayloadSchema = z.array(taskPositionPayloadSchema);
 
 export const updateTasksLabelsPayloadSchema = z.array(labelSchema);
+
+export const projectMemberUpdatePayloadSchema = z.object({
+  member_id: z.int().min(1, errorTemplates.idMinError),
+  project_id: z.int().min(1, errorTemplates.idMinError),
+  role: z.enum(rolesTuple),
+});
+
+export const reassignTeamsSchema = z.object({
+  teamIds: z.array(z.number()).min(1, "A project must have at least one team."),
+});
+
+export const updateProjectTeamsPayload = z.object({
+  project_id: z.number().int().positive(),
+  toAdd: z.array(z.number().int().positive()),
+  toRemove: z.array(z.number().int().positive()),
+});

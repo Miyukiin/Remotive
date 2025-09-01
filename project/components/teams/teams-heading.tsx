@@ -31,7 +31,7 @@ type TeamsHeadingProps = {
 };
 
 const TeamsHeading: FC<TeamsHeadingProps> = ({ team }) => {
-  const { isTeamLeader } = useTeams(team.id);
+  const { isTeamLeader } = useTeams({team_id: team.id});
   const { setAddMemberModalOpen } = useUIStore();
 
   const baseNavItems: NavItem[] = [

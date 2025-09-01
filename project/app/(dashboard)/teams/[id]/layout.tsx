@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 export default function TeamsLayout({ children }: { children: React.ReactNode }) {
   const { id } = useParams<{ id: string }>();
   const teamId = Number(id);
-  const { team, isTeamLoading, teamError } = useTeams(teamId);
+  const { team, isTeamLoading, teamError } = useTeams({team_id: teamId});
 
   if (!team) {
     if (!team && isTeamLoading) {

@@ -39,7 +39,7 @@ const AddTeamMembersModal: FC<AddTeamMembersModalProps> = ({ team_id }) => {
   });
 
   const { users, isUsersLoading, getUsersError } = useUsers();
-  const { addUsersToTeam, isAddingUsersToTeamLoading, teamMembers } = useTeams(team_id);
+  const { addUsersToTeam, isAddingUsersToTeamLoading, teamMembers } = useTeams({team_id});
 
   // Member ids in the team
   const memberIds = useMemo(() => new Set((teamMembers ?? []).map((m) => m.id)), [teamMembers]);

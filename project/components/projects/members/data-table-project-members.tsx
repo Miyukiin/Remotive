@@ -17,7 +17,6 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "../../ui/input";
 import { TeamsSelect } from "@/types";
-import { Label } from "@radix-ui/react-label";
 
 import {
   Select,
@@ -29,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProjectMember } from "./columns-data-table-project-members";
+import { useUIStore } from "@/stores/ui-store";
 
 interface ProjectMembersDataTableProps {
   columns: ColumnDef<ProjectMember>[];
@@ -43,12 +43,9 @@ export function ProjectMembersDataTable({ columns, data, teamOptions }: ProjectM
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
+  const { setReassignProjectTeamsModalOpen } = useUIStore();
 
-  // const executeButtonAction = (selectedRows: RowModel<UserSelect>) => {
-  //   const users: UserSelect[] = selectedRows.rows.map((row) => row.original);
-  //   buttonAction(users);
-  //   setRowSelection({});
-  // };
+  const [teamFilter, setTeamFilter] = useState<string>("");
 
   const table = useReactTable({
     data,
@@ -70,33 +67,59 @@ export function ProjectMembersDataTable({ columns, data, teamOptions }: ProjectM
   return (
     <div className="b">
       {/* Search and Filter */}
-      <div className="flex items-center mb-4 gap-8">
+      <div className="flex flex-col md:flex-row items-center mb-4 gap-2 md:gap-8">
         <Input
           placeholder="Search for a user..."
           value={(table.getColumn("user")?.getFilterValue() as string) ?? ""}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
             table.getColumn("user")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-sm text-base"
         />
-        <div className="flex items-center gap-x-2">
-          <Label>Filter by Team:</Label>
-          <Select>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a Team" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Team</SelectLabel>
-                <SelectItem value="All Teams">All Teams</SelectItem>
-                {teamOptions.map((t) => (
-                  <SelectItem key={t.id} value={t.teamName}>
-                    {t.teamName}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+        <div className="flex flex-1 w-full items-center gap-2">
+          <div className="flex w-full max-w-xs items-center">
+            <Select
+              value={teamFilter}
+              onValueChange={(v) => {
+                setTeamFilter(v);
+                table.getColumn("teams")?.setFilterValue(v);
+              }}
+            >
+              <SelectTrigger className="flex w-full max-w-xs text-base md:text-sm">
+                <SelectValue placeholder="Select a Team" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Team</SelectLabel>
+
+                  {teamOptions.map((t) => (
+                    <SelectItem key={t.id} value={t.teamName}>
+                      {t.teamName}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* Clear Button */}
+          <div className="flex">
+            <Button
+              variant="default"
+              className="w-full"
+              onClick={() => {
+                setTeamFilter("");
+                table.getColumn("teams")?.setFilterValue(undefined);
+              }}
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+        {/* Reassign Teams Button */}
+        <div className="flex w-full md:w-[180px] md:shrink-0">
+          <Button variant="default" className="w-full" onClick={() => setReassignProjectTeamsModalOpen(true)}>
+            Manage Teams
+          </Button>
         </div>
       </div>
       <div className="overflow-hidden rounded-md border">

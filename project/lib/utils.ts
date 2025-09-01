@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { BarChart3, Calendar, FolderOpen, Home, Settings, Users } from "lucide-react";
+import { ProjectRoles } from "@/types";
 
 export const projectStatusColor = {
   Completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
@@ -26,6 +27,12 @@ export const listColor = {
   RED: "bg-[#cf222e]/15 text-[#cf222e] dark:bg-[#da3633]/20 dark:text-[#da3633]",
   YELLOW: "bg-[#9a6700]/15 text-[#9a6700] dark:bg-[#9e6a03]/20 dark:text-[#9e6a03]",
 } as const;
+
+// Role Ranking
+export const ROLE_RANK: Record<ProjectRoles, number> = {
+  "Project Member": 1,
+  "Project Manager": 2,
+};
 
 // Projects Search Filter Options
 export const projectsFilterOptions = ["Ascending (A-Z)", "Descending (Z-A)", "Newest First", "Oldest First"] as const;
@@ -235,19 +242,3 @@ export const calendarDummyDates = [
     allDay: true,
   },
 ];
-
-// Perform shallow comparison. Does not handle nested comparisons like for objects or arrays.
-// To be used within update query utilities to identify changed fields to be updated.
-// export function getDataDiff<T>(existingData: T, newData: T): Partial<T> {
-//   const changed: Partial<T> = {};
-
-//   for (const [key, oldValue] of Object.entries(existingData)) {
-//     const newValue = (newData as any)[key];
-
-//     if (oldValue !== newValue) {
-//       (changed as any)[key] = newValue;
-//     }
-//   }
-
-//   return changed;
-// }

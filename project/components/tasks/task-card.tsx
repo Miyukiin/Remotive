@@ -111,7 +111,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   }
   return (
     <Card onClick={onCardClick} ref={setNodeRef} style={style} className={`p-0 gap-0 cursor-pointer  `}>
-      <CardHeader className="px-1 py-2 justify-between items-center flex flex-row border-b-2 border-secondary relative">
+      <CardHeader className="px-1 py-2 justify-between items-center flex flex-row border-b-1 border-border relative">
         {/* Drag Button, Options Button */}
         <DragButton listeners={listeners} attributes={attributes} />
         <TaskOptions task_id={task.id} project_id={project_id} list_id={list_id} />

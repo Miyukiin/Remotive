@@ -51,7 +51,7 @@ const CreateProjectModal: FC = () => {
   }, [isCreateProjectModalOpen, form]);
 
   const { createProject, isProjectCreationLoading } = useProjects();
-  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams();
+  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams({});
 
   const onSubmit = async (values: ProjectCreateForm) => {
     // Server-side uniqueness check
@@ -181,7 +181,7 @@ const CreateProjectModal: FC = () => {
                   <FormLabel>Assign Teams *</FormLabel>
                   <FormControl>
                     <MultiSelect
-                      options={(userTeams.data ?? []).map((t) => ({ label: t.teamName, value: t.id }))}
+                      options={(userTeams ?? []).map((t) => ({ label: t.teamName, value: t.id }))}
                       value={field.value ?? []}
                       onChange={field.onChange}
                       disabled={isUserTeamsLoading || isProjectCreationLoading}

@@ -7,11 +7,14 @@ import {
   listSchemaForm,
   projectSchemaForm,
   projectSchemaUpdateForm,
+  reassignTeamsSchema,
   taskSchemaEditForm,
   taskSchemaForm,
+  updateProjectTeamsPayload,
 } from "@/lib/validations/validations";
 import z from "zod";
 import { TaskStatus } from "../components/tasks/task-modal-ui/task-status";
+import { db } from "@/lib/db/db-index";
 
 // Zod Form Types - Used in RHFs useForm and onSubmit values typing
 export type ProjectCreateForm = z.infer<typeof projectSchemaForm>;
@@ -27,6 +30,8 @@ export type LabelCreateForm = z.infer<typeof labelSchemaForm>;
 export type LabelUpdateForm = z.infer<typeof labelSchemaUpdateForm>;
 
 export type CommentCreateForm = z.infer<typeof commentSchemaForm>;
+
+export type ReassignTeamsForm = z.infer<typeof reassignTeamsSchema>;
 
 // Query Types
 export type QueryResponse<T> =
@@ -110,6 +115,8 @@ export type TaskPositionPayload = {
   position: number;
 };
 
+export type UpdateProjectTeamsPayload = z.infer<typeof updateProjectTeamsPayload>;
+
 export type TaskStatus = { status: string; color: keyof typeof listColor };
 
 export type KanbanColor = keyof typeof listColor;
@@ -132,3 +139,14 @@ export type UpcomingDeadlineEvent = {
   type: "Project" | "Task";
   dueDate: Date;
 };
+
+// Typing Transaction https://github.com/drizzle-team/drizzle-orm/discussions/3271
+export type DatabaseType = typeof db;
+export type TransactionType = Parameters<Parameters<DatabaseType["transaction"]>[0]>[0];
+
+export type ProjectRoles = (typeof schema.rolesEnum.enumValues)[number];
+
+
+export type PendingProjectManager = { userId: number; role: ProjectRoles } | null;
+
+

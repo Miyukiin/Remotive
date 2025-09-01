@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 export default function TeamSettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params); // Unwrap the promise as per Nextjs 15 recommendation
   const teamId = Number(id);
-  const { team, isTeamLoading, teamError, isTeamLeader } = useTeams(teamId);
+  const { team, isTeamLoading, teamError, isTeamLeader } = useTeams({team_id: teamId});;
   const router = useRouter();
 
   // Redirect if not leader (only after loading finishes)

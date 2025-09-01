@@ -1,10 +1,9 @@
 import { teamSchema, userSchema } from "@/lib/validations/validations";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, FilterFn } from "@tanstack/react-table";
 import z from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../../ui/button";
 import { ArrowDownZA, ArrowUpAZ } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { rolesTuple } from "../../../lib/db/db-enums";
 import { Badge } from "@/components/ui/badge";
 
@@ -17,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PendingProjectManager, ProjectRoles } from "@/types";
 
 export type ProjectMember = {
   user: z.infer<typeof userSchema>;
@@ -24,10 +24,23 @@ export type ProjectMember = {
   roles: (typeof rolesTuple)[number];
 };
 
-export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
+const teamFilterFn: FilterFn<ProjectMember> = (row, _columnId, value) => {
+  if (!value) return true; // show all when value is empty
+  const val = String(value).toLowerCase();
+  const teams = row.original.teams ?? [];
+  return teams.some((t) => t.teamName.toLowerCase() === val);
+};
+
+export function getProjectDataTableMemberColumns(
+  isLoading: boolean,
+  setPendingProjectManager: (p: PendingProjectManager) => void,
+  setReassignManagerModalOpen: (val: boolean) => void,
+  onRoleChange: (userId: number, nextRole: ProjectRoles) => void,
+): ColumnDef<ProjectMember>[] {
   return [
     {
-      accessorKey: "user",
+      id: "user",
+      accessorFn: (row) => `${row.user.name ?? ""} ${row.user.email ?? ""}`,
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           User
@@ -54,7 +67,9 @@ export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
       ),
     },
     {
-      accessorKey: "teams",
+      id: "teams",
+      accessorFn: (row) => row.teams?.map((t) => t.teamName).join(" ") ?? "",
+      filterFn: teamFilterFn, // Custom, check is user has this team
       header: () => "Teams",
       cell: ({ row }) => (
         <div className="flex gap-2">
@@ -71,23 +86,38 @@ export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
     {
       accessorKey: "roles",
       header: () => "Roles",
-      cell: ({ row }) => (
-        <Select defaultValue={row.original.roles}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select A Role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Roles</SelectLabel>
-              {Object.values(rolesTuple).map((r, idx) => (
-                <SelectItem key={idx} value={r}>
-                  {r}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      ),
+      cell: ({ row }) => {
+        const handleChange = (val: ProjectRoles) => {
+          const userId = row.original.user.id;
+
+          if (val === "Project Manager" && row.original.roles !== "Project Manager") {
+            // set who we will update to be project manager, and open confirm modal
+            setPendingProjectManager({ userId, role: val });
+            setReassignManagerModalOpen(true);
+          } else {
+            // immediate update
+            onRoleChange(userId, val);
+          }
+        };
+
+        return (
+          <Select defaultValue={row.original.roles} onValueChange={handleChange}>
+            <SelectTrigger disabled={isLoading} className="w-[180px]">
+              <SelectValue placeholder="Select A Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Roles</SelectLabel>
+                {Object.values(rolesTuple).map((r, idx) => (
+                  <SelectItem key={idx} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        );
+      },
     },
   ];
 }

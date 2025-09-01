@@ -19,7 +19,7 @@ type TeamsCardProps = {
 };
 
 const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
-  const { teamMembers, isTeamMembersLoading, teamMembersError } = useTeams(teamData.id);
+  const { teamMembers, isTeamMembersLoading, teamMembersError } = useTeams({team_id: teamData.id});
   const [projectCount, setProjectCount] = useState(0);
 
   useEffect(() => {

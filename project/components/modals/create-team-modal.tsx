@@ -32,7 +32,7 @@ type TeamForm = z.infer<typeof teamSchemaForm>;
 const CreateTeamModal: FC = () => {
   const { user } = useUser();
   const { isCreateTeamModalOpen, setCreateTeamModalOpen } = useUIStore();
-  const { createTeam, isTeamCreateLoading } = useTeams();
+  const { createTeam, isTeamCreateLoading } = useTeams({});
 
   const form = useForm<TeamForm>({
     resolver: zodResolver(teamSchemaForm),

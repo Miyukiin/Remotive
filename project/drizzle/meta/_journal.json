@@ -155,6 +155,48 @@
       "when": 1756549962981,
       "tag": "0021_careless_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1756643393135,
+      "tag": "0022_lean_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1756646901685,
+      "tag": "0023_flippant_gorgon",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1756648691065,
+      "tag": "0024_certain_mister_fear",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1756695485348,
+      "tag": "0025_dapper_richard_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1756695718822,
+      "tag": "0026_last_prism",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1756720855271,
+      "tag": "0027_simple_stellaris",
+      "breakpoints": true
     }
   ]
 }

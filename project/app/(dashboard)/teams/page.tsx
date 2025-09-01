@@ -5,7 +5,7 @@ import { useTeams } from "@/hooks/use-teams";
 import CreateTeamModal from "@/components/modals/create-team-modal";
 
 export default function TeamPage() {
-  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams();
+  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams({});
 
   return (
     <>
@@ -24,8 +24,8 @@ export default function TeamPage() {
 
         {/* Display Teams */}
         <p className="text-xl font-bold mb-4 text-foreground">Your Teams</p>
-        {!isUserTeamsLoading && userTeams.data ? (
-          <TeamsSection teamsData={userTeams.data} />
+        {!isUserTeamsLoading && userTeams ? (
+          <TeamsSection teamsData={userTeams} />
         ) : (
           <div className="text-center text-sm text-muted-foreground">
             {!userTeams && !isUserTeamsLoading && getUserTeamsError ? (

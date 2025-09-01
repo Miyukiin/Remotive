@@ -11,7 +11,7 @@ type LeaveTeamButtonProps = {
 };
 
 const LeaveTeamButton: FC<LeaveTeamButtonProps> = ({ team_id }) => {
-  const { isTeamLeader, isTeamLeaderCheckLoading, leaveTeam, isLeaveTeamLoading } = useTeams(team_id);
+  const { isTeamLeader, isTeamLeaderCheckLoading, leaveTeam, isLeaveTeamLoading } = useTeams({team_id});
 
   function onLeaveTeamClick() {
     if (isTeamLeader) {

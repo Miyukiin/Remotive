@@ -1,0 +1,2 @@
+DROP INDEX "audit_unique_exact";--> statement-breakpoint
+CREATE UNIQUE INDEX "audit_unique_exact" ON "audit_logs" USING btree ("actor_user_id","entity_type","entity_id","action","subject_user_id","team_id","created_at");
