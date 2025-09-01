@@ -64,6 +64,7 @@ import {
   getAllMembersForProject,
   getProjectByIdAction,
   getProjectsForUserAction,
+  reassignProjectMemberRole,
   updateProjectAction,
 } from "@/actions/project-actions";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -72,9 +73,10 @@ import z from "zod";
 import { toast } from "sonner";
 import { getUserId } from "@/actions/user-actions";
 import { getTasksCountForProjectAction } from "@/actions/task-actions";
-import { ProjectSelect } from "@/types";
+import { ProjectRoles, ProjectSelect } from "@/types";
 import { getTempId } from "@/lib/utils";
 import { getProjectMembersTableData } from "@/actions/teams-actions";
+import { ProjectMember } from "@/components/projects/members/columns-data-table-project-members";
 
 // Projects list
 export function useProjects(project_id?: number) {
@@ -279,8 +281,9 @@ export function useProjects(project_id?: number) {
   };
 }
 
-// Members for *one* project
 export function useProjectMembers(projectId: number) {
+  const queryClient = useQueryClient();
+
   const projectMembers = useQuery({
     queryKey: ["project_members", projectId],
     enabled: typeof projectId === "number",
@@ -303,16 +306,69 @@ export function useProjectMembers(projectId: number) {
     },
   });
 
+  const updateProjectMember = useMutation({
+    mutationFn: async ({ member_id, role }: { member_id: number; role: ProjectRoles }) => {
+      const res = await reassignProjectMemberRole({ member_id, project_id: projectId, role });
+      if (!res.success) throw new Error(res.message);
+      return res.data; // { updatedCount, newRole }
+    },
+
+    // Optimistic update of the DataTable list
+    onMutate: async ({ member_id, role }) => {
+      await queryClient.cancelQueries({ queryKey: ["project_members_data_table", projectId] });
+      await queryClient.cancelQueries({ queryKey: ["project_members", projectId] });
+
+      const previousProjectMemberTableData = queryClient.getQueryData<ProjectMember[]>([
+        "project_members_data_table",
+        projectId,
+      ]);
+
+      // optimistic patch: update the role string for the matching user id
+      if (previousProjectMemberTableData) {
+        queryClient.setQueryData<ProjectMember[]>(
+          ["project_members_data_table", projectId],
+          previousProjectMemberTableData.map((row) => (row.user.id === member_id ? { ...row, roles: role } : row)),
+        );
+      }
+
+      return { previousProjectMemberTableData };
+    },
+
+    onSuccess: () => {
+      toast.success("Success", {
+        description: `Updated member role successfully.`,
+      });
+    },
+
+    onError: (err, _vars, ctx) => {
+      toast.error("Error", { description: err.message });
+      // rollback
+      if (ctx?.previousProjectMemberTableData) {
+        queryClient.setQueryData(["project_members_data_table", projectId], ctx?.previousProjectMemberTableData);
+      }
+    },
+
+    onSettled: async () => {
+      // ensure server truth after mutation
+      await queryClient.invalidateQueries({ queryKey: ["project_members_data_table", projectId] });
+      await queryClient.invalidateQueries({ queryKey: ["project_members", projectId] });
+    },
+  });
+
   return {
     // Retrieve UserSelect data type project members
     projectMembers: projectMembers.data,
     isProjectMembersLoading: projectMembers.isLoading,
     projectMembersError: projectMembers.error,
 
-
     // Retrieve project members data for data table of Type Project Member
     projectMembersData: projectMembersDataTable.data,
     isProjectMembersDataLoading: projectMembersDataTable.isLoading,
     projectMembersDataError: projectMembersDataTable.error,
+
+    // Update project member role
+    updateProjectMember: updateProjectMember.mutate,
+    isUpdateProjectMemberLoading: updateProjectMember.isPending,
+    updateProjectMemberError: updateProjectMember.error,
   };
 }

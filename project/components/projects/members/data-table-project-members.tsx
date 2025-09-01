@@ -17,7 +17,6 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "../../ui/input";
 import { TeamsSelect } from "@/types";
-import { Label } from "@radix-ui/react-label";
 
 import {
   Select,
@@ -29,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProjectMember } from "./columns-data-table-project-members";
-import { useScreenWidth } from "@/lib/client-utils";
 
 interface ProjectMembersDataTableProps {
   columns: ColumnDef<ProjectMember>[];

@@ -16,13 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PendingProjectManager, ProjectRoles } from "@/types";
 
 export type ProjectMember = {
   user: z.infer<typeof userSchema>;
   teams: z.infer<typeof teamSchema>[];
   roles: (typeof rolesTuple)[number];
 };
-
 
 const teamFilterFn: FilterFn<ProjectMember> = (row, _columnId, value) => {
   if (!value) return true; // show all when value is empty
@@ -31,7 +31,12 @@ const teamFilterFn: FilterFn<ProjectMember> = (row, _columnId, value) => {
   return teams.some((t) => t.teamName.toLowerCase() === val);
 };
 
-export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
+export function getProjectDataTableMemberColumns(
+  isLoading: boolean,
+  setPendingProjectManager: (p: PendingProjectManager) => void,
+  setReassignManagerModalOpen: (val: boolean) => void,
+  onRoleChange: (userId: number, nextRole: ProjectRoles) => void,
+): ColumnDef<ProjectMember>[] {
   return [
     {
       id: "user",
@@ -64,7 +69,7 @@ export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
     {
       id: "teams",
       accessorFn: (row) => row.teams?.map((t) => t.teamName).join(" ") ?? "",
-      filterFn: teamFilterFn,  // Custom, check is user has this team
+      filterFn: teamFilterFn, // Custom, check is user has this team
       header: () => "Teams",
       cell: ({ row }) => (
         <div className="flex gap-2">
@@ -81,23 +86,38 @@ export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
     {
       accessorKey: "roles",
       header: () => "Roles",
-      cell: ({ row }) => (
-        <Select defaultValue={row.original.roles}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select A Role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Roles</SelectLabel>
-              {Object.values(rolesTuple).map((r, idx) => (
-                <SelectItem key={idx} value={r}>
-                  {r}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      ),
+      cell: ({ row }) => {
+        const handleChange = (val: ProjectRoles) => {
+          const userId = row.original.user.id;
+
+          if (val === "Project Manager" && row.original.roles !== "Project Manager") {
+            // set who we will update to be project manager, and open confirm modal
+            setPendingProjectManager({ userId, role: val });
+            setReassignManagerModalOpen(true);
+          } else {
+            // immediate update
+            onRoleChange(userId, val);
+          }
+        };
+
+        return (
+          <Select defaultValue={row.original.roles} onValueChange={handleChange}>
+            <SelectTrigger disabled={isLoading} className="w-[180px]">
+              <SelectValue placeholder="Select A Role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Roles</SelectLabel>
+                {Object.values(rolesTuple).map((r, idx) => (
+                  <SelectItem key={idx} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        );
+      },
     },
   ];
 }

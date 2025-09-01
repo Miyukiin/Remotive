@@ -91,6 +91,9 @@ interface UIState {
   isReassignLeaderModalOpen: boolean;
   setReassignLeaderModalOpen: (val: boolean) => void;
 
+  isReassignManagerModalOpen: boolean;
+  setReassignManagerModalOpen: (val: boolean) => void;
+
   isSideBarOpen: boolean;
   setSideBarOpen: (val: boolean) => void;
 }
@@ -134,6 +137,9 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isReassignLeaderModalOpen: false,
   setReassignLeaderModalOpen: (val) => set(() => ({ isReassignLeaderModalOpen: val })),
+
+  isReassignManagerModalOpen: false,
+  setReassignManagerModalOpen: (val) => set(() => ({ isReassignManagerModalOpen: val })),
 
   isSideBarOpen: false,
   setSideBarOpen: (val) => set(() => ({ isSideBarOpen: val })),
