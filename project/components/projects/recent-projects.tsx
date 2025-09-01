@@ -47,7 +47,7 @@ export default async function RecentProjectsCard() {
 
       <CardContent className="flex flex-col gap-4">
         {projects.map((project) => {
-          const pct = 0;
+          const pct = project.percentCompletion;
 
           return (
             <Link href={`/projects/${project.id}`} key={project.id} className="group">

@@ -100,6 +100,7 @@ export type RecentProjects = {
   dueDate: Date | null;
   updatedAt: Date;
   status: "Completed" | "On-hold" | "In Progress" | "Planning" | "Review";
+  percentCompletion: number;
   memberCount: number;
   memberImages: string[];
 };
