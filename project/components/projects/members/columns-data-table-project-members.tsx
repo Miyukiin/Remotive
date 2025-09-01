@@ -1,10 +1,9 @@
 import { teamSchema, userSchema } from "@/lib/validations/validations";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, FilterFn } from "@tanstack/react-table";
 import z from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../../ui/button";
 import { ArrowDownZA, ArrowUpAZ } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { rolesTuple } from "../../../lib/db/db-enums";
 import { Badge } from "@/components/ui/badge";
 
@@ -22,6 +21,14 @@ export type ProjectMember = {
   user: z.infer<typeof userSchema>;
   teams: z.infer<typeof teamSchema>[];
   roles: (typeof rolesTuple)[number];
+};
+
+
+const teamFilterFn: FilterFn<ProjectMember> = (row, _columnId, value) => {
+  if (!value) return true; // show all when value is empty
+  const val = String(value).toLowerCase();
+  const teams = row.original.teams ?? [];
+  return teams.some((t) => t.teamName.toLowerCase() === val);
 };
 
 export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
@@ -55,7 +62,9 @@ export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
       ),
     },
     {
-      accessorKey: "teams",
+      id: "teams",
+      accessorFn: (row) => row.teams?.map((t) => t.teamName).join(" ") ?? "",
+      filterFn: teamFilterFn,  // Custom, check is user has this team
       header: () => "Teams",
       cell: ({ row }) => (
         <div className="flex gap-2">
