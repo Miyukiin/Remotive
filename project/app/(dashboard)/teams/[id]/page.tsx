@@ -27,7 +27,7 @@ export default function TeamPage({ params }: { params: Promise<{ id: string }> }
     teamLeaderCheckError,
     reassignTeamLeader,
     isReassignTeamLeaderLoading,
-  } = useTeams(team_id);
+  } = useTeams({team_id});
 
   // If error, throw error
   if (teamError || teamLeaderUserError || teamMembersError || teamLeaderCheckError) {

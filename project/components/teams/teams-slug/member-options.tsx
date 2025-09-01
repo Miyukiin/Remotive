@@ -14,7 +14,7 @@ type MemberOptionsProps = {
 };
 
 const MemberOptions: FC<MemberOptionsProps> = ({ team_id, user_id, isReassignLoading, setNewLeaderId }) => {
-  const { removeUserFromTeam, isRemoveUserFromTeamLoading } = useTeams();
+  const { removeUserFromTeam, isRemoveUserFromTeamLoading } = useTeams({});
   const { setReassignLeaderModalOpen } = useUIStore();
 
   function onRemoveClick() {

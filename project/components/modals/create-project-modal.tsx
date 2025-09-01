@@ -51,7 +51,7 @@ const CreateProjectModal: FC = () => {
   }, [isCreateProjectModalOpen, form]);
 
   const { createProject, isProjectCreationLoading } = useProjects();
-  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams();
+  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams({});
 
   const onSubmit = async (values: ProjectCreateForm) => {
     // Server-side uniqueness check

@@ -7,6 +7,7 @@ import {
   deleteTeamAction,
   getProjectsForTeamAction,
   getTeamByIdAction,
+  getTeamsForProject,
   getTeamsForUser,
   getUsersForTeam,
   reassignTeamLeaderAction,
@@ -21,7 +22,7 @@ import { teamSchemaForm } from "@/lib/validations/validations";
 import { TeamsSelect, UserSelect } from "@/types";
 import { getTempId } from "@/lib/utils";
 
-export function useTeams(team_id?: number) {
+export function useTeams({ team_id, project_id }: { team_id?: number; project_id?: number }) {
   const queryClient = useQueryClient();
 
   // All teams for current user
@@ -31,6 +32,18 @@ export function useTeams(team_id?: number) {
       const me = await getUserId();
       if (!me.success) throw new Error(me.message);
       const res = await getTeamsForUser(me.data.id);
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
+  // All teams for current project
+  const projectTeams = useQuery({
+    queryKey: ["teams", project_id],
+    enabled: typeof project_id === "number",
+    queryFn: async ({ queryKey }) => {
+      const [, project_id] = queryKey as ["teams", number];
+      const res = await getTeamsForProject(project_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -358,10 +371,15 @@ export function useTeams(team_id?: number) {
   });
 
   return {
-    // lists
-    userTeams: teams,
+    // user's teams
+    userTeams: teams.data,
     isUserTeamsLoading: teams.isLoading,
     getUserTeamsError: teams.error,
+
+    // project's teams
+    projectTeams: projectTeams.data,
+    isProjectTeamsLoading: projectTeams.isLoading,
+    getProjectTeamsError: projectTeams.error,
 
     // team by Id
     team: getTeamById.data,

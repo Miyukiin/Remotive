@@ -18,7 +18,7 @@ type DeleteTeamModalProps = { team_id: number };
 
 export function DeleteTeamModal({ team_id }: DeleteTeamModalProps) {
   const { isDeleteTeamModalOpen, setDeleteTeamModalOpen } = useUIStore();
-  const { deleteTeam, isTeamDeleteLoading } = useTeams(team_id);
+  const { deleteTeam, isTeamDeleteLoading } = useTeams({team_id});
   const router = useRouter();
 
   function onCancelClick() {

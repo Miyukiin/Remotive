@@ -5,7 +5,7 @@ import { useTeams } from "@/hooks/use-teams";
 import CreateTeamModal from "@/components/modals/create-team-modal";
 
 export default function TeamPage() {
-  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams();
+  const { userTeams, isUserTeamsLoading, getUserTeamsError } = useTeams({});
 
   return (
     <>

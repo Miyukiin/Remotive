@@ -22,7 +22,7 @@ type Props = {
 type TeamForm = z.infer<typeof teamSchemaForm>;
 
 const TeamGeneralSettings: FC<Props> = ({ team }) => {
-  const { updateTeam, isTeamUpdateLoading } = useTeams(team.id);
+  const { updateTeam, isTeamUpdateLoading } = useTeams({team_id: team.id});
 
   const form = useForm<TeamForm>({
     resolver: zodResolver(teamSchemaForm),

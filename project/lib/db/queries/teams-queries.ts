@@ -410,4 +410,20 @@ export const teams = {
       return failResponse(`Unable to retrieve team's projects`, e);
     }
   },
+  getTeamsForProject: async (project_id: number): Promise<types.QueryResponse<types.TeamsSelect[]>> => {
+    try {
+      const result = await db
+        .select({ teams: schema.teams })
+        .from(schema.teams)
+        .innerJoin(schema.teams_to_projects, eq(schema.teams_to_projects.team_id, schema.teams.id))
+        .where(eq(schema.teams_to_projects.project_id, project_id))
+        .orderBy(schema.teams.teamName);
+
+      // Unwrap
+      const projectTeams = result.map((r) => r.teams);
+      return successResponse(`Task members retrieved successfully.`, projectTeams);
+    } catch (e) {
+      return failResponse(`Unable to retrieve project's teams`, e);
+    }
+  },
 };

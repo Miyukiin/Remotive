@@ -101,6 +101,15 @@ export async function getTeamsForUser(user_id: number): Promise<ServerActionResp
   return await queries.teams.getTeamsForUser(user_id);
 }
 
+export async function getTeamsForProject(project_id: number): Promise<ServerActionResponse<types.TeamsSelect[]>> {
+  await checkAuthenticationStatus();
+
+  const parsed = idSchema.safeParse({ id: project_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  return await queries.teams.getTeamsForProject(project_id);
+}
+
 // Mutations
 export async function updateTeamAction(
   team_id: number,
