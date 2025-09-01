@@ -96,22 +96,14 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
-              {isProgressLoading ? (
-                <Skeleton height="4" width="10" />
-              ) : (
-                <span className="font-medium">{progress}%</span>
-              )}
+              {isProgressLoading ? <Skeleton className="h-4 w-10" /> : <span className="font-medium">{progress}%</span>}
             </div>
-            {isProgressLoading ? (
-              <Skeleton height="2" width="full" className=" rounded" />
-            ) : (
-              <Progress value={progress} />
-            )}
+            {isProgressLoading ? <Skeleton className=" h-2 w-full rounded" /> : <Progress value={progress} />}
             {isProgressError ? <span className="text-xs text-muted-foreground">Unable to load progress</span> : null}
           </div>
 
           {/* Tasks + Days Left */}
-          <div className={`flex items-center justify-between text-sm  text-muted-foreground}`}>
+          <div className={`flex items-center justify-between text-sm  text-muted-foreground`}>
             <span aria-live="polite">{tasksText}</span>
             <span className={`${overdueInfo.isOverdue ? "text-destructive" : "text-muted-foreground"}`}>
               {taskOverdueText}
@@ -132,7 +124,7 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
           </Badge>
 
           {isProjectMembersLoading ? (
-            <Skeleton height="6" width="20" />
+            <Skeleton className="w-20 h-6" />
           ) : projectMembers && !projectMembersError ? (
             <TooltipProvider delayDuration={200}>
               <Tooltip>

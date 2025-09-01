@@ -1,11 +1,13 @@
 "use client";
+
 import CreateProjectModal from "@/components/modals/create-project-modal";
 import { CreateProjectButton } from "@/components/projects/create-project-button";
 import ProjectsSection from "@/components/projects/projects-section";
+import { ProjectsSectionSkeleton } from "@/components/projects/projects-sections-skeleton";
 import { useProjects } from "@/hooks/use-projects";
 
 export default function ProjectsPage() {
-  const { projects } = useProjects();
+  const { projects, isProjectsLoading, projectsError } = useProjects();
 
   return (
     <>
@@ -20,11 +22,17 @@ export default function ProjectsPage() {
         </div>
 
         {/* Projects Section */}
-        {projects ? (
+        {isProjectsLoading ? (
+          <ProjectsSectionSkeleton count={6} />
+        ) : projects && projects.length > 0 ? (
           <ProjectsSection projectsData={projects} />
+        ) : projectsError ? (
+          <div className="flex justify-center">
+            <p className="text-muted-foreground">Unable to get project data. Please refresh the page.</p>
+          </div>
         ) : (
           <div className="flex justify-center">
-            <p className="text-muted-foreground"> Unable to get project data. Please refresh the page.</p>{" "}
+            <p className="text-muted-foreground">No projects yet. Create your first one!</p>
           </div>
         )}
       </div>

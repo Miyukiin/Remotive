@@ -1,3 +1,5 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export function DashboardStatsSkeleton() {
   const cards = Array.from({ length: 4 });
 
@@ -8,7 +10,7 @@ export function DashboardStatsSkeleton() {
           <div className="flex items-center">
             {/* Icon box */}
             <div className="shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-muted animate-pulse" />
+              <Skeleton className="h-8 w-8 rounded-lg" />
             </div>
 
             {/* Text area */}
@@ -16,14 +18,14 @@ export function DashboardStatsSkeleton() {
               <div className="space-y-2">
                 {/* Title + (Last 7 days) */}
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-28 bg-muted/70 rounded animate-pulse" />
-                  <div className="h-3 w-20 bg-muted/40 rounded animate-pulse" />
+                  <Skeleton className="h-3 w-28 rounded" />
+                  <Skeleton className="h-3 w-20 rounded" />
                 </div>
 
                 {/* Value + delta */}
-                <div className="flex gap-3">
-                  <div className="h-7 w-16 bg-muted rounded animate-pulse" />
-                  <div className="h-3 w-10 bg-muted/60 rounded animate-pulse" />
+                <div className="flex items-baseline gap-3">
+                  <Skeleton className="h-7 w-16 rounded" />
+                  <Skeleton className="h-3 w-10 rounded" />
                 </div>
               </div>
             </div>

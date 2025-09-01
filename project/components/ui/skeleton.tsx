@@ -1,12 +1,13 @@
-"use client";
-import { FC } from "react";
+import { cn } from "@/lib/utils"
 
-type SkeletonProps = {
-  height: string;
-  width: string;
-  className?: string;
-};
+function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="skeleton"
+      className={cn("bg-muted-foreground/10 dark:bg-muted animate-pulse rounded-md", className)}
+      {...props}
+    />
+  )
+}
 
-export const Skeleton: FC<SkeletonProps> = ({ height, width, className }) => {
-  return <div className={`${className} h-${height} w-${width} bg-white-smoke-200 rounded-md animate-pulse`} />;
-};
+export { Skeleton }
