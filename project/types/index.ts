@@ -111,10 +111,25 @@ export type RecentTasks = {
   description: string | null;
   project_id: number;
   dueDate: Date | null;
-  statusName: string,
+  statusName: string;
   statusColor: keyof typeof listColor;
   assigneeCount: number;
   assigneeImages: string[];
+};
+
+export type DashboardAnalytics = {
+  stats: {
+    activeProjects: number;
+    teamMembers: number;
+    completedTasks: number;
+    pendingTasks: number;
+  };
+  deltas: {
+    activeProjects: string;
+    teamMembers: string;
+    completedTasks: string;
+    pendingTasks: string;
+  };
 };
 
 export type ListPositionPayload = {

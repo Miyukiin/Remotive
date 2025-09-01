@@ -1,4 +1,4 @@
-import { RecentProjects, RecentTasks } from "@/types";
+import { DashboardAnalytics, RecentProjects, RecentTasks } from "@/types";
 import { cookies } from "next/headers";
 
 // Development
@@ -38,6 +38,19 @@ export async function getRecentTasks() {
     return (await res.json()) as APIResponse<RecentTasks[]>;
   } catch (e) {
     console.error("Error fetching recent tasks:", e);
+    throw e;
+  }
+}
+
+export async function getDashboardAnalytics() {
+  try {
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore.toString();
+    const route = "dashboard/analytics/";
+    const res = await fetch(API_BASE_URL + route, { method: "GET", headers: { Cookie: cookieHeader } });
+    return (await res.json()) as APIResponse<DashboardAnalytics>;
+  } catch (e) {
+    console.error("Error fetching dashboard analytics:", e);
     throw e;
   }
 }
