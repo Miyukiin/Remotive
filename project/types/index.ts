@@ -104,6 +104,18 @@ export type RecentProjects = {
   memberImages: string[];
 };
 
+export type RecentTasks = {
+  id: number;
+  title: string;
+  description: string | null;
+  project_id: number;
+  dueDate: Date | null;
+  statusName: string,
+  statusColor: keyof typeof listColor;
+  assigneeCount: number;
+  assigneeImages: string[];
+};
+
 export type ListPositionPayload = {
   id: number;
   position: number;
@@ -146,7 +158,4 @@ export type TransactionType = Parameters<Parameters<DatabaseType["transaction"]>
 
 export type ProjectRoles = (typeof schema.rolesEnum.enumValues)[number];
 
-
 export type PendingProjectManager = { userId: number; role: ProjectRoles } | null;
-
-
