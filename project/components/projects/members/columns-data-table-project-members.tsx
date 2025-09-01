@@ -27,7 +27,8 @@ export type ProjectMember = {
 export function getProjectDataTableMemberColumns(): ColumnDef<ProjectMember>[] {
   return [
     {
-      accessorKey: "user",
+      id: "user",
+      accessorFn: (row) => `${row.user.name ?? ""} ${row.user.email ?? ""}`,
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           User
