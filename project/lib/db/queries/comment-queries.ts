@@ -40,6 +40,7 @@ export const comments = {
           entity_type: "comment",
           action: "COMMENT_CREATED",
           task_id: insertedComment.taskId, // contextual
+          comment_id: insertedComment.id,
         });
 
         return successResponse(`Created comment successfully.`, insertedComment);
@@ -89,6 +90,7 @@ export const comments = {
           entity_type: "comment",
           action: "COMMENT_UPDATED",
           task_id: result.taskId,
+          comment_id: result.id
         });
 
         return successResponse(`Updated comment successfully.`, result);
