@@ -10,13 +10,14 @@ import ReassignManagerModal from "@/components/modals/reassign-manager-modal";
 import { useProjectManagerStore } from "@/stores/project-manager-store";
 import { useUIStore } from "@/stores/ui-store";
 import { ProjectRoles } from "@/types";
+import ReassignProjectTeamsModal from "@/components/modals/reassign-project-teams-modal";
 
 export default function ProjectMembersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const projectId = Number(id);
 
   const { project, isProjectLoading, projectError } = useProjects(projectId);
-  const { projectTeams } = useTeams({ project_id: projectId });
+  const { userTeams, projectTeams } = useTeams({ project_id: projectId });
 
   const { projectMembersData, isProjectMembersDataLoading, updateProjectMember, isUpdateProjectMemberLoading } =
     useProjectMembers(projectId);
@@ -24,10 +25,12 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
   const { setPendingProjectManager } = useProjectManagerStore();
   const { setReassignManagerModalOpen } = useUIStore();
 
-  // Func that ac
   function changeRole(userId: number, nextRole: ProjectRoles) {
     updateProjectMember({ member_id: userId, role: nextRole });
   }
+
+  // Current team ids of project
+  const teamIds = projectTeams?.map((t) => t.id);
 
   if (!project) {
     if (isProjectLoading) return <LoadingUI />;
@@ -44,8 +47,9 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
 
   return (
     <div>
-      {projectMembersData && projectTeams && (
+      {projectMembersData && projectTeams && userTeams && teamIds && (
         <>
+          <ReassignProjectTeamsModal project_id={projectId} allTeams={userTeams} currentTeamIds={teamIds} />
           <ReassignManagerModal isLoading={isUpdateProjectMemberLoading} onRoleChange={changeRole} />
           <ProjectMembersDataTable columns={columns} data={projectMembersData} teamOptions={projectTeams} />
         </>

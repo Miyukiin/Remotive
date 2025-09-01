@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProjectMember } from "./columns-data-table-project-members";
+import { useUIStore } from "@/stores/ui-store";
 
 interface ProjectMembersDataTableProps {
   columns: ColumnDef<ProjectMember>[];
@@ -42,14 +43,9 @@ export function ProjectMembersDataTable({ columns, data, teamOptions }: ProjectM
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
+  const { setReassignProjectTeamsModalOpen } = useUIStore();
 
   const [teamFilter, setTeamFilter] = useState<string>("");
-
-  // const executeButtonAction = (selectedRows: RowModel<UserSelect>) => {
-  //   const users: UserSelect[] = selectedRows.rows.map((row) => row.original);
-  //   buttonAction(users);
-  //   setRowSelection({});
-  // };
 
   const table = useReactTable({
     data,
@@ -71,7 +67,7 @@ export function ProjectMembersDataTable({ columns, data, teamOptions }: ProjectM
   return (
     <div className="b">
       {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row items-center mb-4 gap-8">
+      <div className="flex flex-col md:flex-row items-center mb-4 gap-2 md:gap-8">
         <Input
           placeholder="Search for a user..."
           value={(table.getColumn("user")?.getFilterValue() as string) ?? ""}
@@ -118,6 +114,12 @@ export function ProjectMembersDataTable({ columns, data, teamOptions }: ProjectM
               Clear
             </Button>
           </div>
+        </div>
+        {/* Reassign Teams Button */}
+        <div className="flex w-full md:w-[180px] md:shrink-0">
+          <Button variant="default" className="w-full" onClick={() => setReassignProjectTeamsModalOpen(true)}>
+            Manage Teams
+          </Button>
         </div>
       </div>
       <div className="overflow-hidden rounded-md border">

@@ -66,6 +66,7 @@ import {
   getProjectsForUserAction,
   reassignProjectMemberRole,
   updateProjectAction,
+  updateProjectTeamsAction,
 } from "@/actions/project-actions";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectSchemaForm, projectSchemaUpdateForm } from "../lib/validations/validations";
@@ -73,7 +74,7 @@ import z from "zod";
 import { toast } from "sonner";
 import { getUserId } from "@/actions/user-actions";
 import { getTasksCountForProjectAction } from "@/actions/task-actions";
-import { ProjectRoles, ProjectSelect } from "@/types";
+import { ProjectRoles, ProjectSelect, UpdateProjectTeamsPayload } from "@/types";
 import { getTempId } from "@/lib/utils";
 import { getProjectMembersTableData } from "@/actions/teams-actions";
 import { ProjectMember } from "@/components/projects/members/columns-data-table-project-members";
@@ -355,6 +356,33 @@ export function useProjectMembers(projectId: number) {
     },
   });
 
+  const reassignProjectTeams = useMutation({
+    mutationFn: async ({ project_id, toAdd, toRemove }: UpdateProjectTeamsPayload) => {
+      const res = await updateProjectTeamsAction({ project_id: projectId, toAdd, toRemove });
+      if (!res.success) throw new Error(res.error as string);
+      return res.data; // { addedTeamIds, removedTeamIds, insertedMembers, deletedMembers }
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["project_members_data_table", projectId] });
+      await queryClient.cancelQueries({ queryKey: ["project_members", projectId] });
+      await queryClient.cancelQueries({ queryKey: ["teams", projectId] });
+      return {};
+    },
+    onSuccess: () => {
+      toast.success("Success", { description: "Successfully updated project teams." });
+    },
+    onError: (error) => {
+      toast.error("Error", { description: `${error.message}` });
+    },
+    onSettled: async () => {
+      // Always re-fetch canonical server state after changes
+      await queryClient.invalidateQueries({ queryKey: ["project_members_data_table", projectId] });
+      await queryClient.invalidateQueries({ queryKey: ["project_members", projectId] });
+      await queryClient.invalidateQueries({ queryKey: ["teams", projectId] });
+      await queryClient.invalidateQueries({ queryKey: ["project", projectId] }); // update updatedAt etc.
+    },
+  });
+
   return {
     // Retrieve UserSelect data type project members
     projectMembers: projectMembers.data,
@@ -370,5 +398,11 @@ export function useProjectMembers(projectId: number) {
     updateProjectMember: updateProjectMember.mutate,
     isUpdateProjectMemberLoading: updateProjectMember.isPending,
     updateProjectMemberError: updateProjectMember.error,
+
+    // Update project teams
+    reassignProjectTeams: reassignProjectTeams.mutate,
+    reassignProjectTeamsAsync: reassignProjectTeams.mutateAsync,
+    isReassignProjectTeamsLoading: reassignProjectTeams.isPending,
+    reassignProjectTeamsError: reassignProjectTeams.error,
   };
 }

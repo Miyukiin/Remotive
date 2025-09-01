@@ -528,3 +528,13 @@ export const projectMemberUpdatePayloadSchema = z.object({
   project_id: z.int().min(1, errorTemplates.idMinError),
   role: z.enum(rolesTuple),
 });
+
+export const reassignTeamsSchema = z.object({
+  teamIds: z.array(z.number()).min(1, "A project must have at least one team."),
+});
+
+export const updateProjectTeamsPayload = z.object({
+  project_id: z.number().int().positive(),
+  toAdd: z.array(z.number().int().positive()),
+  toRemove: z.array(z.number().int().positive()),
+});

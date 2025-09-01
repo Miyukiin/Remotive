@@ -94,6 +94,9 @@ interface UIState {
   isReassignManagerModalOpen: boolean;
   setReassignManagerModalOpen: (val: boolean) => void;
 
+  isReassignProjectTeamsModalOpen: boolean;
+  setReassignProjectTeamsModalOpen: (val: boolean) => void;
+
   isSideBarOpen: boolean;
   setSideBarOpen: (val: boolean) => void;
 }
@@ -140,6 +143,9 @@ export const useUIStore = create<UIState>()((set) => ({
 
   isReassignManagerModalOpen: false,
   setReassignManagerModalOpen: (val) => set(() => ({ isReassignManagerModalOpen: val })),
+
+  isReassignProjectTeamsModalOpen: false,
+  setReassignProjectTeamsModalOpen: (val) => set(() => ({ isReassignProjectTeamsModalOpen: val })),
 
   isSideBarOpen: false,
   setSideBarOpen: (val) => set(() => ({ isSideBarOpen: val })),

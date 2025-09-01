@@ -7,8 +7,10 @@ import {
   listSchemaForm,
   projectSchemaForm,
   projectSchemaUpdateForm,
+  reassignTeamsSchema,
   taskSchemaEditForm,
   taskSchemaForm,
+  updateProjectTeamsPayload,
 } from "@/lib/validations/validations";
 import z from "zod";
 import { TaskStatus } from "../components/tasks/task-modal-ui/task-status";
@@ -28,6 +30,8 @@ export type LabelCreateForm = z.infer<typeof labelSchemaForm>;
 export type LabelUpdateForm = z.infer<typeof labelSchemaUpdateForm>;
 
 export type CommentCreateForm = z.infer<typeof commentSchemaForm>;
+
+export type ReassignTeamsForm = z.infer<typeof reassignTeamsSchema>;
 
 // Query Types
 export type QueryResponse<T> =
@@ -111,6 +115,8 @@ export type TaskPositionPayload = {
   position: number;
 };
 
+export type UpdateProjectTeamsPayload = z.infer<typeof updateProjectTeamsPayload>;
+
 export type TaskStatus = { status: string; color: keyof typeof listColor };
 
 export type KanbanColor = keyof typeof listColor;
@@ -142,3 +148,5 @@ export type ProjectRoles = (typeof schema.rolesEnum.enumValues)[number];
 
 
 export type PendingProjectManager = { userId: number; role: ProjectRoles } | null;
+
+
