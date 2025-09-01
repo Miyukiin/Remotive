@@ -1,6 +1,7 @@
 "use client";
+
 import ProjectHeading from "@/components/projects/project-heading";
-import LoadingUI from "@/components/ui/loading-ui";
+import { BreadCrumbsSkeleton, ProjectHeadingSkeleton } from "@/components/skeletons/skeletons";
 import { useProjects } from "@/hooks/use-projects";
 import { useParams } from "next/navigation";
 
@@ -9,11 +10,17 @@ export default function ProjectsLayout({ children }: { children: React.ReactNode
   const projectId = Number(id);
   const { project, isProjectLoading, projectError } = useProjects(projectId);
 
+  if (isProjectLoading) {
+    return (
+      <div className="space-y-6">
+        <BreadCrumbsSkeleton />
+        <ProjectHeadingSkeleton />
+      </div>
+    );
+  }
+
   if (!project) {
-    if (!project && isProjectLoading) {
-      return <LoadingUI />;
-    }
-    throw new Error(projectError?.message);
+    throw new Error(projectError?.message || "Unable to load project.");
   }
 
   return (

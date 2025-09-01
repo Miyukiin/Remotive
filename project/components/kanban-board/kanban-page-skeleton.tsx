@@ -1,8 +1,6 @@
 import { FC } from "react";
 import {
-  BreadCrumbsSkeleton,
   KanbanBoardSkeleton,
-  ProjectHeadingSkeleton,
   SearchBarSkeleton,
 } from "../skeletons/skeletons";
 
@@ -10,10 +8,10 @@ const SkeletonKanbanBoardPage: FC = () => {
   return (
     <div className="flex flex-col gap-y-3">
       {/* Breadcrumbs */}
-      <BreadCrumbsSkeleton />
+      {/* <BreadCrumbsSkeleton /> */}
 
       {/* Project Heading Skeleton */}
-      <ProjectHeadingSkeleton />
+      {/* <ProjectHeadingSkeleton /> */}
 
       {/* Search Bar Skeleton */}
       <SearchBarSkeleton />
