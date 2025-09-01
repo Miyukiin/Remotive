@@ -245,10 +245,11 @@ export function useTeams({ team_id, project_id }: { team_id?: number; project_id
       toast.error("Error", { description: error.message });
       queryClient.setQueryData(["team_members"], context?.previousTeamMembers);
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Refetch
-      queryClient.invalidateQueries({ queryKey: ["teams", "mine"] });
-      queryClient.invalidateQueries({ queryKey: ["team_members", { teamId: team_id }] });
+      await queryClient.invalidateQueries({ queryKey: ["teams", "mine"] });
+      await queryClient.invalidateQueries({ queryKey: ["team_members", { teamId: team_id }] });
+      await queryClient.invalidateQueries({ queryKey: ["project_members", project_id] });
     },
   });
 
@@ -316,10 +317,11 @@ export function useTeams({ team_id, project_id }: { team_id?: number; project_id
       toast.error("Error", { description: error.message });
       queryClient.setQueryData(["team_members"], context?.previousTeamMembers);
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Refetch
-      queryClient.invalidateQueries({ queryKey: ["teams", "mine"] });
-      queryClient.invalidateQueries({ queryKey: ["team_members", { teamId: team_id }] });
+      await queryClient.invalidateQueries({ queryKey: ["teams", "mine"] });
+      await queryClient.invalidateQueries({ queryKey: ["team_members", { teamId: team_id }] });
+      await queryClient.invalidateQueries({ queryKey: ["project_members", project_id] });
     },
   });
 

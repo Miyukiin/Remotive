@@ -354,6 +354,8 @@ export const auditLogs = pgTable(
       t.entity_type,
       t.entity_id,
       t.action,
+      t.subject_user_id,
+      t.team_id,
       t.created_at,
     ),
   }),

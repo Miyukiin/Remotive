@@ -18,6 +18,7 @@ import { failResponse, successResponse } from "@/lib/db/queries/query_utils";
 import { db } from "@/lib/db/db-index";
 import * as schema from "@/lib/db/schema";
 import { and, eq, inArray, ne } from "drizzle-orm";
+import { logAction } from "@/lib/audit/audit.utils";
 
 // Utility
 export async function checkProjectNameUnique(ProjectName: string): Promise<ServerActionResponse<boolean>> {
@@ -155,9 +156,24 @@ export async function reassignProjectMemberRole({
               ne(schema.project_members.user_id, member_id), // everyone except the new PM
             ),
           )
-          .returning({ user_id: schema.project_members.user_id });
+          .returning({
+            user_id: schema.project_members.user_id,
+            team_id: schema.project_members.team_id,
+          });
 
         totalUpdated += demoted.length;
+
+        // AUDIT: log each demotion (PM -> Member)
+        for (const row of demoted) {
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project_id,
+            action: "PROJECT_MEMBER_ROLE_UPDATED",
+            project_id,
+            team_id: row.team_id,
+            subject_user_id: row.user_id,
+          });
+        }
       }
 
       // Now set the target user's rows to the target role across all their team memberships
@@ -173,6 +189,18 @@ export async function reassignProjectMemberRole({
 
       totalUpdated += promotedOrUpdated.length;
 
+      // AUDIT: role changes for each member
+      for (const row of promotedOrUpdated) {
+        await logAction(tx, {
+          entity_type: "project",
+          entity_id: project_id,
+          action: "PROJECT_MEMBER_ROLE_UPDATED",
+          project_id,
+          team_id: row.team_id,
+          subject_user_id: member_id,
+        });
+      }
+
       return { totalUpdated };
     });
 
@@ -181,10 +209,10 @@ export async function reassignProjectMemberRole({
       newRole: { id: targetRoleRow.id, role_name: targetRoleRow.role_name },
     });
   } catch (e) {
+    console.log(e)
     return failResponse("Unable to reassign member role.", e);
   }
 }
-
 export async function updateProjectTeamsAction(payload: types.UpdateProjectTeamsPayload): Promise<
   ServerActionResponse<{
     addedTeamIds: number[];
@@ -261,6 +289,17 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
             updatedAt: now,
           })),
         );
+
+        // AUDIT: project assigned to each added team
+        for (const team_id of toAdd) {
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project_id,
+            action: "PROJECT_TEAM_ADDED",
+            project_id,
+            team_id,
+          });
+        }
       }
 
       // Insert project_members entry for every user in our newly added teams
@@ -307,9 +346,21 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
                 schema.project_members.user_id,
               ],
             })
-            .returning({ user_id: schema.project_members.user_id });
+            .returning({ user_id: schema.project_members.user_id, team_id: schema.project_members.team_id });
 
           insertedMembers = inserted.length;
+
+          // AUDIT: each user added as project member
+          for (const row of inserted) {
+            await logAction(tx, {
+              entity_type: "project",
+              entity_id: project_id,
+              action: "PROJECT_MEMBER_ADDED",
+              project_id,
+              team_id: row.team_id,
+              subject_user_id: row.user_id,
+            });
+          }
         }
       }
 
@@ -321,9 +372,21 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
           .where(
             and(eq(schema.project_members.project_id, project_id), inArray(schema.project_members.team_id, toRemove)),
           )
-          .returning({ user_id: schema.project_members.user_id });
+          .returning({ user_id: schema.project_members.user_id, team_id: schema.project_members.team_id });
 
         deletedMembers = deleted.length;
+
+        // AUDIT: each user removed as project member
+        for (const row of deleted) {
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project_id,
+            action: "PROJECT_MEMBER_REMOVED",
+            project_id,
+            team_id: row.team_id,
+            subject_user_id: row.user_id,
+          });
+        }
 
         // Remove teams to projects association of teams
         await tx
@@ -334,6 +397,17 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
               inArray(schema.teams_to_projects.team_id, toRemove),
             ),
           );
+
+        // AUDIT: project unassigned from each removed team
+        for (const team_id of toRemove) {
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: project_id,
+            action: "PROJECT_TEAM_REMOVED",
+            project_id,
+            team_id,
+          });
+        }
       }
 
       // Update project.updatedAt

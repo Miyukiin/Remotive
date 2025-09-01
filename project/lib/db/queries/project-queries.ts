@@ -1,9 +1,10 @@
 import * as types from "../../../types/index";
 import { db } from "../db-index";
-import { getAllObject, getObjectById, deleteObject, getBaseFields, successResponse, failResponse } from "./query_utils";
+import { getAllObject, getObjectById, getBaseFields, successResponse, failResponse } from "./query_utils";
 import * as schema from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { teams } from "@/lib/db/queries/teams-queries";
+import { logAction } from "@/lib/audit/audit.utils";
 
 export const projects = {
   getAll: async (): Promise<types.QueryResponse<Array<types.ProjectSelect>>> => {
@@ -22,6 +23,14 @@ export const projects = {
         const [insertedProject] = await tx.insert(schema.projects).values(newProject).returning();
         if (!insertedProject) throw new Error(`Database did not return a project. Check connection.`);
 
+        // AUDIT: project created
+        await logAction(tx, {
+          entity_id: insertedProject.id,
+          entity_type: "project",
+          action: "PROJECT_CREATED",
+          project_id: insertedProject.id,
+        });
+
         // Create an entry to insert for each team
         const teamsToAssign: types.TeamsToProjectsInsert[] = teamIds.map((id) => ({
           team_id: id,
@@ -33,6 +42,17 @@ export const projects = {
         // Assign the teams
         const assignedTeams = await tx.insert(schema.teams_to_projects).values(teamsToAssign).returning();
         if (assignedTeams.length !== teamIds.length) throw new Error("Not all teams were assigned.");
+
+        // AUDIT: project assigned to each team
+        for (const t of assignedTeams) {
+          await logAction(tx, {
+            entity_id: insertedProject.id,
+            entity_type: "project",
+            action: "PROJECT_TEAM_ADDED",
+            project_id: insertedProject.id,
+            team_id: t.team_id,
+          });
+        }
 
         // Create Project Members Entries
         for (const assignedTeam of assignedTeams) {
@@ -54,6 +74,18 @@ export const projects = {
           // Assign the members of this team.
           const assignedMembers = await tx.insert(schema.project_members).values(membersToAssign).returning();
           if (assignedMembers.length !== teamMembers.length) throw new Error("Not all members were assigned.");
+
+          // AUDIT: each user added as project member
+          for (const m of membersToAssign) {
+            await logAction(tx, {
+              entity_type: "project",
+              entity_id: insertedProject.id,
+              action: "PROJECT_MEMBER_ADDED",
+              project_id: insertedProject.id,
+              team_id: m.team_id,
+              subject_user_id: m.user_id, // the user being added
+            });
+          }
         }
 
         // Insert default columns
@@ -70,6 +102,17 @@ export const projects = {
 
         const insertedLists = await tx.insert(schema.lists).values(listsToInsert).returning();
         if (insertedLists.length !== defaultColumns.length) throw new Error("Not all default columns were created.");
+
+        // AUDIT: each default list created
+        for (const l of insertedLists) {
+          await logAction(tx, {
+            entity_id: l.id,
+            entity_type: "list",
+            action: "LIST_CREATED",
+            list_id: l.id,
+            project_id: insertedProject.id,
+          });
+        }
 
         // Insert default project labels
         const defaultLabels: { name: string; color: string }[] = [
@@ -118,7 +161,6 @@ export const projects = {
       if (existingProject.description !== incomingProject.description)
         changed.description = incomingProject.description;
       if (existingProject.dueDate !== incomingProject.dueDate) changed.dueDate = incomingProject.dueDate;
-      if (existingProject.status !== incomingProject.status) changed.status = incomingProject.status;
 
       const finalUpdatedObjectData = {
         ...getBaseFields(existingProject),
@@ -128,21 +170,60 @@ export const projects = {
 
       if (Object.keys(changed).length === 0) return successResponse(`No changes detected.`, existingProject);
 
-      const [result] = await db
-        .update(schema.projects)
-        .set(finalUpdatedObjectData)
-        .where(eq(schema.projects.id, project_id))
-        .returning();
+      const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.ProjectSelect>> => {
+        const [result] = await tx
+          .update(schema.projects)
+          .set(finalUpdatedObjectData)
+          .where(eq(schema.projects.id, project_id))
+          .returning();
 
-      // Check if update is successful.
-      if (result) return successResponse(`Updated project successfully.`, result);
-      else return failResponse(`Unable to update project.`, `Database returned no result.`);
+        if (!result) throw new Error("Database returned no result.");
+
+        // AUDIT: project updated
+        await logAction(tx, {
+          entity_id: result.id,
+          entity_type: "project",
+          action: "PROJECT_UPDATED",
+          project_id: result.id,
+        });
+
+        return successResponse(`Updated project successfully.`, result);
+      });
+
+      if (txResult.success) return txResult;
+      return failResponse(`Unable to update project.`, `Database returned no result.`);
     } catch (e) {
       return failResponse(`Unable to update project.`, e);
     }
   },
   delete: async (id: number): Promise<types.QueryResponse<types.ProjectSelect>> => {
-    return deleteObject<types.ProjectSelect>(id, "projects");
+    try {
+      const txResult = await db.transaction<types.QueryResponse<types.ProjectSelect>>(async (tx) => {
+        const toDelete = await tx.query.projects.findFirst({
+          where: eq(schema.projects.id, id),
+        });
+
+        if (!toDelete) throw new Error("Project not found.");
+
+        const [deleted] = await tx.delete(schema.projects).where(eq(schema.projects.id, id)).returning();
+
+        if (!deleted) throw new Error("Database returned no result.");
+
+        // AUDIT: project deleted
+        await logAction(tx, {
+          entity_type: "project",
+          entity_id: deleted.id,
+          action: "PROJECT_DELETED",
+        });
+
+        return successResponse(`Deleted project successfully.`, deleted);
+      });
+
+      if (txResult.success) return successResponse(txResult.message, txResult.data);
+      return failResponse(`Unable to delete project.`, `Project database deletion transaction failed.`);
+    } catch (e) {
+      return failResponse(`Unable to delete project.`, e);
+    }
   },
   checkProjectNameUnique: async (project_name: string): Promise<types.QueryResponse<boolean>> => {
     try {

@@ -355,7 +355,7 @@ export const tasks = {
       });
 
       if (txResult.success) return successResponse(txResult.message, txResult.data);
-      return failResponse(`Unable to delete task.`, `Task database creation transaction failed.`);
+      return failResponse(`Unable to delete task.`, `Task database deletion transaction failed.`);
     } catch (e) {
       return failResponse(`Unable to delete task.`, e);
     }
