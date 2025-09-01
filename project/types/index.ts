@@ -132,6 +132,12 @@ export type DashboardAnalytics = {
   };
 };
 
+export type ProjectProgressPayload = {
+  total: number;
+  done: number;
+  percent: number;
+};
+
 export type ListPositionPayload = {
   id: number;
   position: number;

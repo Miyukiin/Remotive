@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Users, Calendar } from "lucide-react";
-import { getRecentProjects } from "@/lib/api-calls";
+import { getRecentProjects } from "@/lib/api-calls/api-calls";
 import { projectStatusColor, formatDate, cn } from "@/lib/utils";
 import type { RecentProjects } from "@/types";
 

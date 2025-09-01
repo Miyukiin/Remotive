@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Users, Calendar } from "lucide-react";
-import { getRecentTasks } from "@/lib/api-calls";
+import { getRecentTasks } from "@/lib/api-calls/api-calls";
 import { formatDate, cn, listColor } from "@/lib/utils";
 import type { RecentTasks } from "@/types";
 

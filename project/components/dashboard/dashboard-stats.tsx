@@ -1,7 +1,7 @@
 import { CheckCircle, Clock, TrendingUp, Users } from "lucide-react";
 
 import type { DashboardAnalytics } from "@/types";
-import { getDashboardAnalytics } from "@/lib/api-calls";
+import { getDashboardAnalytics } from "@/lib/api-calls/api-calls";
 
 const FALLBACK: DashboardAnalytics = {
   stats: { activeProjects: 0, teamMembers: 0, completedTasks: 0, pendingTasks: 0 },

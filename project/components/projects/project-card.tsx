@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { useProjectProgress } from "@/hooks/use-project-progress";
 
 interface ProjectCardProps {
   project: ProjectSelect;
@@ -29,6 +30,7 @@ interface ProjectCardProps {
 const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
   const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(project.id);
   const { taskCount, isTaskCountLoading, taskCountError } = useProjects(project.id);
+  const { data: prog, isLoading: isProgressLoading, isError: isProgressError } = useProjectProgress(project.id);
 
   const overdueInfo = useMemo(() => {
     const due = project.dueDate ? new Date(project.dueDate) : null;
@@ -36,7 +38,11 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
   }, [project.dueDate]);
 
   const progress =
-    "progress" in project && typeof project.progress === "number" ? Math.min(100, Math.max(0, project.progress)) : 0;
+    typeof prog?.percent === "number"
+      ? prog.percent
+      : "progress" in project && typeof project.progress === "number"
+        ? Math.min(100, Math.max(0, project.progress))
+        : 0;
 
   const membersText = isProjectMembersLoading
     ? "Loading…"
@@ -90,9 +96,18 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium">{progress}%</span>
+              {isProgressLoading ? (
+                <Skeleton height="4" width="10" />
+              ) : (
+                <span className="font-medium">{progress}%</span>
+              )}
             </div>
-            <Progress value={progress} />
+            {isProgressLoading ? (
+              <Skeleton height="2" width="full" className=" rounded" />
+            ) : (
+              <Progress value={progress} />
+            )}
+            {isProgressError ? <span className="text-xs text-muted-foreground">Unable to load progress</span> : null}
           </div>
 
           {/* Tasks + Days Left */}

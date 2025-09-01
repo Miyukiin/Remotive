@@ -1,5 +1,6 @@
 import { DashboardAnalytics, RecentProjects, RecentTasks } from "@/types";
 import { cookies } from "next/headers";
+// Server only api calls
 
 // Development
 const API_BASE_URL = "http://localhost:3000/api/";
