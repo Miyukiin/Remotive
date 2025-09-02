@@ -28,7 +28,7 @@ const ReassignManagerModal: FC<ReassignManagerModalProps> = ({ isLoading, onRole
   const { pendingProjectManager, setPendingProjectManager } = useProjectManagerStore(); // PendingProjectManager to update
 
   const handleSubmit = () => {
-    console.log(pendingProjectManager)
+    console.log(pendingProjectManager);
     console.log(onRoleChange);
     if (!pendingProjectManager) return;
     onRoleChange?.(pendingProjectManager.userId, pendingProjectManager.role);
@@ -58,12 +58,13 @@ const ReassignManagerModal: FC<ReassignManagerModalProps> = ({ isLoading, onRole
             <DialogTitle>Make this user Project Manager?</DialogTitle>
           </div>
           <DialogDescription>
-            This will set them as the project’s sole Project Manager. You will lose PM privileges in this project and become a project member!
+            This will set them as the project’s sole Project Manager. You will lose PM privileges in this project and
+            become a project member!
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="gap-2">
-          <Button type="button" variant="secondary" onClick={handleClose} disabled={isLoading}>
+          <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading} variant="destructive">

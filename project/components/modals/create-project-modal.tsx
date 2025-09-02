@@ -197,7 +197,7 @@ const CreateProjectModal: FC = () => {
             <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setCreateProjectModalOpen(false)}
                 disabled={isProjectCreationLoading}
               >

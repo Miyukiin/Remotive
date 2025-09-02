@@ -38,7 +38,7 @@ export function DeleteProjectModal({ project_id }: DeleteProjectModalProps) {
         </p>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="secondary" onClick={onCancelClick} disabled={isProjectDeleteLoading}>
+            <Button variant="outline" onClick={onCancelClick} disabled={isProjectDeleteLoading}>
               Cancel
             </Button>
           </AlertDialogCancel>

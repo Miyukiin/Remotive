@@ -108,12 +108,15 @@ const CreateTeamModal: FC = () => {
               )}
             />
 
-            <DialogFooter className="gap-2 sm:gap-0">
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Cancel
-                </Button>
-              </DialogClose>
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCreateTeamModalOpen(false)}
+                disabled={isTeamCreateLoading}
+              >
+                Cancel
+              </Button>
 
               <Button type="submit" disabled={isTeamCreateLoading}>
                 <LoadingButtonContent isLoading={isTeamCreateLoading} displayText="Create" />

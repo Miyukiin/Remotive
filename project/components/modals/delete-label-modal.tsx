@@ -17,18 +17,18 @@ type DeleteLabelModalProps = { project_id: number };
 
 export function DeleteLabelModal({ project_id }: DeleteLabelModalProps) {
   const { isDeleteLabelModalOpen, setDeleteLabelModalOpen } = useUIStore();
-  const { deleteLabel, isLabelDeletionLoading } = useLabels({project_id});
+  const { deleteLabel, isLabelDeletionLoading } = useLabels({ project_id });
   const { labelToDelete } = useLabelStore();
 
   function onCancelClick() {
-    setTimeout(() => (document.body.style.pointerEvents = ""), 500); // Fix to unable to click after modal close. https://github.com/shadcn-ui/ui/issues/468 
+    setTimeout(() => (document.body.style.pointerEvents = ""), 500); // Fix to unable to click after modal close. https://github.com/shadcn-ui/ui/issues/468
     setDeleteLabelModalOpen(false);
   }
 
   async function onDeleteClick() {
     if (!labelToDelete) throw new Error("Unable to find label to delete.");
     await deleteLabel(labelToDelete.id);
-    setTimeout(() => (document.body.style.pointerEvents = ""), 500); // Fix to unable to click after modal close. https://github.com/shadcn-ui/ui/issues/468 
+    setTimeout(() => (document.body.style.pointerEvents = ""), 500); // Fix to unable to click after modal close. https://github.com/shadcn-ui/ui/issues/468
     setDeleteLabelModalOpen(false);
   }
   return (
@@ -42,7 +42,7 @@ export function DeleteLabelModal({ project_id }: DeleteLabelModalProps) {
         </p>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="secondary" onClick={onCancelClick} disabled={isLabelDeletionLoading}>
+            <Button variant="outline" onClick={onCancelClick} disabled={isLabelDeletionLoading}>
               Cancel
             </Button>
           </AlertDialogCancel>

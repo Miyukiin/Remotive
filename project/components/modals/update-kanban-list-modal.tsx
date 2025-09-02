@@ -138,7 +138,7 @@ const UpdateKanbanModal: FC<UpdateKanbanModalProps> = ({ project_id }) => {
             <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setUpdateKanbanModalOpen(false)}
                 disabled={isListUpdateLoading}
               >
