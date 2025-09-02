@@ -15,11 +15,25 @@ import z from "zod";
 import { checkAuthenticationStatus } from "./actions-utils";
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { getUserId } from "./user-actions";
+import { guardProjectAction, guardTaskAction } from "@/lib/rbac/permission-utils";
 
 // Fetches
 export async function getTaskMembersAction(task_id: number): Promise<ServerActionResponse<UserSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<UserSelect[]>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -27,8 +41,21 @@ export async function getTaskMembersAction(task_id: number): Promise<ServerActio
 }
 
 export async function getTasksCountForProjectAction(project_id: number): Promise<ServerActionResponse<number>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<number>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -36,8 +63,21 @@ export async function getTasksCountForProjectAction(project_id: number): Promise
 }
 
 export async function getTasksByProjectAction(project_id: number): Promise<ServerActionResponse<TaskSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<TaskSelect[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -45,8 +85,21 @@ export async function getTasksByProjectAction(project_id: number): Promise<Serve
 }
 
 export async function getTasksByListIdAction(list_id: number): Promise<ServerActionResponse<TaskSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskSelect[]>({
+    actorUserId: userRes.data.id,
+    listId: list_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: list_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -54,8 +107,21 @@ export async function getTasksByListIdAction(list_id: number): Promise<ServerAct
 }
 
 export async function getTaskByIdAction(task_id: number): Promise<ServerActionResponse<TaskSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskSelect>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -63,8 +129,21 @@ export async function getTaskByIdAction(task_id: number): Promise<ServerActionRe
 }
 
 export async function getProjectIdentifier(task_id: number): Promise<ServerActionResponse<number>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<number>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -72,8 +151,21 @@ export async function getProjectIdentifier(task_id: number): Promise<ServerActio
 }
 
 export async function getTaskStatusAction(task_id: number): Promise<ServerActionResponse<TaskStatus>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskStatus>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -81,8 +173,21 @@ export async function getTaskStatusAction(task_id: number): Promise<ServerAction
 }
 
 export async function getTaskCreatorAction(task_id: number): Promise<ServerActionResponse<UserSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<UserSelect>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -91,8 +196,21 @@ export async function getTaskCreatorAction(task_id: number): Promise<ServerActio
 
 // Mutations
 export async function deleteTaskAction(task_id: number): Promise<ServerActionResponse<TaskSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskSelect>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "DELETE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -104,8 +222,21 @@ export async function createTaskAction(
   position: number,
   taskFormData: z.infer<typeof taskSchemaForm>,
 ): Promise<ServerActionResponse<TaskSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskSelect>({
+    actorUserId: userRes.data.id,
+    listId: list_id,
+    action: "CREATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const res = await getUserId();
   if (!res.success) return res;
 
@@ -131,8 +262,21 @@ export async function updateTaskAction(
   task_id: number,
   taskFormData?: z.infer<typeof taskSchemaForm>,
 ): Promise<ServerActionResponse<TaskSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskSelect>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const res = await queries.tasks.getById(task_id);
   if (!res.success) return res;
 
@@ -153,8 +297,21 @@ export async function updateTaskNewAction(
   task_id: number,
   taskFormData?: z.infer<typeof taskSchemaEditForm>,
 ): Promise<ServerActionResponse<TaskSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskSelect>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const res = await queries.tasks.getById(task_id);
   if (!res.success) return res;
 
@@ -175,7 +332,21 @@ export async function updateTasksPositionsAction(
   tasksPayload: TaskPositionPayload[],
   project_id: number,
 ): Promise<ServerActionResponse<TaskSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
+
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardTaskAction<TaskSelect[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "MOVE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
 
   const parsed = tasksPositionsPayloadSchema.safeParse(tasksPayload);
 

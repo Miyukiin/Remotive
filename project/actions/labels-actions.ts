@@ -12,7 +12,7 @@ import {
 import z from "zod";
 import { LabelSelect, LabelUpdateForm } from "@/types";
 import { getUserId } from "./user-actions";
-import { guardLabelAction } from "@/lib/rbac/permission-utils";
+import { guardLabelAction, guardTaskAction } from "@/lib/rbac/permission-utils";
 
 // Fetches
 export async function getProjectLabelsAction(project_id: number): Promise<ServerActionResponse<LabelSelect[]>> {
@@ -149,10 +149,21 @@ export async function updateTaskLabelsAction(
   task_id: number,
   incomingLabels: LabelSelect[],
 ): Promise<ServerActionResponse<LabelSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
-  // TASK GUARD
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
 
+  const guardResult = await guardTaskAction<LabelSelect[]>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 

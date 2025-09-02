@@ -1,6 +1,6 @@
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { loadPermissionContext } from "./permission-loaders";
-import { canDo, LabelAction, ListAction, ProjectAction, TeamAction } from "./permissions";
+import { canDo, LabelAction, ListAction, ProjectAction, TaskAction, TeamAction } from "./permissions";
 import * as types from "@/types/index";
 
 // TEAMS
@@ -151,6 +151,54 @@ export async function guardListAction<T>({
 
   if (!(await canDo("LIST", action, ctx))) {
     return failResponse<T>(listsForbiddenMsg(action), "FORBIDDEN");
+  }
+  return null; // allowed
+}
+
+// TASKS
+export function tasksForbiddenMsg(action: TaskAction): string {
+  switch (action) {
+    case "READ":
+      return "Only project members (or the project manager) can view tasks in this project.";
+    case "CREATE":
+      return "Only project members (or the project manager) can create tasks in this project.";
+    case "MOVE":
+      return "Only project members (or the project manager) can move tasks in this project.";
+    case "UPDATE":
+      return "Only the task author (or the project manager) can update this task.";
+    case "DELETE":
+      return "Only the task author (or the project manager) can delete this task.";
+    case "MANAGE_ASSIGNEES":
+      return "Only the task author (or the project manager) can manage assignees for this task.";
+    default:
+      return "You don’t have permission to perform this action on tasks.";
+  }
+}
+
+export async function guardTaskAction<T>({
+  actorUserId,
+  action,
+  // Provide one of these depending on the action:
+  projectId,
+  listId,
+  taskId,
+}: {
+  actorUserId: number;
+  action: TaskAction;
+  projectId?: number; // for CREATE (or pass listId)
+  listId?: number; // for CREATE (alternative to projectId)
+  taskId?: number; // for READ/MOVE/UPDATE/DELETE/MANAGE_ASSIGNEES
+}): Promise<types.QueryResponse<T> | null> {
+  // Build context
+  const ctx = await loadPermissionContext({
+    actorUserId,
+    projectId: projectId ?? null,
+    listId: listId ?? null,
+    taskId: taskId ?? null,
+  });
+
+  if (!(await canDo("TASK", action, ctx))) {
+    return failResponse<T>(tasksForbiddenMsg(action), "FORBIDDEN");
   }
   return null; // allowed
 }

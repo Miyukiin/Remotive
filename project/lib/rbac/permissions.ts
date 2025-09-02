@@ -17,8 +17,9 @@ export type ProjectAction =
 
 export type LabelAction = "CREATE" | "READ" | "UPDATE" | "DELETE";
 export type ListAction = "CREATE" | "READ" | "UPDATE" | "DELETE" | "MOVE";
+export type TaskAction = "CREATE" | "READ" | "UPDATE" | "DELETE" | "MOVE" | "MANAGE_ASSIGNEES";
 
-export type AllAction = "MOVE" | "ASSIGN" | "REORDER" | TeamAction | ProjectAction | LabelAction | ListAction;
+export type AllAction = TeamAction | ProjectAction | LabelAction | ListAction | TaskAction;
 
 export type PermissionContext = {
   actorUserId: number;
@@ -68,12 +69,11 @@ export async function canDo(entity: Entity, action: AllAction, ctx: PermissionCo
       switch (action) {
         case "READ":
         case "CREATE":
-        case "ASSIGN":
-        case "REORDER":
+        case "MOVE":
           return true; // project member can do things up to here, further requires being author id
+        case "MANAGE_ASSIGNEES":
         case "UPDATE":
-        case "DELETE":
-        case "MOVE": {
+        case "DELETE": {
           const authors = ctx.taskAuthorIds ?? [];
           const isAuthor = authors.includes(ctx.actorUserId); // Check if attempter is among the task authors
           return isAuthor;
