@@ -93,12 +93,12 @@ export function useLabels({ project_id, task_id }: { project_id: number; task_id
   });
 
   const deleteLabel = useMutation({
-    mutationFn: async (label_id: number) => {
-      const res = await deleteLabelAction(label_id);
+    mutationFn: async ({ label_id, project_id }: { label_id: number; project_id: number }) => {
+      const res = await deleteLabelAction(label_id, project_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
-    onMutate: async (label_id: number) => {
+    onMutate: async ({ label_id, project_id }: { label_id: number; project_id: number }) => {
       queryClient.cancelQueries({ queryKey: ["labels", project_id] });
 
       const previousLabels = queryClient.getQueryData<LabelSelect[]>(["labels", project_id]);

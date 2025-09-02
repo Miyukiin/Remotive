@@ -15,7 +15,9 @@ export type ProjectAction =
   | "REASSIGN_PROJECT_ROLE"
   | "MANAGE_TEAMS";
 
-export type AllAction = "CREATE" | "MOVE" | "ASSIGN" | "REORDER" | TeamAction | ProjectAction;
+export type LabelAction = "CREATE" | "READ" | "UPDATE" | "DELETE";
+
+export type AllAction = "MOVE" | "ASSIGN" | "REORDER" | TeamAction | ProjectAction | LabelAction;
 
 export type PermissionContext = {
   actorUserId: number;
@@ -49,12 +51,7 @@ export async function canDo(entity: Entity, action: AllAction, ctx: PermissionCo
     case "LABELS":
       return isProjMember || isPM;
     case "PROJECT":
-      if (
-        action === "UPDATE" ||
-        action === "DELETE" ||
-        action === "REASSIGN_PROJECT_ROLE" ||
-        action === "MANAGE_TEAMS"
-      )
+      if (action === "UPDATE" || action === "DELETE" || action === "REASSIGN_PROJECT_ROLE" || action === "MANAGE_TEAMS")
         return isPM;
       // For every action else, PM can do anything a member can
       return isProjMember || isPM;

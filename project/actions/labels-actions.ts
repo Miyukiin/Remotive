@@ -11,11 +11,26 @@ import {
 } from "@/lib/validations/validations";
 import z from "zod";
 import { LabelSelect, LabelUpdateForm } from "@/types";
+import { getUserId } from "./user-actions";
+import { guardLabelAction } from "@/lib/rbac/permission-utils";
 
 // Fetches
 export async function getProjectLabelsAction(project_id: number): Promise<ServerActionResponse<LabelSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardLabelAction<LabelSelect[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -24,6 +39,8 @@ export async function getProjectLabelsAction(project_id: number): Promise<Server
 
 export async function getTaskLabelsAction(task_id: number): Promise<ServerActionResponse<LabelSelect[]>> {
   await checkAuthenticationStatus();
+
+  // TASK GUARD
 
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
@@ -36,8 +53,21 @@ export async function createLabelAction(
   project_id: number,
   labelFormData: z.infer<typeof labelSchemaForm>,
 ): Promise<ServerActionResponse<LabelSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardLabelAction<LabelSelect>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "CREATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const labelDBData: z.infer<typeof labelSchemaDB> = {
     ...labelFormData,
     project_id,
@@ -53,9 +83,25 @@ export async function createLabelAction(
   return await queries.labels.create(labelDBData);
 }
 
-export async function deleteLabelAction(label_id: number): Promise<ServerActionResponse<LabelSelect>> {
+export async function deleteLabelAction(
+  label_id: number,
+  project_id: number,
+): Promise<ServerActionResponse<LabelSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardLabelAction<LabelSelect>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "DELETE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: label_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -67,8 +113,21 @@ export async function updateLabelAction(
   label_id: number,
   labelFormData: LabelUpdateForm,
 ): Promise<ServerActionResponse<LabelSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardLabelAction<LabelSelect>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   // Check if exists
   const res = await queries.labels.getById(label_id);
   if (!res.success) return res;
@@ -92,7 +151,9 @@ export async function updateTaskLabelsAction(
 ): Promise<ServerActionResponse<LabelSelect[]>> {
   await checkAuthenticationStatus();
 
-  const parsed = idSchema.safeParse({id: task_id});
+  // TASK GUARD
+
+  const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
   const parsed2 = updateTasksLabelsPayloadSchema.safeParse(incomingLabels);

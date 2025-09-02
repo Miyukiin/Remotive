@@ -27,7 +27,7 @@ export function DeleteLabelModal({ project_id }: DeleteLabelModalProps) {
 
   async function onDeleteClick() {
     if (!labelToDelete) throw new Error("Unable to find label to delete.");
-    await deleteLabel(labelToDelete.id);
+    await deleteLabel({label_id: labelToDelete.id, project_id});
     setTimeout(() => (document.body.style.pointerEvents = ""), 500); // Fix to unable to click after modal close. https://github.com/shadcn-ui/ui/issues/468
     setDeleteLabelModalOpen(false);
   }
