@@ -41,7 +41,7 @@ export default async function RecentActivities() {
 
       <CardContent className="flex flex-col gap-4">
         {items.map((i) => {
-          const dateText = format(new Date(i.createdAt), "MMM d, yyyy");
+          const dateText = format(new Date(i.createdAt), "EEEE, MMM d, yyyy");
 
           return (
             <div key={i.id} className="rounded-md border bg-card p-4 transition-shadow hover:shadow-md">
@@ -59,7 +59,7 @@ export default async function RecentActivities() {
                     </Badge>
                     {renderSentence(i)}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">{dateText}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">On {dateText}</p>
                 </div>
               </div>
             </div>
