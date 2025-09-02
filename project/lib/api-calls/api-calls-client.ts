@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectProgressPayload, TeamTasksCountChartPayload } from "@/types";
+import { ProjectProgressPayload, TasksPerMonthChartPayload, TeamTasksCountChartPayload } from "@/types";
 
 // Development
 const API_BASE_URL = "http://localhost:3000/api/";
@@ -35,6 +35,21 @@ export async function getTeamTasksCountData() {
     return (await res.json()) as APIResponse<TeamTasksCountChartPayload>;
   } catch (e) {
     console.error("Error fetching team tasks count:", e);
+    throw e;
+  }
+}
+
+export async function getTasksPerMonth() {
+  try {
+    const route = `analytics/tasks-per-month/`;
+    const res = await fetch(API_BASE_URL + route, {
+      method: "GET",
+      credentials: "include", // send cookies for Clerk-protected routes
+      cache: "no-store", // always fresh
+    });
+    return (await res.json()) as APIResponse<TasksPerMonthChartPayload>;
+  } catch (e) {
+    console.error("Error fetching tasks per month:", e);
     throw e;
   }
 }

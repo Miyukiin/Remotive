@@ -214,3 +214,11 @@ export type TeamTasksChartDataType = {
   tasks: number;
   fill: string;
 };
+
+export type TasksPerMonthChartPayload = {
+  labelRange: string;
+  points: {
+    month: string;
+    count: number;
+  }[];
+};

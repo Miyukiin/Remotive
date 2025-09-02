@@ -1,10 +1,7 @@
 "use client";
 
-import { TrendingUp} from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TeamTasksChart } from "@/components/analytics/team-tasks-chart";
-
-
+import { MonthTasksChart } from "@/components/analytics/month-tasks-chart";
 
 export default function AnalyticsPage() {
   return (
@@ -19,21 +16,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TeamTasksChart />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Team Activity</CardTitle>
-            <CardDescription>Events & contributions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 grid place-items-center rounded-md border bg-muted/40">
-              <div className="text-center text-muted-foreground">
-                <TrendingUp className="mx-auto mb-2 h-12 w-12" />
-                <p>Activity Chart Placeholder</p>
-                <p className="text-sm">TODO: Implement activity timeline</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <MonthTasksChart />
       </div>
     </div>
   );

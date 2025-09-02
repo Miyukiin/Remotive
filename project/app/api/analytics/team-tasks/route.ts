@@ -21,7 +21,7 @@ export async function GET() {
 
     const now = new Date();
     const sixMonthsAgo = new Date(now);
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
 
     // We will return these later as part of the return object
     const nowMonth = new Date().toLocaleString("default", { month: "long" });

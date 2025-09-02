@@ -52,7 +52,7 @@ export function TeamTasksChart() {
     return (
       <Card className="flex flex-col">
         <CardHeader className="items-center pb-0">
-          <CardTitle>Tasks per Team</CardTitle>
+          <CardTitle>Tasks created per Team</CardTitle>
           <CardDescription>Loading…</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 pb-6" />
@@ -64,7 +64,7 @@ export function TeamTasksChart() {
     return (
       <Card className="flex flex-col">
         <CardHeader className="items-center pb-0">
-          <CardTitle>Tasks per Team</CardTitle>
+          <CardTitle>Tasks created per Team</CardTitle>
           <CardDescription className="text-destructive">
             {(error as Error)?.message ?? "Failed to load"}
           </CardDescription>
@@ -77,7 +77,7 @@ export function TeamTasksChart() {
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Tasks per Team</CardTitle>
+        <CardTitle>Tasks created per Team</CardTitle>
         <CardDescription>{dateLabel}</CardDescription>
       </CardHeader>
 
@@ -104,7 +104,7 @@ export function TeamTasksChart() {
       </CardContent>
 
       <CardFooter className="flex-col gap-2 text-sm">
-        <div className="text-muted-foreground leading-none">Showing tasks created in the last 6 months per team</div>
+        <div className="text-muted-foreground leading-none">Number of tasks created in each team in the last 6 months.</div>
       </CardFooter>
     </Card>
   );
