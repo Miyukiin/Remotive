@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Users, Calendar } from "lucide-react";
-import { getRecentProjects } from "@/lib/api-calls";
+import { getRecentProjects } from "@/lib/api-calls/api-calls";
 import { projectStatusColor, formatDate, cn } from "@/lib/utils";
 import type { RecentProjects } from "@/types";
 
@@ -13,8 +13,8 @@ export default async function RecentProjectsCard() {
 
   if (!res.success) {
     return (
-      <Card className="flex-1">
-        <CardContent className="flex h-full items-center justify-center text-center text-muted-foreground">
+      <Card className="flex-1  items-center gap-2">
+        <CardContent className="flex flex-col text-sm h-full items-center justify-center text-center text-muted-foreground">
           <p>Unable to load data.</p>
         </CardContent>
       </Card>
@@ -25,10 +25,10 @@ export default async function RecentProjectsCard() {
 
   if (projects.length === 0) {
     return (
-      <Card className="flex-1 items-center">
-        <CardContent className="flex h-full items-center justify-center text-center text-muted-foreground">
-          <p>No projects found.</p>
-          <p>Get invited to or create one.</p>
+      <Card className="flex-1  items-center gap-2">
+        <CardContent className="flex flex-col text-sm h-full items-center justify-center text-center text-muted-foreground">
+          <p className="font-bold text-md">No projects found.</p>
+          <p className="text-xs">Get invited to or create one.</p>
         </CardContent>
       </Card>
     );
@@ -47,7 +47,7 @@ export default async function RecentProjectsCard() {
 
       <CardContent className="flex flex-col gap-4">
         {projects.map((project) => {
-          const pct = 0;
+          const pct = project.percentCompletion;
 
           return (
             <Link href={`/projects/${project.id}`} key={project.id} className="group">

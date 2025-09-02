@@ -1,12 +1,13 @@
 "use client";
 import { FC } from "react";
 import { Button } from "../ui/button";
-import { ClipboardCheck, EllipsisVertical, SquarePen, Trash } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { CircleQuestionMark, ClipboardCheck, EllipsisVertical, SquarePen, Trash } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { useLists } from "@/hooks/use-lists";
 import { useUIStore } from "@/stores/ui-store";
 import { ListSelect } from "@/types";
 import { useKanbanStore } from "@/stores/kanban-store";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 type KanbanListOptionsProps = {
   project_id: number;
@@ -45,16 +46,29 @@ const KanbanListOptions: FC<KanbanListOptionsProps> = ({ project_id, list, isDon
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
+        <DropdownMenuLabel>
+          <div className="flex gap-2 items-center">
+            <span>Actions </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CircleQuestionMark size={14} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Done lists cannot be deleted.</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuItem onClick={onEdit}>
           <SquarePen /> Edit
         </DropdownMenuItem>
         <DropdownMenuItem onClick={setAsDone} disabled={isDone}>
           <ClipboardCheck />
-          {isDone ? "Already the Done Column" : "Set as Done Column"}
+          {isDone ? "Already Marked" : "Mark as Done List"}
         </DropdownMenuItem>
-        <DropdownMenuItem disabled={isDeleteKanbanModalOpen} variant="destructive" onClick={onClick}>
+        <DropdownMenuItem disabled={isDeleteKanbanModalOpen || isDone} variant="destructive" onClick={onClick}>
           <Trash />
-          Delete List
+          {isDone ? "Cannot Delete Done List" : "Delete List"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -42,7 +42,7 @@ export function DeleteKanbanModal({ project_id }: DeleteKanbanModalProps) {
         </p>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="secondary" onClick={onCancelClick} disabled={isListDeleteLoading}>
+            <Button variant="outline" onClick={onCancelClick} disabled={isListDeleteLoading}>
               Cancel
             </Button>
           </AlertDialogCancel>

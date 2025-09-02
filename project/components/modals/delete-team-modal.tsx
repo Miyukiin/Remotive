@@ -18,7 +18,7 @@ type DeleteTeamModalProps = { team_id: number };
 
 export function DeleteTeamModal({ team_id }: DeleteTeamModalProps) {
   const { isDeleteTeamModalOpen, setDeleteTeamModalOpen } = useUIStore();
-  const { deleteTeam, isTeamDeleteLoading } = useTeams({team_id});
+  const { deleteTeam, isTeamDeleteLoading } = useTeams({ team_id });
   const router = useRouter();
 
   function onCancelClick() {
@@ -42,7 +42,7 @@ export function DeleteTeamModal({ team_id }: DeleteTeamModalProps) {
         <p className="text-sm text-muted-foreground">This action cannot be undone. Your team will be lost forever!</p>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="secondary" onClick={onCancelClick} disabled={isTeamDeleteLoading}>
+            <Button variant="outline" onClick={onCancelClick} disabled={isTeamDeleteLoading}>
               Cancel
             </Button>
           </AlertDialogCancel>

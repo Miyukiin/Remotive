@@ -136,7 +136,7 @@ const ReassignProjectTeamsModal: FC<ReassignProjectTeamsModalProps> = ({
             <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setReassignProjectTeamsModalOpen(false)}
                 disabled={isReassignProjectTeamsLoading}
               >

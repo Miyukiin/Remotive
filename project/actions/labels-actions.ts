@@ -11,7 +11,6 @@ import {
 } from "@/lib/validations/validations";
 import z from "zod";
 import { LabelSelect, LabelUpdateForm } from "@/types";
-import { LabelsToTasksSelect } from "../types/index";
 
 // Fetches
 export async function getProjectLabelsAction(project_id: number): Promise<ServerActionResponse<LabelSelect[]>> {

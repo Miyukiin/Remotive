@@ -100,8 +100,42 @@ export type RecentProjects = {
   dueDate: Date | null;
   updatedAt: Date;
   status: "Completed" | "On-hold" | "In Progress" | "Planning" | "Review";
+  percentCompletion: number;
   memberCount: number;
   memberImages: string[];
+};
+
+export type RecentTasks = {
+  id: number;
+  title: string;
+  description: string | null;
+  project_id: number;
+  dueDate: Date | null;
+  statusName: string;
+  statusColor: keyof typeof listColor;
+  assigneeCount: number;
+  assigneeImages: string[];
+};
+
+export type DashboardAnalytics = {
+  stats: {
+    activeProjects: number;
+    teamMembers: number;
+    completedTasks: number;
+    pendingTasks: number;
+  };
+  deltas: {
+    activeProjects: string;
+    teamMembers: string;
+    completedTasks: string;
+    pendingTasks: string;
+  };
+};
+
+export type ProjectProgressPayload = {
+  total: number;
+  done: number;
+  percent: number;
 };
 
 export type ListPositionPayload = {
@@ -146,7 +180,52 @@ export type TransactionType = Parameters<Parameters<DatabaseType["transaction"]>
 
 export type ProjectRoles = (typeof schema.rolesEnum.enumValues)[number];
 
-
 export type PendingProjectManager = { userId: number; role: ProjectRoles } | null;
 
+// For recent activities
+export type DashboardFeedItem = {
+  id: number;
+  action: string;
+  createdAt: Date;
 
+  actorName: string | null;
+  actorImage: string | null;
+  subjectName: string | null;
+  subjectImage: string | null;
+
+  projectName: string | null;
+  teamName: string | null;
+  listName: string | null;
+  taskTitle: string | null;
+};
+
+export type TeamTasksCountChartPayload = {
+  month: string;
+  sixMonthsAgo: string;
+  JsonSerializableTeamTasksData: {
+    teamId: number;
+    teamName: string;
+    taskCount: number;
+  }[];
+};
+
+export type TeamTasksChartDataType = {
+  team: string;
+  tasks: number;
+  fill: string;
+};
+
+export type TasksPerMonthChartPayload = {
+  labelRange: string;
+  points: {
+    month: string;
+    count: number;
+  }[];
+};
+
+export type TasksCompletionChartPayload = {
+  total: number;
+  completed: number;
+  notCompleted: number;
+  percentCompleted: number;
+};

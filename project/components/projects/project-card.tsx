@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { useProjectProgress } from "@/hooks/use-project-progress";
 
 interface ProjectCardProps {
   project: ProjectSelect;
@@ -29,6 +30,7 @@ interface ProjectCardProps {
 const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
   const { projectMembers, isProjectMembersLoading, projectMembersError } = useProjectMembers(project.id);
   const { taskCount, isTaskCountLoading, taskCountError } = useProjects(project.id);
+  const { data: prog, isLoading: isProgressLoading, isError: isProgressError } = useProjectProgress(project.id);
 
   const overdueInfo = useMemo(() => {
     const due = project.dueDate ? new Date(project.dueDate) : null;
@@ -36,7 +38,11 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
   }, [project.dueDate]);
 
   const progress =
-    "progress" in project && typeof project.progress === "number" ? Math.min(100, Math.max(0, project.progress)) : 0;
+    typeof prog?.percent === "number"
+      ? prog.percent
+      : "progress" in project && typeof project.progress === "number"
+        ? Math.min(100, Math.max(0, project.progress))
+        : 0;
 
   const membersText = isProjectMembersLoading
     ? "Loading…"
@@ -90,13 +96,14 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium">{progress}%</span>
+              {isProgressLoading ? <Skeleton className="h-4 w-10" /> : <span className="font-medium">{progress}%</span>}
             </div>
-            <Progress value={progress} />
+            {isProgressLoading ? <Skeleton className=" h-2 w-full rounded" /> : <Progress value={progress} />}
+            {isProgressError ? <span className="text-xs text-muted-foreground">Unable to load progress</span> : null}
           </div>
 
           {/* Tasks + Days Left */}
-          <div className={`flex items-center justify-between text-sm  text-muted-foreground}`}>
+          <div className={`flex items-center justify-between text-sm  text-muted-foreground`}>
             <span aria-live="polite">{tasksText}</span>
             <span className={`${overdueInfo.isOverdue ? "text-destructive" : "text-muted-foreground"}`}>
               {taskOverdueText}
@@ -117,7 +124,7 @@ const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
           </Badge>
 
           {isProjectMembersLoading ? (
-            <Skeleton height="6" width="20" />
+            <Skeleton className="w-20 h-6" />
           ) : projectMembers && !projectMembersError ? (
             <TooltipProvider delayDuration={200}>
               <Tooltip>

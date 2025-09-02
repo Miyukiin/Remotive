@@ -100,7 +100,7 @@ export function useLists(project_id: number) {
       toast.success("Success", { description: "Successfully deleted the list." });
     },
     onError: (error, variables, context) => {
-      toast.error("Error", { description: error.message });
+      toast.error("Error", { description: error.message});
       queryClient.setQueryData(["lists", project_id], context?.previousLists);
     },
     onSettled: () => {

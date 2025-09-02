@@ -101,7 +101,7 @@ export function ProjectLabelSettings({ project_id }: Props) {
       {
         accessorKey: "isDefault",
         header: "Default",
-        cell: ({ row }) => (row.getValue<boolean>("isDefault") ? <Badge variant="secondary">Default</Badge> : "No"),
+        cell: ({ row }) => (row.getValue<boolean>("isDefault") ? <Badge variant="secondary">Default</Badge> : <Badge variant="secondary">No</Badge>),
         enableGlobalFilter: false,
       },
       {

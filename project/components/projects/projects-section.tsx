@@ -3,6 +3,7 @@ import { FC, useMemo, useState } from "react";
 import ProjectsSearchFilter from "./projects-search-filter";
 import ProjectsGrid from "./project-grid";
 import { ProjectSelect, ProjectsFilterOptions } from "@/types";
+import StateBlock from "@/components/ui/state-block";
 
 type ProjectsSectionProps = {
   projectsData: ProjectSelect[];
@@ -10,34 +11,83 @@ type ProjectsSectionProps = {
 
 const ProjectsSection: FC<ProjectsSectionProps> = ({ projectsData }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterOption, setFilterOption] = useState<ProjectsFilterOptions>("Ascending (A-Z)");
+  const [filterOption, setFilterOption] =
+    useState<ProjectsFilterOptions>("Ascending (A-Z)");
 
-  const filteredTeams = useMemo(() => {
-    // Filter by search term
-    let filtered = projectsData.filter((project) => project.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredProjects = useMemo(() => {
+    let filtered = [...projectsData];
 
-    // Sort based on filterOption
-    switch (filterOption) {
-      case "Ascending (A-Z)":
-        filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "Descending (Z-A)":
-        filtered = filtered.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case "Newest First":
-        filtered = filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        break;
-      case "Oldest First":
-        filtered = filtered.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-        break;
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter((p) => p.name.toLowerCase().includes(q));
     }
 
+    switch (filterOption) {
+      case "Ascending (A-Z)":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "Descending (Z-A)":
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "Newest First":
+        filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      case "Oldest First":
+        filtered.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        break;
+    }
     return filtered;
   }, [searchTerm, filterOption, projectsData]);
 
+  // Empty projects
+  if (projectsData.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="mb-4">
+          <ProjectsSearchFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterOption={filterOption}
+            setFilterOption={setFilterOption}
+          />
+        </div>
+        <StateBlock
+          title="You have no projects right now."
+          description="Create one or get invited to an existing team."
+        />
+      </div>
+    );
+  }
+
+  // Empty query result
+  if (filteredProjects.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="mb-4">
+          <ProjectsSearchFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterOption={filterOption}
+            setFilterOption={setFilterOption}
+          />
+        </div>
+        <StateBlock
+          title="No projects found."
+          description="Try a different name or clear your filters."
+        />
+      </div>
+    );
+  }
+
+  // Normal grid
   return (
     <div>
-      {/* Search and Filter */}
       <div className="mb-4">
         <ProjectsSearchFilter
           searchTerm={searchTerm}
@@ -46,20 +96,7 @@ const ProjectsSection: FC<ProjectsSectionProps> = ({ projectsData }) => {
           setFilterOption={setFilterOption}
         />
       </div>
-
-      {/* Project Card Grid */}
-      {projectsData.length === 0 ? (
-        <div className="flex flex-col justify-center text-center text-sm text-dark-grey-400">
-          <p>You have no projects right now.</p>
-          <p>Create or get invited to one!</p>
-        </div>
-      ) : filteredTeams.length === 0 ? (
-        <div className="flex justify-center text-center text-sm text-dark-grey-400">
-          <p>No projects found with that name.</p>
-        </div>
-      ) : (
-        <ProjectsGrid projects={filteredTeams} />
-      )}
+      <ProjectsGrid projects={filteredProjects} />
     </div>
   );
 };

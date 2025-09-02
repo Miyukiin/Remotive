@@ -4,6 +4,7 @@ import * as schema from "../schema";
 import { and, eq } from "drizzle-orm";
 import { failResponse, successResponse } from "./query_utils";
 import { logAction } from "@/lib/audit/audit.utils";
+import { getUserId } from "@/actions/user-actions";
 
 export const teams = {
   getById: async (teamId: number): Promise<types.QueryResponse<types.TeamsSelect>> => {
@@ -19,20 +20,52 @@ export const teams = {
   deleteTeam: async (teamId: number): Promise<types.QueryResponse<types.TeamsSelect>> => {
     try {
       const res = await teams.getById(teamId);
-      if (res.success === false) throw new Error(res.message);
+      if (!res.success) throw new Error(res.message);
+
+      const res2 = await getUserId();
+      if (!res2.success) throw new Error(res2.message);
+      const userId = res2.data.id;
 
       const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.TeamsSelect>> => {
+        // fetc projects this team is assigned to
+        const projectRows = await tx
+          .select({ projectId: schema.teams_to_projects.project_id })
+          .from(schema.teams_to_projects)
+          .where(eq(schema.teams_to_projects.team_id, teamId));
+        const projectIds = projectRows.map((p) => p.projectId);
+
+        // Audit: log team deleted
+        await logAction(tx, {
+          actor_user_id: userId,
+          entity_type: "team",
+          entity_id: teamId,
+          action: "TEAM_DELETED",
+          team_id: teamId,
+          project_id: null,
+        });
+
+        // Log project teams are removed.
+        for (const pid of projectIds) {
+          await logAction(tx, {
+            actor_user_id: userId,
+            entity_type: "project",
+            entity_id: pid,
+            action: "PROJECT_TEAM_REMOVED",
+            team_id: teamId,
+            project_id: pid,
+          });
+        }
+
         const [team] = await tx.delete(schema.teams).where(eq(schema.teams.id, teamId)).returning();
         if (!team) throw new Error("Database returned no result.");
 
-        await logAction(tx, { entity_id: team.id, entity_type: "team", action: "TEAM_DELETED" });
-        return successResponse(`Deleted team successfully`, team);
+        return successResponse("Deleted team successfully", team);
       });
 
       if (txResult.success) return txResult;
-      else return failResponse(`Unable to delete team`, `Database returned no result.`);
+      return failResponse("Unable to delete team", "Database returned no result.");
     } catch (e) {
-      return failResponse(`Unable to delete team`, e);
+      return failResponse("Unable to delete team", e);
     }
   },
   getTeamsForUser: async (userId: number): Promise<types.QueryResponse<types.TeamsSelect[]>> => {

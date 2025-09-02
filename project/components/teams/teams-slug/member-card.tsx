@@ -109,19 +109,19 @@ const SkeletonMemberCard: FC<{ count?: number }> = ({ count = 6 }) => {
         <Card key={i} className="animate-pulse">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
-              <Skeleton className="rounded-full" height="10" width="10" />
+              <Skeleton className="rounded-full h-10 w-10" />
               <div className="space-y-2">
-                <Skeleton height="4" width="32" />
-                <Skeleton height="3" width="24" />
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Skeleton height="3" width="48" />
+            <Skeleton className="h-3 w-48" />
           </CardContent>
           <CardFooter className="flex items-center justify-between">
-            <Skeleton className="rounded-full" height="6" width="16" />
-            <Skeleton height="3" width="20" />
+            <Skeleton className="rounded-full" />
+            <Skeleton className="h-3 w-20" />
           </CardFooter>
         </Card>
       ))}

@@ -94,7 +94,7 @@ export function UpdateLabelModal({ project_id }: UpdateLabelModalProps) {
             <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setUpdateLabelModalOpen(false)}
                 disabled={isLabelUpdateLoading}
               >

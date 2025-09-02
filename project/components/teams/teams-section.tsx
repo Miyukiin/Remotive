@@ -2,73 +2,97 @@
 import { FC, useMemo, useState } from "react";
 import TeamsSearchFilter from "./teams-search-filter";
 import TeamsGrid from "./teams-grid";
-import { TeamsSelect } from "@/types";
+import { ProjectsFilterOptions, TeamsSelect } from "@/types";
+import StateBlock from "@/components/ui/state-block";
 
 type TeamsProps = {
-  teamsData: TeamsSelect[];
+  teamsData: TeamsSelect[]; 
 };
+
 const TeamsSection: FC<TeamsProps> = ({ teamsData }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterOption, setFilterOption] = useState("Ascending (A-Z)");
+  const [filterOption, setFilterOption] = useState<ProjectsFilterOptions>("Ascending (A-Z)");
 
   const filteredTeams = useMemo(() => {
+    let filtered = [...teamsData];
+
     // Filter by search term
-    let filtered = teamsData.filter((team) =>
-      team.teamName.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter((team) => team.teamName.toLowerCase().includes(q));
+    }
 
     // Sort based on filterOption
     switch (filterOption) {
       case "Ascending (A-Z)":
-        filtered = filtered.sort((a, b) =>
-          a.teamName.localeCompare(b.teamName),
-        );
+        filtered.sort((a, b) => a.teamName.localeCompare(b.teamName));
         break;
       case "Descending (Z-A)":
-        filtered = filtered.sort((a, b) =>
-          b.teamName.localeCompare(a.teamName),
-        );
+        filtered.sort((a, b) => b.teamName.localeCompare(a.teamName));
         break;
       case "Newest First":
-        filtered = filtered.sort(
-          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-        );
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
       case "Oldest First":
-        filtered = filtered.sort(
-          (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-        );
+        filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         break;
     }
 
     return filtered;
   }, [searchTerm, filterOption, teamsData]);
 
+  // Empty teams
+  if (teamsData.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="mb-4">
+          <TeamsSearchFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterOption={filterOption as ProjectsFilterOptions}
+            setFilterOption={setFilterOption}
+          />
+        </div>
+        <StateBlock
+          title="You are not in any teams right now."
+          description="Create one or get invited to an existing team."
+        />
+      </div>
+    );
+  }
+
+  // Empty query result
+  if (filteredTeams.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="mb-4">
+          <TeamsSearchFilter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterOption={filterOption as ProjectsFilterOptions}
+            setFilterOption={setFilterOption}
+          />
+        </div>
+        <StateBlock
+          title="No teams found."
+          description="Try a different name or clear your filters."
+        />
+      </div>
+    );
+  }
+
+  // Data grid
   return (
     <div>
-      {/* Search and Filter */}
       <div className="mb-4">
         <TeamsSearchFilter
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          filterOption={filterOption}
+          filterOption={filterOption as ProjectsFilterOptions}
           setFilterOption={setFilterOption}
         />
       </div>
-
-      {/* Team Card Grid */}
-      {teamsData.length === 0 ? (
-        <div className="text-center text-sm text-dark-grey-400">
-          <p>You are not in any teams right now.</p>
-          <p>Create or get invited to one!</p>
-        </div>
-      ) : filteredTeams.length === 0 ? (
-        <div className="text-center text-sm text-dark-grey-400">
-          <p>No teams found with that name.</p>
-        </div>
-      ) : (
-        <TeamsGrid teamsData={filteredTeams} />
-      )}
+      <TeamsGrid teamsData={filteredTeams} />
     </div>
   );
 };

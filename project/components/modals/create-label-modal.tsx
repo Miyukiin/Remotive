@@ -77,7 +77,7 @@ export function CreateLabelModal({ project_id }: CreateLabelModalProps) {
             <DialogFooter className="gap-2">
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setCreateLabelModalOpen(false)}
                 disabled={isLabelCreationLoading}
               >

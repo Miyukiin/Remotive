@@ -1,25 +1,61 @@
-import { Loader2Icon } from "lucide-react";
 
-function SearchBarSkeleton() {
-  return <div className=" min-h-[40px] bg-white-smoke-100 dark:bg-dark-grey-100 rounded-md"></div>;
+import { Skeleton } from "@/components/ui/skeleton";
+
+export function SearchBarSkeleton() {
+  return <Skeleton className="h-10 w-full rounded-md" />;
 }
 
-function ProjectHeadingSkeleton() {
-  return <div className=" min-h-[100px] bg-white-smoke-100 dark:bg-dark-grey-100 rounded-md"></div>;
+export function ProjectHeadingSkeleton() {
+  return <Skeleton className="h-24 w-full rounded-md" />;
 }
 
-function BreadCrumbsSkeleton() {
-  return <div className="max-w-[250px] min-h-[30px] bg-white-smoke-100 dark:bg-dark-grey-100 rounded-md"></div>;
+export function BreadCrumbsSkeleton() {
+  return <Skeleton className="h-6 w-[250px] rounded-md" />;
 }
 
-function KanbanBoardSkeleton() {
+export function KanbanBoardSkeleton({
+  columns = 4,
+  cardsPerColumn = 3,
+  height = 500,
+}: {
+  columns?: number;
+  cardsPerColumn?: number;
+  height?: number;
+}) {
   return (
     <div className="scrollbar-custom flex gap-x-3 overflow-x-auto">
       <div className="flex gap-x-3 py-2">
-        {[1, 2, 3, 4].map((list, index) => (
-          <div key={index} className="min-w-[80px] w-80 h-[500px] overflow-y shrink-0">
-            <div className="flex h-full justify-center items-center p-4 bg-list-bg rounded-lg  border border-border">
-              <Loader2Icon className="animate-spin text-white-smoke-100" />
+        {Array.from({ length: columns }).map((_, colIdx) => (
+          <div key={colIdx} className="min-w-[20rem] w-80 shrink-0">
+            <div
+              className="flex h-full flex-col rounded-lg border border-border bg-list-bg p-3"
+              style={{ height }}
+            >
+              {/* Column header */}
+              <div className="mb-3 flex items-center justify-between">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-5 w-10 rounded-full" />
+              </div>
+
+              {/* Cards */}
+              <div className="space-y-3 overflow-y-auto">
+                {Array.from({ length: cardsPerColumn }).map((_, cardIdx) => (
+                  <div key={cardIdx} className="rounded-md border border-border bg-card p-3">
+                    {/* Title */}
+                    <Skeleton className="h-4 w-40" />
+                    {/* Description */}
+                    <div className="mt-2 space-y-2">
+                      <Skeleton className="h-3 w-5/6" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                    {/* Meta row */}
+                    <div className="mt-3 flex items-center justify-between">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         ))}
@@ -27,5 +63,3 @@ function KanbanBoardSkeleton() {
     </div>
   );
 }
-
-export { SearchBarSkeleton, ProjectHeadingSkeleton, BreadCrumbsSkeleton, KanbanBoardSkeleton };

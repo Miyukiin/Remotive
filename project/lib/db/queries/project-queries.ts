@@ -209,12 +209,22 @@ export const projects = {
 
         if (!deleted) throw new Error("Database returned no result.");
 
-        // AUDIT: project deleted
-        await logAction(tx, {
-          entity_type: "project",
-          entity_id: deleted.id,
-          action: "PROJECT_DELETED",
-        });
+        // This is as we can't set project id for recent activity visibility, so we set team id instead so we can still see it.
+        const teamRows = await tx
+          .select({ teamId: schema.teams_to_projects.team_id })
+          .from(schema.teams_to_projects)
+          .where(eq(schema.teams_to_projects.project_id, id));
+        
+        const teamIds = teamRows.map((r) => r.teamId);
+        for (const id of teamIds) {
+          // AUDIT: project deleted
+          await logAction(tx, {
+            entity_type: "project",
+            entity_id: deleted.id,
+            action: "PROJECT_DELETED",
+            team_id: id,
+          });
+        }
 
         return successResponse(`Deleted project successfully.`, deleted);
       });

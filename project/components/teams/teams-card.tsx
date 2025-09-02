@@ -19,7 +19,7 @@ type TeamsCardProps = {
 };
 
 const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
-  const { teamMembers, isTeamMembersLoading, teamMembersError } = useTeams({team_id: teamData.id});
+  const { teamMembers, isTeamMembersLoading, teamMembersError } = useTeams({ team_id: teamData.id });
   const [projectCount, setProjectCount] = useState(0);
 
   useEffect(() => {
@@ -80,10 +80,10 @@ const TeamsCard: FC<TeamsCardProps> = ({ teamData }) => {
             <div>
               {isTeamMembersLoading ? (
                 <div className="flex items-center gap-2">
-                  <Skeleton className="rounded-full" height="6" width="6" />
-                  <Skeleton className="rounded-full" height="6" width="6" />
-                  <Skeleton className="rounded-full" height="6" width="6" />
-                  <Skeleton className="rounded-md" height="5" width="20" />
+                  <Skeleton className="rounded-full h-6 w-6" />
+                  <Skeleton className="rounded-full  h-6 w-6" />
+                  <Skeleton className="rounded-full  h-6 w-6" />
+                  <Skeleton className="rounded-md h-5 w-20 " />
                 </div>
               ) : teamMembers && !teamMembersError ? (
                 teamMembers.length === 0 ? (
