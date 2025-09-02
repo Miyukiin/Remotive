@@ -2,8 +2,6 @@
 
 import { ProjectProgressPayload, TasksCompletionChartPayload, TasksPerMonthChartPayload, TeamTasksCountChartPayload } from "@/types";
 
-// Development
-const API_BASE_URL = "http://localhost:3000/api/";
 
 type APIResponse<T> =
   | { success: true; message: string; data: T }
@@ -11,8 +9,8 @@ type APIResponse<T> =
 
 export async function getProjectProgress(project_id: number) {
   try {
-    const route = `projects/${project_id}/progress/`;
-    const res = await fetch(API_BASE_URL + route, {
+    const route = `/api/projects/${project_id}/progress/`;
+    const res = await fetch(route, {
       method: "GET",
       credentials: "include", // send cookies for Clerk-protected routes
       cache: "no-store", // always fresh
@@ -26,8 +24,8 @@ export async function getProjectProgress(project_id: number) {
 
 export async function getTeamTasksCountData() {
   try {
-    const route = `analytics/team-tasks/`;
-    const res = await fetch(API_BASE_URL + route, {
+    const route = `/api/analytics/team-tasks/`;
+    const res = await fetch(route, {
       method: "GET",
       credentials: "include", // send cookies for Clerk-protected routes
       cache: "no-store", // always fresh
@@ -41,8 +39,8 @@ export async function getTeamTasksCountData() {
 
 export async function getTasksPerMonth() {
   try {
-    const route = `analytics/tasks-per-month/`;
-    const res = await fetch(API_BASE_URL + route, {
+    const route = `/api/analytics/tasks-per-month/`;
+    const res = await fetch(route, {
       method: "GET",
       credentials: "include", // send cookies for Clerk-protected routes
       cache: "no-store", // always fresh
@@ -56,8 +54,8 @@ export async function getTasksPerMonth() {
 
 export async function getTasksCompletion() {
   try {
-    const route = `analytics/tasks-completion/`;
-    const res = await fetch(API_BASE_URL + route, {
+    const route = `/api/analytics/tasks-completion/`;
+    const res = await fetch(route, {
       method: "GET",
       credentials: "include",
       cache: "no-store",
