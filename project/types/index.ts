@@ -222,3 +222,10 @@ export type TasksPerMonthChartPayload = {
     count: number;
   }[];
 };
+
+export type TasksCompletionChartPayload = {
+  total: number;
+  completed: number;
+  notCompleted: number;
+  percentCompleted: number;
+};

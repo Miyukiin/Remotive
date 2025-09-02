@@ -104,7 +104,7 @@ export function TeamTasksChart() {
       </CardContent>
 
       <CardFooter className="flex-col gap-2 text-sm">
-        <div className="text-muted-foreground leading-none">Number of tasks created in each team in the last 6 months.</div>
+        <div className="text-muted-foreground leading-none"> Shows the number of tasks created in each team in the last 6 months.</div>
       </CardFooter>
     </Card>
   );

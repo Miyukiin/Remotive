@@ -98,7 +98,7 @@ export function MonthTasksChart() {
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
             <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              Number of tasks created across all teams in the past 6 months.
+              Shows the number of tasks created across all teams in the past 6 months.
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { TeamTasksChart } from "@/components/analytics/team-tasks-chart";
 import { MonthTasksChart } from "@/components/analytics/month-tasks-chart";
+import { TasksCompletionChart } from "@/components/analytics/tasks-completion-chart";
 
 export default function AnalyticsPage() {
   return (
@@ -15,8 +16,8 @@ export default function AnalyticsPage() {
       {/* Charts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TeamTasksChart />
-
         <MonthTasksChart />
+        <TasksCompletionChart />
       </div>
     </div>
   );
