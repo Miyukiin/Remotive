@@ -3,12 +3,13 @@ import { FC } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { ProjectsFilterOptions } from "@/types";
 
 type TeamsSearchFilterProps = {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   filterOption: string;
-  setFilterOption: (value: string) => void;
+  setFilterOption: (value: ProjectsFilterOptions) => void;
 };
 
 const filterOptions = ["Ascending (A-Z)", "Descending (Z-A)", "Newest First", "Oldest First"] as const;
