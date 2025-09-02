@@ -18,8 +18,9 @@ export type ProjectAction =
 export type LabelAction = "CREATE" | "READ" | "UPDATE" | "DELETE";
 export type ListAction = "CREATE" | "READ" | "UPDATE" | "DELETE" | "MOVE";
 export type TaskAction = "CREATE" | "READ" | "UPDATE" | "DELETE" | "MOVE" | "MANAGE_ASSIGNEES";
+export type CommentAction = "CREATE" | "READ" | "UPDATE" | "DELETE";
 
-export type AllAction = TeamAction | ProjectAction | LabelAction | ListAction | TaskAction;
+export type AllAction = TeamAction | ProjectAction | LabelAction | ListAction | TaskAction | CommentAction;
 
 export type PermissionContext = {
   actorUserId: number;
@@ -84,15 +85,18 @@ export async function canDo(entity: Entity, action: AllAction, ctx: PermissionCo
     }
 
     case "COMMENT": {
-      if (isPM) return true; // PM BYPASS
       if (!isProjMember) return false; // If attempter is not a project member
 
       switch (action) {
         case "READ":
         case "CREATE":
           return true; // project member can do things up to here, further requires being author id
-        case "UPDATE":
+        case "UPDATE": {
+          const isAuthor = ctx.commentAuthorId != null && ctx.commentAuthorId === ctx.actorUserId; // Project managers and project members cannot update
+          return isAuthor;
+        }
         case "DELETE": {
+          if (isPM) return true; // PM BYPASS
           const isAuthor = ctx.commentAuthorId != null && ctx.commentAuthorId === ctx.actorUserId;
           return isAuthor;
         }

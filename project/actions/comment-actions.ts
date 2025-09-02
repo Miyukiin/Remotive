@@ -7,11 +7,26 @@ import { commentSchemaDB, commentSchemaForm, idSchema } from "@/lib/validations/
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { queries } from "@/lib/db/queries/queries";
 import z from "zod";
+import { getUserId } from "./user-actions";
+import { guardCommentAction } from "@/lib/rbac/permission-utils";
 
 // Fetches
 export async function getTaskComments(task_id: number): Promise<ServerActionResponse<CommentSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardCommentAction<CommentSelect[]>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -24,8 +39,21 @@ export async function createCommentAction(
   task_id: number,
   commentFormData: z.infer<typeof commentSchemaForm>,
 ): Promise<ServerActionResponse<CommentSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardCommentAction<CommentSelect>({
+    actorUserId: userRes.data.id,
+    taskId: task_id,
+    action: "CREATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -51,7 +79,21 @@ export async function updateCommentAction(
   comment_id: number,
   commentFormData: z.infer<typeof commentSchemaForm>,
 ): Promise<ServerActionResponse<CommentSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
+
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardCommentAction<CommentSelect>({
+    actorUserId: userRes.data.id,
+    commentId: comment_id,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
 
   const parsed = idSchema.safeParse({ id: comment_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));

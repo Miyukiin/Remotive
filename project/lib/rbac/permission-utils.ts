@@ -1,6 +1,6 @@
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { loadPermissionContext } from "./permission-loaders";
-import { canDo, LabelAction, ListAction, ProjectAction, TaskAction, TeamAction } from "./permissions";
+import { canDo, CommentAction, LabelAction, ListAction, ProjectAction, TaskAction, TeamAction } from "./permissions";
 import * as types from "@/types/index";
 
 // TEAMS
@@ -178,15 +178,14 @@ export function tasksForbiddenMsg(action: TaskAction): string {
 export async function guardTaskAction<T>({
   actorUserId,
   action,
-  // Provide one of these depending on the action:
   projectId,
   listId,
   taskId,
 }: {
   actorUserId: number;
   action: TaskAction;
-  projectId?: number; // for CREATE (or pass listId)
-  listId?: number; // for CREATE (alternative to projectId)
+  projectId?: number;
+  listId?: number;
   taskId?: number; // for READ/MOVE/UPDATE/DELETE/MANAGE_ASSIGNEES
 }): Promise<types.QueryResponse<T> | null> {
   // Build context
@@ -199,6 +198,45 @@ export async function guardTaskAction<T>({
 
   if (!(await canDo("TASK", action, ctx))) {
     return failResponse<T>(tasksForbiddenMsg(action), "FORBIDDEN");
+  }
+  return null; // allowed
+}
+
+// COMMENTS
+export function commentsForbiddenMsg(action: CommentAction): string {
+  switch (action) {
+    case "READ":
+      return "Only project members (or the project manager) can view comments in this project.";
+    case "CREATE":
+      return "Only project members (or the project manager) can add comments in this project.";
+    case "UPDATE":
+      return "Only the comment author can update this comment.";
+    case "DELETE":
+      return "Only the comment author (or the project manager) can delete this comment.";
+    default:
+      return "You don’t have permission to perform this action on comments.";
+  }
+}
+
+export async function guardCommentAction<T>({
+  actorUserId,
+  action,
+  taskId,
+  commentId,
+}: {
+  actorUserId: number;
+  action: CommentAction;
+  taskId?: number;
+  commentId?: number;
+}): Promise<types.QueryResponse<T> | null> {
+  const ctx = await loadPermissionContext({
+    actorUserId,
+    taskId: taskId ?? null,
+    commentId: commentId ?? null,
+  });
+
+  if (!(await canDo("COMMENT", action, ctx))) {
+    return failResponse<T>(commentsForbiddenMsg(action), "FORBIDDEN");
   }
   return null; // allowed
 }
