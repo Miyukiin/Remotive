@@ -198,3 +198,19 @@ export type DashboardFeedItem = {
   listName: string | null;
   taskTitle: string | null;
 };
+
+export type TeamTasksCountChartPayload = {
+  month: string;
+  sixMonthsAgo: string;
+  JsonSerializableTeamTasksData: {
+    teamId: number;
+    teamName: string;
+    taskCount: number;
+  }[];
+};
+
+export type TeamTasksChartDataType = {
+  team: string;
+  tasks: number;
+  fill: string;
+};
