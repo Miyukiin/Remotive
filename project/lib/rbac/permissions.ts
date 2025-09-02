@@ -16,8 +16,9 @@ export type ProjectAction =
   | "MANAGE_TEAMS";
 
 export type LabelAction = "CREATE" | "READ" | "UPDATE" | "DELETE";
+export type ListAction = "CREATE" | "READ" | "UPDATE" | "DELETE" | "MOVE";
 
-export type AllAction = "MOVE" | "ASSIGN" | "REORDER" | TeamAction | ProjectAction | LabelAction;
+export type AllAction = "MOVE" | "ASSIGN" | "REORDER" | TeamAction | ProjectAction | LabelAction | ListAction;
 
 export type PermissionContext = {
   actorUserId: number;

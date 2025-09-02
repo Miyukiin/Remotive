@@ -1,6 +1,6 @@
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { loadPermissionContext } from "./permission-loaders";
-import { canDo, LabelAction, ProjectAction, TeamAction } from "./permissions";
+import { canDo, LabelAction, ListAction, ProjectAction, TeamAction } from "./permissions";
 import * as types from "@/types/index";
 
 // TEAMS
@@ -119,3 +119,38 @@ export async function guardLabelAction<T>({
   return null; // allowed
 }
 
+// LABELS
+export function listsForbiddenMsg(action: ListAction): string {
+  switch (action) {
+    case "READ":
+      return "Only project members (or the project manager) can view lists for this project.";
+    case "CREATE":
+      return "Only project members (or the project manager) can create lists for this project.";
+    case "UPDATE":
+      return "Only project members (or the project manager) can update lists for this project.";
+    case "DELETE":
+      return "Only project members (or the project manager) can delete lists for this project.";
+    case "MOVE":
+      return "Only project members (or the project manager) can move lists for this project.";
+
+    default:
+      return "You don’t have permission to perform this action on lists.";
+  }
+}
+
+export async function guardListAction<T>({
+  actorUserId,
+  projectId,
+  action,
+}: {
+  actorUserId: number;
+  projectId: number;
+  action: ListAction;
+}): Promise<types.QueryResponse<T> | null> {
+  const ctx = await loadPermissionContext({ actorUserId, projectId });
+
+  if (!(await canDo("LIST", action, ctx))) {
+    return failResponse<T>(listsForbiddenMsg(action), "FORBIDDEN");
+  }
+  return null; // allowed
+}
