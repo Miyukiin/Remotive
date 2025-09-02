@@ -30,7 +30,7 @@ export const lists = {
         const [list] = await tx.insert(schema.lists).values(data).returning();
         if (!list) throw new Error("Database returned no result.");
 
-        await logAction(tx, { entity_id: list.id, entity_type: "list", action: "LIST_CREATED", list_id: list.id });
+        await logAction(tx, { entity_id: list.id, entity_type: "list", action: "LIST_CREATED", list_id: list.id, project_id: data.projectId });
         return successResponse(`Created team successfully`, list);
       });
 
@@ -70,7 +70,7 @@ export const lists = {
           .returning();
         if (!list) throw new Error("Database returned no result.");
 
-        await logAction(tx, { entity_id: list.id, entity_type: "list", action: "LIST_UPDATED", list_id: list.id });
+        await logAction(tx, { entity_id: list.id, entity_type: "list", action: "LIST_UPDATED", list_id: list.id, project_id: list.projectId  });
         return successResponse(`Updated list successfully.`, list);
       });
 
@@ -101,7 +101,7 @@ export const lists = {
           .set({ position: sql`${schema.lists.position} - 1` })
           .where(and(eq(schema.lists.projectId, projectId), gt(schema.lists.position, deletedPos)));
 
-        await logAction(tx, { entity_id: deleted.id, entity_type: "list", action: "LIST_DELETED" });
+        await logAction(tx, { entity_id: deleted.id, entity_type: "list", action: "LIST_DELETED", project_id: deleted.projectId  });
 
         return successResponse(`Deleted list successfully.`, deleted);
       });
@@ -140,7 +140,6 @@ export const lists = {
               entity_id: list.id,
               action: "LIST_MOVED",
               project_id,
-              // metadata: { fromPosition, toPosition: list.position }
             });
           }
         }
@@ -180,7 +179,7 @@ export const lists = {
           .where(eq(schema.lists.id, oldDoneList.id))
           .returning();
         if (!res) throw new Error("Unable to set old list isDone status to false.");
-        await logAction(tx, { entity_id: res.id, entity_type: "list", action: "LIST_UPDATED", list_id: res.id }); // Old List With Done Status Log
+        await logAction(tx, { entity_id: res.id, entity_type: "list", action: "LIST_UPDATED", list_id: res.id, project_id: res.projectId  }); // Old List With Done Status Log
 
         [res] = await tx
           .update(schema.lists)
@@ -188,7 +187,7 @@ export const lists = {
           .where(eq(schema.lists.id, new_done_list_id))
           .returning();
         if (!res) throw new Error("Unable to set new list isDone status to true.");
-        await logAction(tx, { entity_id: res.id, entity_type: "list", action: "LIST_UPDATED", list_id: res.id }); // New List With Done Status Log
+        await logAction(tx, { entity_id: res.id, entity_type: "list", action: "LIST_UPDATED", list_id: res.id, project_id: res.projectId  }); // New List With Done Status Log
 
         return successResponse(`Updated list status successfully.`, res);
       });
