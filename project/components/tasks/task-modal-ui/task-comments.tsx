@@ -92,7 +92,10 @@ function CommentBlocks({ activeTask, isMobile }: CommentBlocksProps) {
   }, [authorIds, commentAuthors]);
 
   // initial/empty/error states
-  if ((taskCommentsIsLoading && !taskComments?.length) || (Object.keys(commentAuthors).length === 0 && taskComments?.length))
+  if (
+    (taskCommentsIsLoading && !taskComments?.length) ||
+    (Object.keys(commentAuthors).length === 0 && taskComments?.length)
+  )
     return (
       <div className="flex justify-center items-center py-10 text-muted-foreground gap-2">
         <Loader2Icon className="animate-spin" /> <p>Loading the discussion...</p>
@@ -267,6 +270,23 @@ type CommentAreaProps = {
 
 function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
   const { createComment, isCommentCreationLoading } = useComments(activeTask.id);
+  const [author, setAuthor] = useState<UserSelect | null>(null);
+  const [isAuthorLoading, setIsAuthorLoading] = useState(true);
+
+  useEffect(() => {
+    async function retrieveAuthor() {
+      try {
+        const res = await getUserId();
+        if (!res.success) throw new Error(res.message);
+        setAuthor(res.data);
+        setIsAuthorLoading(false);
+      } catch {
+        toast.error("Error", { description: "Unable to retrieve author." });
+        return;
+      }
+    }
+    retrieveAuthor();
+  }, []);
 
   const form = useForm<CommentCreateForm>({
     resolver: zodResolver(commentSchemaForm),
@@ -275,20 +295,11 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
 
   const content = form.watch("content") ?? "";
   const plainTextLen = content.replace(/<[^>]*>/g, "").trim().length;
-  const isSubmitDisabled = isCommentCreationLoading || plainTextLen === 0;
+  const isSubmitDisabled = isCommentCreationLoading || plainTextLen === 0 || isAuthorLoading;
+
 
   async function onSubmit(values: CommentCreateForm) {
-    // Retrieve author
-    let author;
-    try {
-      const res = await getUserId();
-      if (!res.success) throw new Error(res.message);
-      author = res.data;
-    } catch {
-      toast.error("Error", { description: "Unable to retrieve author." });
-      return;
-    }
-
+    if (!author) return;
     await createComment({
       author_id: author.id,
       task_id: activeTask.id,
@@ -301,16 +312,16 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
     <div className="flex w-full gap-3 mt-5">
       {!isMobile && (
         <Avatar className="w-12 h-12">
-          <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage src={author?.image_url} />
+          <AvatarFallback>{initials(author?.name)}</AvatarFallback>
         </Avatar>
       )}
       <div className="w-full space-y-5">
         <div className="flex items-center gap-2">
           {isMobile && (
             <Avatar className="w-12 h-12">
-              <AvatarImage src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMHVGZXExRll1cENQdEY5amg1YkhMdUU2TDEifQ" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage src={author?.image_url} />
+              <AvatarFallback>{initials(author?.name)}</AvatarFallback>
             </Avatar>
           )}
           <p className="text-sm md:text-base"> Add something to the discussion </p>
@@ -323,7 +334,12 @@ function CommentArea({ activeTask, isMobile }: CommentAreaProps) {
               name="content"
               control={form.control}
               render={({ field }) => (
-                <QuillEditor className="scrollbar-custom overflow-y-scroll min-h-40 max-h-[500px]" value={field.value} onChange={field.onChange} placeholder="Discuss…" />
+                <QuillEditor
+                  className="scrollbar-custom overflow-y-scroll min-h-40 max-h-[500px]"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Discuss…"
+                />
               )}
             />
 
