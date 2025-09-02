@@ -1,5 +1,6 @@
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardStatsSkeleton } from "@/components/dashboard/dashboard-stats-skeleton";
+import RecentActivities from "@/components/dashboard/recent-activity";
 import RecentProjects from "@/components/dashboard/recent-projects";
 import { RecentProjectsCardSkeleton } from "@/components/dashboard/recent-projects-skeleton";
 import RecentTasks from "@/components/dashboard/recent-tasks";
@@ -22,7 +23,7 @@ export default function DashboardPage() {
         <DashboardStats />
       </Suspense>
 
-      {/* Recent Activity */}
+      {/* Recent Activities */}
       <div className="flex flex-col md:flex-row w-full gap-6">
         {/* Recent Projects + Recent Tasks column */}
         <div className="flex flex-1 flex-col gap-6">
@@ -36,10 +37,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Feed */}
-        <div className="flex flex-1 h-full bg-card rounded-lg border border-border p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Feed</h3>
-          <div className="space-y-3" />
-        </div>
+        <RecentActivities/>
       </div>
     </div>
   );

@@ -242,3 +242,18 @@ export const calendarDummyDates = [
     allDay: true,
   },
 ];
+
+// Filter out any audits rows we do not need for dashboard
+export function keepForDashboard(action: string) {
+  if (action.endsWith("_CREATED")) return true;
+  if (action.endsWith("_UPDATED")) return true;
+  if (action.endsWith("_DELETED")) return true;
+
+  if (action === "TASK_MEMBER_ASSIGNED") return true;
+  if (action === "TASK_MEMBER_REMOVED") return true;
+  if (action === "PROJECT_TEAM_ADDED") return true;
+  if (action === "PROJECT_TEAM_REMOVED") return true;
+  if (action === "COMMENT_CREATED") return true;
+
+  return false;
+}

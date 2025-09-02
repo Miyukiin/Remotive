@@ -181,3 +181,20 @@ export type TransactionType = Parameters<Parameters<DatabaseType["transaction"]>
 export type ProjectRoles = (typeof schema.rolesEnum.enumValues)[number];
 
 export type PendingProjectManager = { userId: number; role: ProjectRoles } | null;
+
+// For recent activities
+export type DashboardFeedItem = {
+  id: number;
+  action: string;
+  createdAt: Date;
+
+  actorName: string | null;
+  actorImage: string | null;
+  subjectName: string | null;
+  subjectImage: string | null;
+
+  projectName: string | null;
+  teamName: string | null;
+  listName: string | null;
+  taskTitle: string | null;
+};
