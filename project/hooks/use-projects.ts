@@ -374,7 +374,7 @@ export function useProjectMembers(projectId: number) {
       toast.success("Success", { description: "Successfully updated project teams." });
     },
     onError: (error) => {
-      toast.error("Error", { description: error.message });
+      toast.error("Error", { description: error.message});
     },
     onSettled: async () => {
       // Always re-fetch canonical server state after changes

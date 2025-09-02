@@ -361,7 +361,7 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
 
             const label = pmUser?.name ?? `User ${pmUserId}`;
             throw new Error(
-              `Cannot remove the selected teams because it would leave the Project Manager (${label}) without any team in this project. Assign them to another team first.`,
+              `Cannot update project teams because it would leave the Project Manager (${label}) without any team in this project. Assign them to another team first.`,
             );
           }
         }
@@ -456,6 +456,49 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
       // REMOVE project_members for removed teams, then remove team associations via teams to projects
       let deletedMembers = 0;
       if (toRemove.length > 0) {
+        // Prevent team removal altogether if any member of the teams-to-remove still has ACTIVE tasks in this project
+        const removedTeamMemberRows = await tx
+          .select({ user_id: schema.project_members.user_id })
+          .from(schema.project_members)
+          .where(
+            and(eq(schema.project_members.project_id, project_id), inArray(schema.project_members.team_id, toRemove)),
+          );
+
+        const removedUserIds = Array.from(new Set(removedTeamMemberRows.map((r) => r.user_id)));
+
+        if (removedUserIds.length > 0) {
+          const activeAssignments = await tx
+            .select({
+              user_id: schema.users_to_tasks.user_id,
+              task_id: schema.users_to_tasks.task_id,
+            })
+            .from(schema.users_to_tasks)
+            .innerJoin(schema.tasks, eq(schema.tasks.id, schema.users_to_tasks.task_id))
+            .innerJoin(schema.lists, eq(schema.lists.id, schema.tasks.listId))
+            .where(
+              and(
+                inArray(schema.users_to_tasks.user_id, removedUserIds),
+                eq(schema.lists.projectId, project_id),
+                eq(schema.lists.isDone, false), // "active" = task in a non-done list
+              ),
+            );
+
+          if (activeAssignments.length > 0) {
+            const blockedUserIds = Array.from(new Set(activeAssignments.map((a) => a.user_id)));
+            const blockedUsers = await tx
+              .select({ id: schema.users.id, name: schema.users.name })
+              .from(schema.users)
+              .where(inArray(schema.users.id, blockedUserIds));
+
+            const names = blockedUsers.map((u) => u.name).join(", ") || `${blockedUserIds.length} user(s)`;
+
+            throw new Error(
+              `Cannot update project teams because the following member(s) still have active assigned tasks in this project: ${names}. ` +
+                `Complete/move to Done or reassign those tasks first.`,
+            );
+          }
+        }
+
         const deleted = await tx
           .delete(schema.project_members)
           .where(
@@ -512,6 +555,7 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
 
     return successResponse("Project teams updated.", result);
   } catch (e) {
-    return failResponse("Unable to update project teams.", e);
+    const msg = e instanceof Error && e.message ? e.message : "Cannot update project teams due to an unexpected error.";
+    return failResponse(msg, e);
   }
 }
