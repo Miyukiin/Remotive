@@ -78,6 +78,7 @@ import { ProjectRoles, ProjectSelect, UpdateProjectTeamsPayload } from "@/types"
 import { getTempId } from "@/lib/utils";
 import { getProjectMembersTableData } from "@/actions/teams-actions";
 import { ProjectMember } from "@/components/projects/members/columns-data-table-project-members";
+import { redirect } from "next/navigation";
 
 // Projects list
 export function useProjects(project_id?: number) {
@@ -194,6 +195,7 @@ export function useProjects(project_id?: number) {
     },
     onSuccess: () => {
       toast.success("Success", { description: "Successfully deleted the project." });
+      redirect("/projects");
     },
     onError: (error, variables, context) => {
       toast.error("Error", { description: error.message });
@@ -359,7 +361,7 @@ export function useProjectMembers(projectId: number) {
   const reassignProjectTeams = useMutation({
     mutationFn: async ({ project_id, toAdd, toRemove }: UpdateProjectTeamsPayload) => {
       const res = await updateProjectTeamsAction({ project_id: projectId, toAdd, toRemove });
-      if (!res.success) throw new Error(res.error as string);
+      if (!res.success) throw new Error(res.message);
       return res.data; // { addedTeamIds, removedTeamIds, insertedMembers, deletedMembers }
     },
     onMutate: async () => {
@@ -372,7 +374,7 @@ export function useProjectMembers(projectId: number) {
       toast.success("Success", { description: "Successfully updated project teams." });
     },
     onError: (error) => {
-      toast.error("Error", { description: `${error.message}` });
+      toast.error("Error", { description: error.message });
     },
     onSettled: async () => {
       // Always re-fetch canonical server state after changes
