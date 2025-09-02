@@ -211,19 +211,19 @@ export function useLabels({ project_id, task_id }: { project_id: number; task_id
     taskLabelsError: getLabelsByTask.error,
 
     // Mutations
-    createLabel: createLabel.mutateAsync,
+    createLabel: createLabel.mutate,
     isLabelCreationLoading: createLabel.isPending,
     labelCreationError: createLabel.error,
 
-    deleteLabel: deleteLabel.mutateAsync,
+    deleteLabel: deleteLabel.mutate,
     isLabelDeletionLoading: deleteLabel.isPending,
     labelDeletionError: deleteLabel.error,
 
-    updateLabel: updateLabel.mutateAsync,
+    updateLabel: updateLabel.mutate,
     isLabelUpdateLoading: updateLabel.isPending,
     labelUpdateError: updateLabel.error,
 
-    updateTaskLabels: updateTaskLabels.mutateAsync,
+    updateTaskLabels: updateTaskLabels.mutate,
     isTaskLabelsUpdating: updateTaskLabels.isPending,
     updateTaskLabelsError: updateTaskLabels.error,
   };
