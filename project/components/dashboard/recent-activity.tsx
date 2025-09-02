@@ -22,10 +22,10 @@ export default async function RecentActivities() {
 
   if (items.length === 0) {
     return (
-      <Card className="flex-1 items-center">
-        <CardContent className="flex h-full items-center justify-center text-center text-muted-foreground">
-          <p>No activity yet.</p>
-          <p>Once you and your team start working, feed items will appear here.</p>
+      <Card className="flex-1 h-[300px] items-center gap-2">
+        <CardContent className="flex flex-col text-sm h-full items-center justify-center text-center text-muted-foreground">
+          <p className="font-bold text-md">No activity yet.</p>
+          <p className="text-xs">Once you and your team start working, feed items will appear here.</p>
         </CardContent>
       </Card>
     );

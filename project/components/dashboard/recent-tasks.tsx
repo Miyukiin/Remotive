@@ -13,8 +13,8 @@ export default async function RecentTasksCard() {
 
   if (!res.success) {
     return (
-      <Card className="flex-1">
-        <CardContent className="flex h-full items-center justify-center text-center text-muted-foreground">
+      <Card className="flex-1 items-center gap-2">
+        <CardContent className="flex flex-col text-sm h-full items-center justify-center text-center text-muted-foreground">
           <p>Unable to load data.</p>
         </CardContent>
       </Card>
@@ -25,10 +25,10 @@ export default async function RecentTasksCard() {
 
   if (tasks.length === 0) {
     return (
-      <Card className="flex-1 items-center">
-        <CardContent className="flex h-full items-center justify-center text-center text-muted-foreground">
-          <p>No tasks found.</p>
-          <p>Get assigned to or create one.</p>
+      <Card className="flex-1  items-center gap-2">
+        <CardContent className="flex flex-col text-sm h-full items-center justify-center text-center text-muted-foreground">
+          <p className="font-bold text-md">No tasks found.</p>
+          <p className="text-xs">Get invited to or create one.</p>
         </CardContent>
       </Card>
     );
