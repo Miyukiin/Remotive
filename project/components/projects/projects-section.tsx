@@ -4,7 +4,6 @@ import ProjectsSearchFilter from "./projects-search-filter";
 import ProjectsGrid from "./project-grid";
 import { ProjectSelect, ProjectsFilterOptions } from "@/types";
 import StateBlock from "@/components/ui/state-block";
-import { CreateProjectButton } from "@/components/projects/create-project-button";
 
 type ProjectsSectionProps = {
   projectsData: ProjectSelect[];
@@ -46,7 +45,7 @@ const ProjectsSection: FC<ProjectsSectionProps> = ({ projectsData }) => {
     return filtered;
   }, [searchTerm, filterOption, projectsData]);
 
-  // No projects yet
+  // Empty projects
   if (projectsData.length === 0) {
     return (
       <div className="space-y-4">
@@ -66,7 +65,7 @@ const ProjectsSection: FC<ProjectsSectionProps> = ({ projectsData }) => {
     );
   }
 
-  // No results for current search
+  // Empty query result
   if (filteredProjects.length === 0) {
     return (
       <div className="space-y-4">

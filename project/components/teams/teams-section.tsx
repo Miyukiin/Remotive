@@ -6,7 +6,7 @@ import { ProjectsFilterOptions, TeamsSelect } from "@/types";
 import StateBlock from "@/components/ui/state-block";
 
 type TeamsProps = {
-  teamsData: TeamsSelect[]; // default to [] from caller
+  teamsData: TeamsSelect[]; 
 };
 
 const TeamsSection: FC<TeamsProps> = ({ teamsData }) => {
@@ -14,7 +14,6 @@ const TeamsSection: FC<TeamsProps> = ({ teamsData }) => {
   const [filterOption, setFilterOption] = useState<ProjectsFilterOptions>("Ascending (A-Z)");
 
   const filteredTeams = useMemo(() => {
-    // Start from a copy to avoid mutating props
     let filtered = [...teamsData];
 
     // Filter by search term
@@ -42,7 +41,7 @@ const TeamsSection: FC<TeamsProps> = ({ teamsData }) => {
     return filtered;
   }, [searchTerm, filterOption, teamsData]);
 
-  // Empty “no teams yet”
+  // Empty teams
   if (teamsData.length === 0) {
     return (
       <div className="space-y-4">
@@ -62,7 +61,7 @@ const TeamsSection: FC<TeamsProps> = ({ teamsData }) => {
     );
   }
 
-  // Empty “no results for this query”
+  // Empty query result
   if (filteredTeams.length === 0) {
     return (
       <div className="space-y-4">
