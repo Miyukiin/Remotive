@@ -3,11 +3,19 @@ import "server-only";
 
 export type TeamRole = "TEAM_LEADER" | "TEAM_MEMBER" | null; // null => not on team
 export type ProjectRole = "PROJECT_MANAGER" | "PROJECT_MEMBER" | null; // null => not in project
-export type Entity = "TEAM" | "PROJECT" | "LIST" | "TASK" | "COMMENT";
+export type Entity = "TEAM" | "PROJECT" | "LIST" | "TASK" | "COMMENT" | "LABELS";
 
 // List of actions that are being regulated
 export type TeamAction = "READ" | "UPDATE" | "DELETE" | "LEAVE" | "ADD_MEMBERS" | "REMOVE_MEMBERS" | "REASSIGN_LEADER";
-export type AllAction = "READ" | "CREATE" | "UPDATE" | "DELETE" | "MOVE" | "ASSIGN" | "REORDER" | TeamAction;
+export type ProjectAction =
+  | "CREATE" // Create Labels, Lists, Tasks etc. Not project itself as anyone authenticated can create project
+  | "READ"
+  | "UPDATE"
+  | "DELETE"
+  | "REASSIGN_PROJECT_ROLE"
+  | "MANAGE_TEAMS";
+
+export type AllAction = "CREATE" | "MOVE" | "ASSIGN" | "REORDER" | TeamAction | ProjectAction;
 
 export type PermissionContext = {
   actorUserId: number;
@@ -38,10 +46,20 @@ export async function canDo(entity: Entity, action: AllAction, ctx: PermissionCo
       return ctx.teamRole !== null; // allow else action taken by this team member
     }
 
+    case "LABELS":
+      return isProjMember || isPM;
     case "PROJECT":
-    case "LIST": {
-      if (action === "UPDATE" || action === "DELETE") return isPM;
+      if (
+        action === "UPDATE" ||
+        action === "DELETE" ||
+        action === "REASSIGN_PROJECT_ROLE" ||
+        action === "MANAGE_TEAMS"
+      )
+        return isPM;
       // For every action else, PM can do anything a member can
+      return isProjMember || isPM;
+
+    case "LIST": {
       return isProjMember || isPM;
     }
 

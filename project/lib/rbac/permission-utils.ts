@@ -1,6 +1,6 @@
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { loadPermissionContext } from "./permission-loaders";
-import { canDo, TeamAction } from "./permissions";
+import { canDo, ProjectAction, TeamAction } from "./permissions";
 import * as types from "@/types/index";
 
 // TEAMS
@@ -45,4 +45,42 @@ export async function guardTeamAction<T>({
     return failResponse<T>(teamForbiddenMsg(action), "FORBIDDEN");
   }
   return null; // if null, then user is authorized to do action, else Not null? then it returned a fail response, forward this to the mutation func in serv action
+}
+
+// PROJECTS
+export function projectForbiddenMsg(action: ProjectAction): string {
+  switch (action) {
+    case "READ":
+      return "Only project members (or the project manager) can view this project.";
+    case "CREATE":
+      return "You don’t have permission to create items in this project.";
+    case "UPDATE":
+      return "Only the Project Manager can update this project.";
+    case "DELETE":
+      return "Only the Project Manager can delete this project.";
+    case "REASSIGN_PROJECT_ROLE":
+      return "Only the Project Manager can manage project member roles in this project.";
+    case "MANAGE_TEAMS":
+      return "Only the Project Manager can manage teams for this project.";
+
+    default:
+      return "You don’t have permission to perform this action on the project.";
+  }
+}
+
+export async function guardProjectAction<T>({
+  actorUserId,
+  projectId,
+  action,
+}: {
+  actorUserId: number;
+  projectId: number;
+  action: ProjectAction;
+}): Promise<types.QueryResponse<T> | null> {
+  const ctx = await loadPermissionContext({ actorUserId, projectId });
+
+  if (!(await canDo("PROJECT", action, ctx))) {
+    return failResponse<T>(projectForbiddenMsg(action), "FORBIDDEN");
+  }
+  return null; // allowed
 }

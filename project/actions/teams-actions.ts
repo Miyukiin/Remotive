@@ -22,7 +22,7 @@ import { db } from "@/lib/db/db-index";
 import * as schema from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { ROLE_RANK } from "@/lib/utils";
-import { guardTeamAction } from "@/lib/rbac/permission-utils";
+import { guardProjectAction, guardTeamAction } from "@/lib/rbac/permission-utils";
 
 // Utilities
 export async function checkUserIsLeaderAction(
@@ -181,8 +181,17 @@ export async function getTeamsForProject(project_id: number): Promise<ServerActi
   // AUTH CHECK
   await checkAuthenticationStatus();
 
-  // GUARD PROJECT ACTION
-  
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<types.TeamsSelect[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
   // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
@@ -194,7 +203,16 @@ export async function getProjectMembersTableData(project_id: number): Promise<Se
   // AUTH CHECK
   await checkAuthenticationStatus();
 
-  // GUARD PROJECT ACTION
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<ProjectMember[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
 
   // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
