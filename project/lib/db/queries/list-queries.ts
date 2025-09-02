@@ -85,10 +85,12 @@ export const lists = {
       const result = await db.transaction<types.QueryResponse<types.ListSelect>>(async (tx) => {
         const toDelete = await tx.query.lists.findFirst({
           where: eq(schema.lists.id, id),
-          columns: { id: true, position: true, projectId: true },
         });
 
         if (!toDelete) return failResponse(`Unable to delete list.`, `List not found`);
+
+        // Check if list has isDone attribute, if so, do not allow deletion
+        if(toDelete.isDone) throw new Error("Unable to delete the list marked as done. Assign another list as done before trying to delete this list.")
 
         const { position: deletedPos, projectId } = toDelete;
 

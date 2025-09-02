@@ -49,7 +49,7 @@ export async function GET() {
       .where(inArray(schema.lists.projectId, projectIds));
 
     if (lists.length === 0) {
-      // It may be that a project does not have a list.
+      // We already guard against zero lists for a project since we do not allow deletion of list marked as done, which means the project will always have one list at al times
       return NextResponse.json({
         success: true,
         message: "OK",
