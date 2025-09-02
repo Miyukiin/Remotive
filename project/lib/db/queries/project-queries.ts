@@ -73,7 +73,7 @@ export const projects = {
             team_id: assignedTeam.team_id,
             project_id: insertedProject.id,
             user_id: teamMember.id,
-            role: teamMember.id === creatorID ? 0 : 1, 
+            role: teamMember.id === creatorID ? 2 : 1, // PM else project member
             createdAt: now,
             updatedAt: now,
           }));
