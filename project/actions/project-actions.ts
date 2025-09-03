@@ -43,6 +43,12 @@ export async function getProjectByIdAction(project_id: number): Promise<ServerAc
   // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // ZOD VALIDATION
+  const parsed = idSchema.safeParse({ id: project_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  const result = await queries.projects.getById(project_id);
+
   // PERMISSION CHECK
   const userRes = await getUserId();
   if (!userRes.success) return userRes;
@@ -54,11 +60,7 @@ export async function getProjectByIdAction(project_id: number): Promise<ServerAc
   });
   if (guardResult) return guardResult;
 
-  // ZOD VALIDATION
-  const parsed = idSchema.safeParse({ id: project_id });
-  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
-
-  return await queries.projects.getById(project_id);
+  return result;
 }
 
 export async function getAllProjects(): Promise<ServerActionResponse<types.ProjectSelect[]>> {
@@ -211,6 +213,26 @@ export async function reassignProjectMemberRole({
     }
 
     const now = new Date();
+
+    // Check if user is project manager, and updating himself to project member
+    if (role === "Project Member") {
+      const res = await getUserId();
+      if (!res.success) return res;
+
+      const userId = res.data.id;
+
+      // Only select one, that's all we need anyawy
+      const [result2] = await db
+        .select()
+        .from(schema.project_members)
+        .where(and(eq(schema.project_members.user_id, userId), eq(schema.project_members.project_id, project_id)))
+        .limit(1);
+
+      const userRole = result2.role;
+      // Check if we are updating self, if so, check if target role is project member, if so check if userRole currently is project manager, if so, return.
+      if (userId === member_id && role === "Project Member" && userRole === pmRole.id)
+        throw new Error("Cannot demote self to project member.");
+    }
 
     const result = await db.transaction(async (tx) => {
       let totalUpdated = 0;

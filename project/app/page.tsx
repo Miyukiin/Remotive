@@ -1,178 +1,124 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle, Users, Kanban } from "lucide-react";
+import { ArrowRight, CheckCircle, Users, Kanban, CircleCheckBig, MoveUpRight } from "lucide-react";
+import { DefaultHeader } from "@/components/default-header";
 import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import { WebsitePreview } from "@/components/website-preview";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-platinum-900 to-platinum-800 dark:from-outer_space-500 dark:to-payne's_gray-500">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header />
+      <DefaultHeader />
 
-      {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-outer_space-500 dark:text-platinum-500 mb-6">
-            Manage Projects with
-            <span className="text-blue_munsell-500"> Kanban Boards</span>
-          </h1>
+      <div>
+        {/* Banner*/}
+        <div className="relative overflow-hidden px-4 sm:px-6 lg:px-8 bg-[linear-gradient(7deg,rgba(200,255,220,1)_0%,rgba(255,255,255,1)_100%)] dark:bg-[linear-gradient(180deg,rgba(18,_21,_18,_1)_0%,_rgba(41,_61,_55,_1)_100%)]">
+          <div className="">
+            <div className="flex flex-col justify-center items-center py-16 md:py-32 min-h-[calc(100vh-64px)]">
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground text-center">
+                Manage Projects with <span className="text-emerald-600 dark:text-primary">Remotive</span>
+              </h1>
 
-          <p className="text-xl text-payne's_gray-500 dark:text-french_gray-500 mb-8 max-w-2xl mx-auto">
-            Organize tasks, collaborate with teams, and track progress with our intuitive drag-and-drop project
-            management platform.
-          </p>
+              <p className="mt-4 md:mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl font-medium mx-auto text-center">
+                Stay on top of tasks, collaborate seamlessly across teams, and track progress effortlessly with our
+                intuitive drag-and-drop platform.
+              </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center px-8 py-4 bg-blue_munsell-500 text-white rounded-lg hover:bg-blue_munsell-600 text-lg font-semibold"
-            >
-              Start Managing Projects
-              <ArrowRight className="ml-2" size={20} />
-            </Link>
-            <Link
-              href="/projects"
-              className="inline-flex items-center px-8 py-4 border-2 border-blue_munsell-500 text-blue_munsell-500 rounded-lg hover:bg-blue_munsell-50 dark:hover:bg-blue_munsell-900 text-lg font-semibold"
-            >
-              View Projects
-            </Link>
-          </div>
+              <div className="mt-8 md:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Button asChild size="lg" className="w-full md:w-fit">
+                  <Link href="/dashboard">
+                    Start Delivering Now
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
 
-          {/* Feature highlights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
-            <div className="flex items-center justify-center space-x-2 text-outer_space-500 dark:text-platinum-500">
-              <Kanban className="text-blue_munsell-500" size={20} />
-              <span>Drag & Drop Boards</span>
-            </div>
-            <div className="flex items-center justify-center space-x-2 text-outer_space-500 dark:text-platinum-500">
-              <Users className="text-blue_munsell-500" size={20} />
-              <span>Team Collaboration</span>
-            </div>
-            <div className="flex items-center justify-center space-x-2 text-outer_space-500 dark:text-platinum-500">
-              <CheckCircle className="text-blue_munsell-500" size={20} />
-              <span>Task Management</span>
-            </div>
-          </div>
-        </div>
-      </section>
+                <Button asChild size="lg" variant="outline" className="w-full md:w-fit">
+                  <Link href="/projects">View Projects</Link>
+                </Button>
+              </div>
 
-      {/* Navigation Demo Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50 dark:bg-outer_space-400/50">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold text-outer_space-500 dark:text-platinum-500 mb-8">
-            🚀 Navigate the Mock Site
-          </h2>
-          <p className="text-lg text-payne's_gray-500 dark:text-french_gray-500 mb-8">
-            All pages are accessible without authentication for development purposes
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <Link
-              href="/dashboard"
-              className="p-4 bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 hover:shadow-lg transition-shadow"
-            >
-              <h3 className="font-semibold text-outer_space-500 dark:text-platinum-500 mb-2">Dashboard</h3>
-              <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400">Main dashboard view</p>
-            </Link>
-
-            <Link
-              href="/projects"
-              className="p-4 bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 hover:shadow-lg transition-shadow"
-            >
-              <h3 className="font-semibold text-outer_space-500 dark:text-platinum-500 mb-2">Projects</h3>
-              <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400">Projects listing page</p>
-            </Link>
-
-            <Link
-              href="/projects/1"
-              className="p-4 bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 hover:shadow-lg transition-shadow"
-            >
-              <h3 className="font-semibold text-outer_space-500 dark:text-platinum-500 mb-2">Kanban Board</h3>
-              <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400">Project board view</p>
-            </Link>
-
-            <Link
-              href="/sign-in"
-              className="p-4 bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 hover:shadow-lg transition-shadow"
-            >
-              <h3 className="font-semibold text-outer_space-500 dark:text-platinum-500 mb-2">Auth Pages</h3>
-              <p className="text-sm text-payne's_gray-500 dark:text-french_gray-400">Sign in/up placeholders</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Task Implementation Status */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center text-outer_space-500 dark:text-platinum-500 mb-12">
-            Implementation Roadmap
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                phase: "1.0",
-                title: "Project Setup",
-                status: "pending",
-                tasks: 6,
-              },
-              {
-                phase: "2.0",
-                title: "Authentication",
-                status: "pending",
-                tasks: 6,
-              },
-              {
-                phase: "3.0",
-                title: "Database Setup",
-                status: "pending",
-                tasks: 6,
-              },
-              {
-                phase: "4.0",
-                title: "Core Features",
-                status: "pending",
-                tasks: 6,
-              },
-              {
-                phase: "5.0",
-                title: "Kanban Board",
-                status: "pending",
-                tasks: 6,
-              },
-              {
-                phase: "6.0",
-                title: "Advanced Features",
-                status: "pending",
-                tasks: 6,
-              },
-              { phase: "7.0", title: "Testing", status: "pending", tasks: 6 },
-              {
-                phase: "8.0",
-                title: "Deployment",
-                status: "pending",
-                tasks: 6,
-              },
-            ].map((item) => (
-              <div
-                key={item.phase}
-                className="bg-white dark:bg-outer_space-500 p-6 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400"
-              >
-                <div className="text-sm text-blue_munsell-500 font-semibold mb-2">Phase {item.phase}</div>
-                <h3 className="font-semibold text-outer_space-500 dark:text-platinum-500 mb-2">{item.title}</h3>
-                <div className="text-sm text-payne's_gray-500 dark:text-french_gray-400 mb-3">{item.tasks} tasks</div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                  <span className="text-sm text-payne's_gray-500 dark:text-french_gray-400 capitalize">
-                    {item.status}
-                  </span>
+              {/* Feature highlights */}
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <Kanban className="h-5 w-5 text-primary" />
+                  <span>Drag &amp; Drop Boards</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <Users className="h-5 w-5 text-primary" />
+                  <span>Team Collaboration</span>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <CheckCircle className="h-5 w-5 text-primary" />
+                  <span>Task Management</span>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
-      </section>
+
+        {/* Features Showcase*/}
+        <div className="flex flex-col justify center items-center px-4 gap-12 py-16 md:py-32 min-h-[calc(100vh-64px)] bg-[linear-gradient(7deg,rgba(255,255,255,1)_0%,rgba(200,255,220,1)_100%)] dark:bg-[linear-gradient(180deg,rgba(41,_61,_55,_1)_0%,_rgba(18,_21,_18,_1)_100%)]">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground text-center">
+            All In a <span className="text-emerald-600 dark:text-primary">Single Source</span> Of Truth
+          </h1>
+          <div className="flex flex-col lg:flex-row gap-4 items-center">
+            <Badge className="flex gap-1 items-center w-full md:w-fit">
+              <CircleCheckBig className="" />
+              <span className="text-sm md:text-base text-foreground">Plan projects & sprints</span>
+            </Badge>
+
+            <Badge className="flex gap-1 items-center w-full md:w-fit">
+              <CircleCheckBig className="" />
+              <span className="text-sm md:text-base text-foreground">Track progress in real time</span>
+            </Badge>
+
+            <Badge className="flex gap-1 items-center w-full md:w-fit">
+              <CircleCheckBig className="" />
+              <span className="text-sm md:text-base text-foreground">Collaborate across teams</span>
+            </Badge>
+
+            <Badge className="flex gap-1 items-center w-full md:w-fit">
+              <CircleCheckBig className="" />
+              <span className="text-sm md:text-base text-foreground">Analyze workloads & velocity</span>
+            </Badge>
+          </div>
+          <div className="flex w-full justify-center">
+            <div className="w-full max-w-[900px] aspect-[16/7.5]">
+              <WebsitePreview />
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="flex flex-col justify-center items-center px-4 gap-12 py-16 md:py-32 min-h-[calc(100vh-64px)]">
+          <div className="relative aspect-square w-full md:max-w-[30%] lg:max-w-[20%] md:h-[40%]">
+            <Image src={"/team.svg"} fill alt="team" objectFit="cover" />
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground text-center">
+              Ready to elevate your <span className="text-emerald-600 dark:text-primary">team?</span>
+            </h1>
+
+            <p className="tracking-tight text-muted-foreground text-center">
+              {" "}
+              Increase efficiency, productivity and business performance with Remotive&apos;s project management
+              capabilities.
+            </p>
+          </div>
+          <div className="mt-3 md:mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button className="bg-primary px-4 py-4 rounded-full md:w-fit hover:scale-110 transition-all duration-300 font-medium">
+              <Link href="/dashboard" className="inline-flex">
+                Start Managing <MoveUpRight className="ml-2 h-5 w-5" />
+              </Link>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <Footer />
     </div>
   );

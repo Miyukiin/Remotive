@@ -1,68 +1,3 @@
-// TODO: Task 4.4 - Build task creation and editing functionality
-// TODO: Task 5.4 - Implement optimistic UI updates for smooth interactions
-
-/*
-TODO: Implementation Notes for Interns:
-
-Custom hook for task data management:
-- Fetch tasks for a project
-- Create new task
-- Update task
-- Delete task
-- Move task between lists
-- Bulk operations
-
-Features:
-- Optimistic updates for smooth UX
-- Real-time synchronization
-- Conflict resolution
-- Undo functionality
-- Batch operations
-
-Example structure:
-export function useTasks(projectId: string) {
-  const queryClient = useQueryClient()
-  
-  const {
-    data: tasks,
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['tasks', projectId],
-    queryFn: () => queries.tasks.getByProject(projectId),
-    enabled: !!projectId
-  })
-  
-  const createTask = useMutation({
-    mutationFn: queries.tasks.create,
-    onMutate: async (newTask) => {
-      // Optimistic update
-      await queryClient.cancelQueries({ queryKey: ['tasks', projectId] })
-      const previousTasks = queryClient.getQueryData(['tasks', projectId])
-      queryClient.setQueryData(['tasks', projectId], (old: Task[]) => [...old, { ...newTask, id: 'temp-' + Date.now() }])
-      return { previousTasks }
-    },
-    onError: (err, newTask, context) => {
-      // Rollback on error
-      queryClient.setQueryData(['tasks', projectId], context?.previousTasks)
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
-    }
-  })
-  
-  return {
-    tasks,
-    isLoading,
-    error,
-    createTask: createTask.mutate,
-    isCreating: createTask.isPending
-  }
-}
-*/
-
-// Placeholder to prevent import errors
-
 "use client";
 import {
   createTaskAction,
@@ -177,7 +112,7 @@ export function useTasks({
       position: number;
       taskFormData: z.infer<typeof taskSchemaForm>;
     }) => {
-      const res = await createTaskAction(list_id, position, taskFormData);
+      const res = await createTaskAction(project_id, list_id, position, taskFormData);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -212,7 +147,9 @@ export function useTasks({
 
       // Tanstack Optimistic UI
       queryClient.setQueryData<TaskSelect[]>(["tasks_list", list_id], (old) => (old ? [...old, optimisticTask] : old));
-      queryClient.setQueryData<TaskSelect[]>(["tasks_project", project_id], (old) => (old ? [...old, optimisticTask] : old));
+      queryClient.setQueryData<TaskSelect[]>(["tasks_project", project_id], (old) =>
+        old ? [...old, optimisticTask] : old,
+      );
 
       // Tanstack Optimistic UI for members
       const assigneeIds = taskFormData.assigneeIds as number[] | undefined;
@@ -279,7 +216,7 @@ export function useTasks({
 
   const deleteTask = useMutation({
     mutationFn: async ({ task_id, project_id }: { task_id: number; project_id: number }) => {
-      const res = await deleteTaskAction(task_id);
+      const res = await deleteTaskAction(project_id, task_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -371,7 +308,7 @@ export function useTasks({
       project_id: number;
       taskFormData?: z.infer<typeof taskSchemaEditForm>;
     }) => {
-      const res = await updateTaskNewAction(task_id, taskFormData);
+      const res = await updateTaskNewAction(project_id, task_id, taskFormData);
       if (!res.success) throw new Error(res.message);
 
       return res.data;

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin '@tailwindcss/typography';
 @plugin 'tailwindcss-animate';
+@import '@clerk/themes/shadcn.css';
 
 @source '../*.{js,ts,jsx,tsx,mdx}';
 
@@ -112,7 +113,7 @@
   --color-emerald-200: oklch(82.873% 0.0958 164.654);
   --color-emerald-300: oklch(80.648% 0.10822 163.985);
   --color-emerald-400: oklch(78.492% 0.1199 163.183);
-  --color-emerald-500: oklch(76.447% 0.13015 162.113); /* base */
+  --color-emerald-500: rgb(87, 204, 153); /* base */
   --color-emerald-600: oklch(70.524% 0.11955 162.053);
   --color-emerald-700: oklch(64.757% 0.10927 162.189);
   --color-emerald-800: oklch(58.595% 0.09729 162.793);
@@ -452,3 +453,5 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+

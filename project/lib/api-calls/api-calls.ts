@@ -2,8 +2,7 @@ import { DashboardAnalytics, DashboardFeedItem, RecentProjects, RecentTasks } fr
 import { cookies } from "next/headers";
 // Server only api calls
 
-// Development
-const API_BASE_URL = "http://localhost:3000/api/";
+const API_BASE_URL = process.env.API_URL!;
 
 type APIResponse<T> =
   | {

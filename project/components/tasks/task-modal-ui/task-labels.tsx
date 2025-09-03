@@ -93,7 +93,7 @@ export function TaskLabels({ activeTask, project_id }: TaskLabelsProps) {
                             color: getContrastYIQ(pl.color).result,
                           }}
                         >
-                          {pl.color.toUpperCase()}
+                          {pl.name.toUpperCase()}
                         </Badge>
                       </div>
                       {isSelected ? <Check size={14} /> : null}

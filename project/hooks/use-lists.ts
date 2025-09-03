@@ -25,7 +25,8 @@ export function useLists(project_id: number) {
       if (!project_id) return [];
       const res = await getAllListsAction(project_id);
       if (!res.success) throw new Error(res.message);
-      return res.data;
+      // Sort by position when data comes from server
+      return res.data.sort((a, b) => a.position - b.position);
     },
   });
 
@@ -100,7 +101,7 @@ export function useLists(project_id: number) {
       toast.success("Success", { description: "Successfully deleted the list." });
     },
     onError: (error, variables, context) => {
-      toast.error("Error", { description: error.message});
+      toast.error("Error", { description: error.message });
       queryClient.setQueryData(["lists", project_id], context?.previousLists);
     },
     onSettled: () => {
@@ -176,20 +177,23 @@ export function useLists(project_id: number) {
 
       const previousLists = queryClient.getQueryData<ListSelect[]>(["lists", project_id]);
 
-      // Optimistically update the list with the new positions
-      queryClient.setQueryData<ListSelect[]>(["lists", project_id], (old) =>
-        old
-          ? old.map((l) => {
-              const payload = listsPayload.find((p) => p.id === l.id);
-              return payload
-                ? {
-                    ...l,
-                    position: payload.position,
-                  }
-                : l;
-            })
-          : old,
-      );
+      // Optimistically update AND reorder the array
+      queryClient.setQueryData<ListSelect[]>(["lists", project_id], (old) => {
+        if (!old) return old;
+
+        const updated = old.map((l) => {
+          const payload = listsPayload.find((p) => p.id === l.id);
+          return payload
+            ? {
+                ...l,
+                position: payload.position,
+              }
+            : l;
+        });
+
+        // IMPORTANT: Sort by position to reorder the array
+        return updated.sort((a, b) => a.position - b.position);
+      });
 
       return { previousLists };
     },

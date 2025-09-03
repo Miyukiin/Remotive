@@ -1,56 +1,91 @@
-import ProfileSettings from "@/components/settings/profile-settings"
-import { User, Bell, Shield, Palette } from "lucide-react"
+"use client";
+
+import { useState } from "react";
+import { Palette, ShieldUser } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { UserProfile } from "@clerk/nextjs";
+import { Appearance } from "@/components/settings/appearance";
+
+type Section = "account" | "appearance";
 
 export default function SettingsPage() {
+  const [section, setSection] = useState<Section>("account");
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-outer_space-500 dark:text-platinum-500">Settings</h1>
-        <p className="text-payne's_gray-500 dark:text-french_gray-500 mt-2">
-          Manage your account and application preferences
-        </p>
+        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground mt-2">Manage your account and application preferences</p>
       </div>
 
-      {/* Implementation Tasks Banner */}
-      <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
-          ⚙️ Settings Implementation Tasks
-        </h3>
-        <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-          <li>• Task 6.4: Implement project member management and permissions</li>
-        </ul>
-      </div>
+      {/* Nav */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start">
+        <Card role="navigation" aria-label="Settings sections" className="flex w-full xl:max-w-[500px]">
+          <CardHeader>
+            <CardTitle className="text-base">Settings</CardTitle>
+            <CardDescription>Choose a section</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <Button
+              variant="ghost"
+              className={`justify-start gap-3 ${section === "account" ? "bg-primary hover:bg-primary" : ""}`}
+              onClick={() => setSection("account")}
+              aria-current={section === "account" ? "page" : undefined}
+            >
+              <ShieldUser className="h-4 w-4" />
+              Account Settings
+            </Button>
 
-      {/* Settings Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Settings Navigation */}
-        <div className="bg-white dark:bg-outer_space-500 rounded-lg border border-french_gray-300 dark:border-payne's_gray-400 p-6">
-          <h3 className="text-lg font-semibold text-outer_space-500 dark:text-platinum-500 mb-4">Settings</h3>
-          <nav className="space-y-2">
-            {[
-              { name: "Profile", icon: User, active: true },
-              { name: "Notifications", icon: Bell, active: false },
-              { name: "Security", icon: Shield, active: false },
-              { name: "Appearance", icon: Palette, active: false },
-            ].map((item) => (
-              <button
-                key={item.name}
-                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  item.active
-                    ? "bg-blue_munsell-100 dark:bg-blue_munsell-900 text-blue_munsell-700 dark:text-blue_munsell-300"
-                    : "text-outer_space-500 dark:text-platinum-500 hover:bg-platinum-500 dark:hover:bg-payne's_gray-400"
-                }`}
-              >
-                <item.icon className="mr-3" size={16} />
-                {item.name}
-              </button>
-            ))}
-          </nav>
+            <Button
+              variant="ghost"
+              className={`justify-start gap-3 ${section === "appearance" ? "bg-primary hover:bg-primary" : ""}`}
+              onClick={() => setSection("appearance")}
+              aria-current={section === "appearance" ? "page" : undefined}
+            >
+              <Palette className="h-4 w-4" />
+              Appearance
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Content */}
+        <div className="w-full min-h-0">
+          {section === "account" ? (
+            <UserProfile
+              routing="hash"
+              appearance={{
+                elements: {
+                  // outer wrapper
+                  rootBox: "w-full",
+
+                  // card container
+                  card: "w-full md:max-w-none",
+                  cardBox: "w-full md:max-w-none h-full",
+
+                  //  make inner scroll area also stretch
+                  scrollBox: "w-full md:max-w-none",
+                },
+              }}
+            />
+          ) : (
+            <Card className="flex-1 w-full h-full max-h-[704px]">
+              {/* just copy userprofile component dimensions across diff views */}
+              <CardHeader className="flex flex-row items-center gap-3">
+                <Palette className="h-5 w-5" />
+                <div>
+                  <CardTitle className="text-base">Appearance</CardTitle>
+                  <CardDescription>Theme & display preferences</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                <Appearance />
+              </CardContent>
+            </Card>
+          )}
         </div>
-
-        {/* Settings Content */}
-        <ProfileSettings></ProfileSettings>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { use } from "react";
-import LoadingUI from "@/components/ui/loading-ui";
 import { useProjectMembers, useProjects } from "@/hooks/use-projects";
 import { useTeams } from "@/hooks/use-teams";
 import { ProjectMembersDataTable } from "@/components/projects/members/data-table-project-members";
@@ -11,6 +10,7 @@ import { useProjectManagerStore } from "@/stores/project-manager-store";
 import { useUIStore } from "@/stores/ui-store";
 import { ProjectRoles } from "@/types";
 import ReassignProjectTeamsModal from "@/components/modals/reassign-project-teams-modal";
+import LoadingUINoHeader from "@/components/ui/loading-ui-no-header";
 
 export default function ProjectMembersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -33,10 +33,10 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
   const teamIds = projectTeams?.map((t) => t.id);
 
   if (!project) {
-    if (isProjectLoading) return <LoadingUI />;
+    if (isProjectLoading) return <LoadingUINoHeader />;
     throw new Error(projectError?.message);
   }
-  if (isProjectMembersDataLoading) return <LoadingUI />;
+  if (isProjectMembersDataLoading) return <LoadingUINoHeader />;
 
   const columns = getProjectDataTableMemberColumns(
     isUpdateProjectMemberLoading,

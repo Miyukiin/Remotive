@@ -1,10 +1,10 @@
 "use client";
 import TeamSettings from "@/components/teams/teams-slug/team-settings";
-import LoadingUI from "@/components/ui/loading-ui";
 import { use, useEffect } from "react";
 import { useTeams } from "@/hooks/use-teams";
 import { DeleteTeamModal } from "@/components/modals/delete-team-modal";
 import { useRouter } from "next/navigation";
+import LoadingUINoHeader from "@/components/ui/loading-ui-no-header";
 
 export default function TeamSettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params); // Unwrap the promise as per Nextjs 15 recommendation
@@ -20,7 +20,7 @@ export default function TeamSettingsPage({ params }: { params: Promise<{ id: str
   }, [isTeamLoading, isTeamLeader, router]);
 
   if (isTeamLoading) {
-    return <LoadingUI />;
+    return <LoadingUINoHeader />;
   }
 
   if (teamError) {

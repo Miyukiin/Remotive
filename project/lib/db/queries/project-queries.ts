@@ -6,19 +6,26 @@ import { eq } from "drizzle-orm";
 import { teams } from "@/lib/db/queries/teams-queries";
 import { logAction } from "@/lib/audit/audit.utils";
 import { getUserId } from "@/actions/user-actions";
+import { notFound } from "next/navigation";
 
 export const projects = {
   getAll: async (): Promise<types.QueryResponse<Array<types.ProjectSelect>>> => {
     return getAllObject<types.ProjectSelect>("projects");
   },
   getById: async (id: number): Promise<types.QueryResponse<types.ProjectSelect>> => {
-    return getObjectById<types.ProjectSelect>(id, "projects");
+    try {
+      const [project] = await db.select().from(schema.projects).limit(1).where(eq(schema.projects.id, id));
+      // Check if object exists.
+      if (project) return successResponse(`Successfully retrieved the project.`, project);
+      notFound();
+    } catch (e) {
+      return failResponse(`Unable to retrieve project.`, e);
+    }
   },
   create: async (data: types.ProjectInsert, teamIds: number[]): Promise<types.QueryResponse<types.ProjectSelect>> => {
     try {
       const newProject = data;
       const now = new Date();
-      
 
       const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.ProjectSelect>> => {
         // Insert project
@@ -64,7 +71,7 @@ export const projects = {
 
           // Get the user to be set as project manager (the project creator)
           const res2 = await getUserId();
-          if(!res2.success) throw new Error(res2.message)
+          if (!res2.success) throw new Error(res2.message);
           const creatorID = res2.data.id;
 
           // Create an entry to insert for each team member
@@ -221,7 +228,7 @@ export const projects = {
           .select({ teamId: schema.teams_to_projects.team_id })
           .from(schema.teams_to_projects)
           .where(eq(schema.teams_to_projects.project_id, id));
-        
+
         const teamIds = teamRows.map((r) => r.teamId);
         for (const id of teamIds) {
           // AUDIT: project deleted

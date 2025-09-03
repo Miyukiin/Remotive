@@ -4,21 +4,17 @@ import type { ReactNode } from "react";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { UserButton, useUser } from "@clerk/nextjs";
-import { Menu, Bell, Search, Loader2 } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
-import { ThemeToggle } from "@/components/theme-toggle";
 import LoadingUI from "@/components/ui/loading-ui";
 import { navigationItems } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScreenWidth } from "@/lib/client-utils";
-import Image from "next/image";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 
 type Props = { children: ReactNode };
 
@@ -31,7 +27,7 @@ export default function DashboardLayout({ children }: Props) {
   const [navItems, setNavItems] = useState(navigationItems);
 
   const screenWidth = useScreenWidth();
-  const isMobile = screenWidth ? (screenWidth < 768 ? true : false) : false;
+  const isMobile = screenWidth ? (screenWidth <= 1024 ? true : false) : false; // Because this >1024 is when our sheet becomes a sidebar
 
   // Zustand for mobile sidebar
   const { isSideBarOpen, setSideBarOpen } = useUIStore();
@@ -77,24 +73,7 @@ export default function DashboardLayout({ children }: Props) {
   }
 
   // Logo
-  const Brand = (
-    <Link href="/" className="group text-xl font-bold tracking-tight">
-      <Image
-        src={`/light-logo.png`}
-        width={150}
-        height={150}
-        alt="remotive-logo"
-        className="absolute transition-all opacity-100 dark:opacity-0 duration-300 group-hover:drop-shadow-[0_0_6px_var(--color-emerald-500)]"
-      />
-      <Image
-        src={`/dark-logo.png`}
-        width={150}
-        height={150}
-        alt="remotive-logo"
-        className="transition-all opacity-0 dark:opacity-100 duration-300 group-hover:drop-shadow-[0_0_6px_var(--color-emerald-500)]"
-      />
-    </Link>
-  );
+  const Brand = <BrandLogo />;
 
   // NavBarList
   const NavList = ({ onItemClick }: { onItemClick?: () => void }) => (
@@ -136,56 +115,12 @@ export default function DashboardLayout({ children }: Props) {
       {/* Main column */}
       <div className="lg:pl-64">
         {/* Top Bar */}
-        <div className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-sidebar px-4 sm:gap-4 sm:px-6 lg:px-8">
-          <div className="lg:hidden">
-            {/* Mobile Sidebar (Sheet) */}
-            <Sheet open={isSideBarOpen} onOpenChange={setSideBarOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0">
-                <SheetHeader className="border-b px-6 py-4">
-                  <SheetTitle className="text-left">{Brand}</SheetTitle>
-                </SheetHeader>
-                <ScrollArea className="h-[calc(100vh-4rem)] px-3 py-4">
-                  <NavList onItemClick={() => setSideBarOpen(false)} />
-                </ScrollArea>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          {/* Search */}
-          <div className="flex flex-1 items-center">
-            <div className="relative w-full max-w-md">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden="true"
-              />
-              <Input placeholder="Search projects, tasks…" className="pl-9" aria-label="Search" />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Notifications">
-                      <Bell className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Notifications</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <ThemeToggle />
-            </div>
-
-            <UserButton />
-          </div>
-        </div>
+        <DashboardHeader
+          isSideBarOpen={isSideBarOpen}
+          setSideBarOpen={setSideBarOpen}
+          Brand={Brand}
+          NavList={NavList}
+        />
 
         {/* Page content */}
         <main className="px-4 py-6 sm:px-6 lg:px-8">

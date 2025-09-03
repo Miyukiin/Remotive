@@ -9,6 +9,8 @@ import { queries } from "@/lib/db/queries/queries";
 import z from "zod";
 import { getUserId } from "./user-actions";
 import { guardCommentAction } from "@/lib/rbac/permission-utils";
+import { pusherServer } from "@/lib/pusher/pusher-server";
+import { getProjectAndListFromTask } from "@/lib/rbac/permission-loaders";
 
 // Fetches
 export async function getTaskComments(task_id: number): Promise<ServerActionResponse<CommentSelect[]>> {
@@ -72,10 +74,19 @@ export async function createCommentAction(
   const parsed3 = commentSchemaDB.safeParse(commentDBData);
   if (!parsed3.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed3.error));
 
-  return await queries.comments.create(commentDBData);
+  const result = await queries.comments.create(commentDBData);
+  if (!result.success) return result;
+
+  const data = await getProjectAndListFromTask(task_id);
+  if (!data) return failResponse(`Unable to retrieve project id for comment`, `PUSHERERROR`);
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${data.projectId}`, "comments-updated", {});
+  return result;
 }
 
 export async function updateCommentAction(
+  task_id: number,
   comment_id: number,
   commentFormData: z.infer<typeof commentSchemaForm>,
 ): Promise<ServerActionResponse<CommentSelect>> {
@@ -109,14 +120,33 @@ export async function updateCommentAction(
   const parsed2 = commentSchemaDB.safeParse(commentDBData);
   if (!parsed2.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed2.error));
 
-  return await queries.comments.update(comment_id, commentDBData);
+  const result = await queries.comments.update(comment_id, commentDBData);
+  if (!result.success) return result;
+
+  const data = await getProjectAndListFromTask(task_id);
+  if (!data) return failResponse(`Unable to retrieve project id for comment`, `PUSHERERROR`);
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${data.projectId}`, "comments-updated", {});
+  return result;
 }
 
-export async function deleteCommentAction(comment_id: number): Promise<ServerActionResponse<CommentSelect>> {
+export async function deleteCommentAction(
+  task_id: number,
+  comment_id: number,
+): Promise<ServerActionResponse<CommentSelect>> {
   await checkAuthenticationStatus();
 
   const parsed = idSchema.safeParse({ id: comment_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
-  return await queries.comments.delete(comment_id);
+  const result = await queries.comments.delete(comment_id);
+  if (!result.success) return result;
+
+  const data = await getProjectAndListFromTask(task_id);
+  if (!data) return failResponse(`Unable to retrieve project id for comment`, `PUSHERERROR`);
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${data.projectId}`, "comments-updated", {});
+  return result;
 }

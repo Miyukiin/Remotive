@@ -8,6 +8,9 @@ interface ListState {
 
   listToDelete: ListSelect | null;
   setListToDelete: (task: ListSelect) => void;
+
+  lists: ListSelect[] | null; // Active Kanban Lists
+  setLists: (Lists: ListSelect[]) => void; // Active Kanban Lists Setter
 }
 
 export const useKanbanStore = create<ListState>()((set) => ({
@@ -17,4 +20,7 @@ export const useKanbanStore = create<ListState>()((set) => ({
 
   listToDelete: null,
   setListToDelete: (list) => set(() => ({ listToDelete: list })),
+
+  lists: null,
+  setLists: (Lists) => set(() => ({ lists: Lists })),
 }));

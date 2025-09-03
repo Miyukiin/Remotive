@@ -92,7 +92,7 @@ export function useComments(task_id: number) {
   // Delete comment
   const deleteComment = useMutation({
     mutationFn: async ({ task_id, comment_id }: { task_id: number; comment_id: number }) => {
-      const res = await deleteCommentAction(comment_id);
+      const res = await deleteCommentAction(task_id, comment_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -130,7 +130,7 @@ export function useComments(task_id: number) {
       comment_id: number;
       commentFormData: z.infer<typeof commentSchemaForm>;
     }) => {
-      const res = await updateCommentAction(comment_id, commentFormData);
+      const res = await updateCommentAction(task_id, comment_id, commentFormData);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },

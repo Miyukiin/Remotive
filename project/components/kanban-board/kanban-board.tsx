@@ -11,44 +11,9 @@ import { ListPositionPayload, ListSelect, TaskPositionPayload, TaskSelect } from
 import { createPortal } from "react-dom";
 import TaskCard from "../tasks/task-card";
 import { UseMutateFunction } from "@tanstack/react-query";
-import { debounce } from "lodash";
 import { DeleteKanbanModal } from "../modals/delete-list-modal.";
+import { useRealtimeInvalidation } from "@/lib/pusher/pusher-realtime-invalidate";
 // https://github.com/Georgegriff/react-dnd-kit-tailwind-shadcn-ui/blob/main/
-
-// TODO: Task 5.1 - Design responsive Kanban board layout
-// TODO: Task 5.2 - Implement drag-and-drop functionality with dnd-kit
-
-/*
-TODO: Implementation Notes for Interns:
-
-This is the main Kanban board component that should:
-- Display columns (lists) horizontally
-- Allow drag and drop of tasks between columns
-- Support adding new tasks and columns
-- Handle real-time updates
-- Be responsive on mobile
-
-Key dependencies to install:
-- @dnd-kit/core
-- @dnd-kit/sortable
-- @dnd-kit/utilities
-
-Features to implement:
-- Drag and drop tasks between columns
-- Drag and drop to reorder tasks within columns
-- Add new task button in each column
-- Add new column functionality
-- Optimistic updates (Task 5.4)
-- Real-time persistence (Task 5.5)
-- Mobile responsive design
-- Loading states
-- Error handling
-
-State management:
-- Use Zustand store for board state (Task 5.3)
-- Implement optimistic updates
-- Handle conflicts with server state
-*/
 
 type KanbanBoardProps = {
   lists: ListSelect[];
@@ -73,42 +38,37 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
   const [kanbanTasks, setKanbanTasks] = useState<TaskSelect[]>(tasks);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
+  // Realtime
+  useRealtimeInvalidation(projectId);
+
   const listIds = useMemo(() => kanbanLists.map((l) => l.id), [kanbanLists]);
 
   useEffect(() => {
-    const updateLists = setTimeout(() => setKanbanLists(lists), 600);
-
-    return () => {
-      clearTimeout(updateLists);
-    };
+    setKanbanLists(lists);
   }, [lists]);
 
   useEffect(() => {
-    const updateTasks = setTimeout(() => setKanbanTasks(tasks), 600);
-
-    return () => {
-      clearTimeout(updateTasks);
-    };
+    setKanbanTasks(tasks);
   }, [tasks]);
 
   const [activeList, setActiveList] = useState<ListSelect | null>(null);
   const [activeTask, setActiveTask] = useState<TaskSelect | null>(null);
 
-  const debouncedListUpdate = useMemo(
-    () =>
-      debounce((listsPayload: ListPositionPayload[], project_id: number) => {
-        updateListsPositions({ listsPayload, project_id });
-      }, 300),
-    [updateListsPositions],
-  );
+  // const debouncedListUpdate = useMemo(
+  //   () =>
+  //     debounce((listsPayload: ListPositionPayload[], project_id: number) => {
+  //       updateListsPositions({ listsPayload, project_id });
+  //     }, 1),
+  //   [updateListsPositions],
+  // );
 
-  const debouncedTaskUpdate = useMemo(
-    () =>
-      debounce((tasksPayload: TaskPositionPayload[], project_id: number) => {
-        updateTasksPositions({ tasksPayload, project_id });
-      }, 300),
-    [updateTasksPositions],
-  );
+  // const debouncedTaskUpdate = useMemo(
+  //   () =>
+  //     debounce((tasksPayload: TaskPositionPayload[], project_id: number) => {
+  //       updateTasksPositions({ tasksPayload, project_id });
+  //     }, 1),
+  //   [updateTasksPositions],
+  // );
 
   function onDragStart(event: DragStartEvent) {
     if (event.active.data.current?.type === "list") {
@@ -148,7 +108,8 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
         id: l.id,
         position: newKanbanLists.indexOf(l) + 1, // Kanban List's New Position In Array + 1
       }));
-      debouncedListUpdate(listsPositionsPayload, projectId);
+
+      updateListsPositions({ listsPayload: listsPositionsPayload, project_id: projectId });
 
       return newKanbanLists;
     });
@@ -199,7 +160,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
             id: t.id,
             position: activeListTasks.indexOf(t), // The task's position in the same list.
           }));
-          debouncedTaskUpdate(tasksPositionsPayload, projectId);
+          updateTasksPositions({ tasksPayload: tasksPositionsPayload, project_id: projectId });
         }
 
         // We are dropping in a list that does have tasks.
@@ -231,7 +192,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
         ];
 
         // Update the database with debounce
-        debouncedTaskUpdate(tasksPositionsPayload, projectId);
+        updateTasksPositions({ tasksPayload: tasksPositionsPayload, project_id: projectId });
         return newKanbanTasks;
       });
     }
@@ -275,7 +236,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
         ];
 
         // Update the database with debounce
-        debouncedTaskUpdate(tasksPositionsPayload, projectId);
+        updateTasksPositions({ tasksPayload: tasksPositionsPayload, project_id: projectId });
         return newKanbanTasks;
       });
     }
