@@ -19,43 +19,6 @@ import { useTaskStore } from "@/stores/task-store";
 import { useLabels } from "@/hooks/use-labels";
 import { useComments } from "@/hooks/use-comments";
 
-/*
-TODO: Implementation Notes for Interns:
-
-This component should display:
-- Task title and description
-- Priority indicator
-- Assignee avatar
-- Due date
-- Labels/tags
-- Comments count
-- Drag handle for reordering
-
-Props interface:
-interface TaskCardProps {
-  task: {
-    id: string
-    title: string
-    description?: string
-    priority: 'low' | 'medium' | 'high'
-    assignee?: User
-    dueDate?: Date
-    labels: string[]
-    commentsCount: number
-  }
-  isDragging?: boolean
-  onEdit?: (id: string) => void
-  onDelete?: (id: string) => void
-}
-
-Features to implement:
-- Drag and drop support
-- Click to open task modal
-- Priority color coding
-- Overdue indicators
-- Responsive design
-*/
-
 type TaskCardProps = {
   task: TaskSelect;
   list_id: number;
@@ -75,7 +38,6 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   const { taskComments, taskCommentsIsLoading } = useComments(task.id);
   const { setTaskDetailsModalOpen } = useUIStore();
   const { setActiveTask } = useTaskStore();
-  
 
   const LABEL_LIMIT = 4;
   const displayedLabels = useMemo(() => taskLabels.slice(0, LABEL_LIMIT), [LABEL_LIMIT, taskLabels]);
@@ -157,7 +119,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
             {/* Assignee Members */}
             <div className="flex items-center justify-end">
               {isTaskMembersLoading ? (
-                <Skeleton height="5" width="24" />
+                <Skeleton className="h-5 w-24" />
               ) : taskMembers && !getTaskMembersError ? (
                 taskMembers.length === 0 ? (
                   <p className="text-xs text-foreground/65">None Assigned</p>
