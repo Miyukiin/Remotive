@@ -1,10 +1,10 @@
 "use client";
 import { use } from "react";
 import { useProjects } from "@/hooks/use-projects";
-import LoadingUI from "@/components/ui/loading-ui";
 import { ProjectGeneralSettings } from "@/components/projects/project-general-settings";
 import { ProjectDangerSettings } from "@/components/projects/project-danger-settings";
 import { ProjectLabelSettings } from "@/components/projects/project-label-settings";
+import LoadingUINoHeader from "@/components/ui/loading-ui-no-header";
 
 export default function ProjectSettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params); // Unwrap the promise as per Nextjs 15 recommendation
@@ -13,7 +13,7 @@ export default function ProjectSettingsPage({ params }: { params: Promise<{ id: 
 
   if (!project) {
     if (!project && isProjectLoading) {
-      return <LoadingUI />;
+      return <LoadingUINoHeader />;
     }
     throw new Error(projectError?.message);
   }
