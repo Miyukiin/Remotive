@@ -25,7 +25,6 @@ export default function CalendarPage() {
   async function loadCalendarEvents() {
     const res = await fetchCalendarEvents();
     if (res.success) {
-      // Dates already are Date objects — no spread, no rehydrate
       setCalendarEvents(res.data ?? []);
     } else {
       toast.error("Error", { description: "Unable to retrieve calendar events." });
@@ -158,9 +157,9 @@ export default function CalendarPage() {
               <span>No upcoming events.</span>
             </div>
           ) : (
-            upcomingEvents.map((ev) => (
-              <Link key={ev.id} href={`/projects/${ev.project_id}`} className="flex flex-col gap-3">
-                <div key={ev.id} className="flex items-center justify-between rounded-md border bg-card p-3">
+            upcomingEvents.map((ev, id) => (
+              <Link key={id} href={`/projects/${ev.project_id}`} className="flex flex-col gap-3">
+                <div className="flex items-center justify-between rounded-md border bg-card p-3">
                   <div className="min-w-0 flex items-center gap-3">
                     {ev.type === "Project" ? (
                       <Folder className="h-5 w-5 md:h-6 md:w-6 text-emerald-800 dark:text-primary shrink-0" />
