@@ -10,7 +10,7 @@ import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-
 import { ListPositionPayload, ListSelect, TaskPositionPayload, TaskSelect } from "@/types";
 import { createPortal } from "react-dom";
 import TaskCard from "../tasks/task-card";
-import { UseMutateFunction, useQueryClient } from "@tanstack/react-query";
+import { UseMutateFunction } from "@tanstack/react-query";
 import { DeleteKanbanModal } from "../modals/delete-list-modal.";
 import { useRealtimeInvalidation } from "@/lib/pusher/pusher-realtime-invalidate";
 // https://github.com/Georgegriff/react-dnd-kit-tailwind-shadcn-ui/blob/main/
@@ -34,7 +34,6 @@ type KanbanBoardProps = {
 };
 
 export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, updateTasksPositions }: KanbanBoardProps) {
-  const queryClient = useQueryClient();
   const [kanbanLists, setKanbanLists] = useState<ListSelect[]>(lists);
   const [kanbanTasks, setKanbanTasks] = useState<TaskSelect[]>(tasks);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -111,7 +110,6 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
       }));
 
       updateListsPositions({ listsPayload: listsPositionsPayload, project_id: projectId });
-      queryClient.invalidateQueries({ queryKey: ["tasks_project", projectId] });
 
       return newKanbanLists;
     });
