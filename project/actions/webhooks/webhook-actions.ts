@@ -38,7 +38,6 @@ export async function createUser(eventData: UserJSON) {
       image_url: eventData.image_url,
       createdAt: new Date(eventData.created_at), // Convert to UNIX timestamp (milliseconds) to a Date object
       updatedAt: new Date(eventData.updated_at),
-      archivedAt: null,
     };
     // Validate using Zod
     const validatedNewUserData = userSchemaDB.parse(newUserData);
@@ -76,18 +75,6 @@ export async function deleteUser(eventData: DeletedObjectJSON) {
         success: false,
         message: `Webhook Action: User "${userClerkIdToBeDeleted}" does not exist in the database. Archival aborted.`,
         error: `Error: User does not exist in database "${userClerkIdToBeDeleted}"`,
-      };
-    }
-
-    // Check if user is already archived.
-    const resp = await queries.users.checkUserArchiveStatus(
-      userClerkIdToBeDeleted,
-    );
-    if (resp.success && resp.data) {
-      return {
-        success: true,
-        message: `Webhook Action: User "${userClerkIdToBeDeleted}" is already archived in the database. Archival aborted.`,
-        error: `Error: Already archived user "${userClerkIdToBeDeleted}"`,
       };
     }
 
@@ -157,7 +144,6 @@ export async function updateUser(eventData: UserJSON) {
       image_url: existingUser.image_url,
       createdAt: existingUser.createdAt, // Convert to UNIX timestamp (milliseconds) to a Date object
       updatedAt: existingUser.updatedAt,
-      archivedAt: existingUser.archivedAt,
       ...changed,
     };
 
