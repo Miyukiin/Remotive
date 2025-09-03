@@ -3,7 +3,7 @@
 import ProjectHeading from "@/components/projects/project-heading";
 import { BreadCrumbsSkeleton, ProjectHeadingSkeleton } from "@/components/skeletons/skeletons";
 import { useProjects } from "@/hooks/use-projects";
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 
 export default function ProjectsLayout({ children }: { children: React.ReactNode }) {
   const { id } = useParams<{ id: string }>();
@@ -19,8 +19,12 @@ export default function ProjectsLayout({ children }: { children: React.ReactNode
     );
   }
 
-  if (!project) {
+  if (projectError) {
     throw new Error(projectError?.message || "Unable to load project.");
+  }
+
+  if (!project) {
+    notFound();
   }
 
   return (

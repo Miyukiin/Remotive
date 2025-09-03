@@ -43,6 +43,12 @@ export async function getProjectByIdAction(project_id: number): Promise<ServerAc
   // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // ZOD VALIDATION
+  const parsed = idSchema.safeParse({ id: project_id });
+  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
+
+  const result = await queries.projects.getById(project_id);
+
   // PERMISSION CHECK
   const userRes = await getUserId();
   if (!userRes.success) return userRes;
@@ -54,11 +60,7 @@ export async function getProjectByIdAction(project_id: number): Promise<ServerAc
   });
   if (guardResult) return guardResult;
 
-  // ZOD VALIDATION
-  const parsed = idSchema.safeParse({ id: project_id });
-  if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
-
-  return await queries.projects.getById(project_id);
+  return result;
 }
 
 export async function getAllProjects(): Promise<ServerActionResponse<types.ProjectSelect[]>> {
