@@ -1,41 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { useTheme } from "@/components/theme-provider";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
 import { useScreenWidth } from "@/lib/client-utils";
 import { LayoutDashboard, MenuIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-
-function Brand() {
-  const { theme } = useTheme();
-  return (
-    <Link href="/" aria-label="Remotive Home" className="group relative inline-flex h-8 w-[150px] items-center">
-      {theme === "light" ? (
-        <Image
-          src="/light-logo.png"
-          alt="remotive-logo"
-          fill
-          sizes="150px"
-          priority
-          className="object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(16,185,129,0.9)]"
-        />
-      ) : (
-        <Image
-          src="/dark-logo.png"
-          alt="remotive-logo"
-          fill
-          sizes="150px"
-          priority
-          className="object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(16,185,129,0.9)]"
-        />
-      )}
-    </Link>
-  );
-}
+import { BrandLogo } from "./brand-logo";
 
 export function DefaultHeader() {
   const width = useScreenWidth();
@@ -44,7 +16,7 @@ export function DefaultHeader() {
     <header className="sticky top-0 z-30 border-b bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/75">
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center gap-3">
-          <Brand />
+          <BrandLogo />
 
           <div className="flex gap-6 items-center">
             <SignedIn>

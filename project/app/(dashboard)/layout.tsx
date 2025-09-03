@@ -12,10 +12,9 @@ import { useUIStore } from "@/stores/ui-store";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useScreenWidth } from "@/lib/client-utils";
-import Image from "next/image";
-import { useTheme } from "@/components/theme-provider";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 
 type Props = { children: ReactNode };
 
@@ -23,7 +22,6 @@ export default function DashboardLayout({ children }: Props) {
   const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const { theme } = useTheme();
 
   const [count, setCount] = useState(3);
   const [navItems, setNavItems] = useState(navigationItems);
@@ -75,29 +73,7 @@ export default function DashboardLayout({ children }: Props) {
   }
 
   // Logo
-  const Brand = (
-    <Link href="/" aria-label="Remotive Home" className="group relative inline-flex h-8 w-[150px] items-center">
-      {theme === "light" ? (
-        <Image
-          src={`/light-logo.png`}
-          fill
-          sizes="150px"
-          alt="remotive-logo"
-          priority
-          className="transition-all object-contain duration-300 group-hover:drop-shadow-[0_0_6px_rgba(16,185,129,0.9)]"
-        />
-      ) : (
-        <Image
-          src={`/dark-logo.png`}
-          fill
-          sizes="150px"
-          alt="remotive-logo"
-          priority
-          className="transition-all object-contain duration-300 group-hover:drop-shadow-[0_0_6px_rgba(16,185,129,0.9)]"
-        />
-      )}
-    </Link>
-  );
+  const Brand = <BrandLogo />;
 
   // NavBarList
   const NavList = ({ onItemClick }: { onItemClick?: () => void }) => (

@@ -1,53 +1,32 @@
-import Link from "next/link"
+import Link from "next/link";
+import { Facebook, Instagram, Linkedin } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { BrandLogo } from "./brand-logo";
 
 export function Footer() {
   return (
-    <footer className="bg-outer_space-500 dark:bg-outer_space-600 text-platinum-500 py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-primary/10 border-t">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Top grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-2xl font-bold text-blue_munsell-400 mb-4">Remotive</h3>
-            <p className="text-french_gray-400">
+            <h3 className="text-2xl font-bold tracking-tight">Remotive</h3>
+            <p className="mt-2 text-muted-foreground">
               The modern project management platform that helps teams collaborate and deliver results.
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Product</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold">Company</h4>
+            <ul className="mt-4 space-y-2">
               <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
-                  Security
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                   About
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                   Careers
                 </Link>
               </li>
@@ -55,31 +34,52 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold">Support</h4>
+            <ul className="mt-4 space-y-2">
               <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
+                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                   Contact
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-french_gray-400 hover:text-platinum-500 transition-colors">
-                  API Docs
+                <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Privacy Policy
                 </Link>
               </li>
             </ul>
           </div>
+
+          <div>
+            <h4 className="font-semibold">Follow us</h4>
+            <div className="mt-4 flex items-center gap-2">
+              <Button asChild size="icon" variant="ghost" aria-label="Facebook">
+                <Link href="#" target="_blank" rel="noopener noreferrer">
+                  <Facebook className="h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild size="icon" variant="ghost" aria-label="LinkedIn">
+                <Link href="#" target="_blank" rel="noopener noreferrer">
+                  <Linkedin className="h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild size="icon" variant="ghost" aria-label="Instagram">
+                <Link href="#" target="_blank" rel="noopener noreferrer">
+                  <Instagram className="h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <div className="border-t border-payne's_gray-400 mt-8 pt-8 text-center">
-          <p className="text-french_gray-400">© 2025 Remotive. All rights reserved.</p>
+        <Separator className="my-8" />
+
+        {/* Bottom bar */}
+        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <BrandLogo />
+
+          <p className="text-sm text-muted-foreground">© 2025 Remotive. All rights reserved.</p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
