@@ -224,7 +224,7 @@ export function useTeams({ team_id, project_id }: { team_id?: number; project_id
 
   const removeUserFromTeam = useMutation({
     mutationFn: async ({ user_id, team_id }: { user_id: number; team_id: number }) => {
-      const res = await removeUserFromTeamAction(user_id, team_id);
+      const res = await removeUserFromTeamAction(user_id, team_id, false);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -257,7 +257,7 @@ export function useTeams({ team_id, project_id }: { team_id?: number; project_id
     mutationFn: async (team_id: number) => {
       const me = await getUserId();
       if (!me.success) throw new Error(me.message);
-      const res = await removeUserFromTeamAction(me.data.id, team_id);
+      const res = await removeUserFromTeamAction(me.data.id, team_id, true);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },

@@ -5,6 +5,7 @@ import * as schema from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { teams } from "@/lib/db/queries/teams-queries";
 import { logAction } from "@/lib/audit/audit.utils";
+import { getUserId } from "@/actions/user-actions";
 
 export const projects = {
   getAll: async (): Promise<types.QueryResponse<Array<types.ProjectSelect>>> => {
@@ -17,6 +18,7 @@ export const projects = {
     try {
       const newProject = data;
       const now = new Date();
+      
 
       const txResult = await db.transaction(async (tx): Promise<types.QueryResponse<types.ProjectSelect>> => {
         // Insert project
@@ -60,13 +62,18 @@ export const projects = {
           const res = await teams.getAllTeamMembers(assignedTeam.team_id);
           if (!res.success) throw new Error(res.message);
 
+          // Get the user to be set as project manager (the project creator)
+          const res2 = await getUserId();
+          if(!res2.success) throw new Error(res2.message)
+          const creatorID = res2.data.id;
+
           // Create an entry to insert for each team member
           const teamMembers = res.data;
           const membersToAssign: types.ProjectMembersInsert[] = teamMembers.map((teamMember) => ({
             team_id: assignedTeam.team_id,
             project_id: insertedProject.id,
             user_id: teamMember.id,
-            role: 1, // Default
+            role: teamMember.id === creatorID ? 2 : 1, // PM else project member
             createdAt: now,
             updatedAt: now,
           }));

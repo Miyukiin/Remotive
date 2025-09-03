@@ -19,6 +19,7 @@ import { db } from "@/lib/db/db-index";
 import * as schema from "@/lib/db/schema";
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { logAction } from "@/lib/audit/audit.utils";
+import { guardProjectAction } from "@/lib/rbac/permission-utils";
 
 // Utility
 export async function checkProjectNameUnique(ProjectName: string): Promise<ServerActionResponse<boolean>> {
@@ -28,8 +29,10 @@ export async function checkProjectNameUnique(ProjectName: string): Promise<Serve
 
 // Fetches
 export async function getProjectsForUserAction(user_id: number): Promise<ServerActionResponse<types.ProjectSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: user_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -37,8 +40,21 @@ export async function getProjectsForUserAction(user_id: number): Promise<ServerA
 }
 
 export async function getProjectByIdAction(project_id: number): Promise<ServerActionResponse<types.ProjectSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<types.ProjectSelect>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -51,8 +67,21 @@ export async function getAllProjects(): Promise<ServerActionResponse<types.Proje
 }
 
 export async function getAllMembersForProject(project_id: number): Promise<ServerActionResponse<types.UserSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<types.UserSelect[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -63,8 +92,10 @@ export async function getAllMembersForProject(project_id: number): Promise<Serve
 export async function createProjectAction(
   projectFormData: z.infer<typeof projectSchemaForm>,
 ): Promise<ServerActionResponse<types.ProjectSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // ZOD VALIDATION
   const res = await getUserId();
   if (!res.success) return res;
 
@@ -87,8 +118,21 @@ export async function updateProjectAction(
   project_id: number,
   projectFormData: z.infer<typeof projectSchemaUpdateForm>,
 ): Promise<ServerActionResponse<types.ProjectSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<types.ProjectSelect>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const res = await queries.projects.getById(project_id);
   if (!res.success) return res;
 
@@ -104,7 +148,21 @@ export async function updateProjectAction(
 }
 
 export async function deleteProjectAction(project_id: number): Promise<ServerActionResponse<types.ProjectSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
+
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<types.ProjectSelect>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "DELETE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   return await queries.projects.delete(project_id);
 }
 
@@ -115,8 +173,21 @@ export async function reassignProjectMemberRole({
 }: z.infer<typeof projectMemberUpdatePayloadSchema>): Promise<
   ServerActionResponse<{ updatedCount: number; newRole: { id: number; role_name: string } }>
 > {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<{ updatedCount: number; newRole: { id: number; role_name: string } }>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "REASSIGN_PROJECT_ROLE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = projectMemberUpdatePayloadSchema.safeParse({ member_id, project_id, role });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -209,7 +280,7 @@ export async function reassignProjectMemberRole({
       newRole: { id: targetRoleRow.id, role_name: targetRoleRow.role_name },
     });
   } catch (e) {
-    console.log(e)
+    console.log(e);
     return failResponse("Unable to reassign member role.", e);
   }
 }
@@ -221,8 +292,26 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
     deletedMembers: number;
   }>
 > {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardProjectAction<{
+    addedTeamIds: number[];
+    removedTeamIds: number[];
+    insertedMembers: number;
+    deletedMembers: number;
+  }>({
+    actorUserId: userRes.data.id,
+    projectId: payload.project_id,
+    action: "MANAGE_TEAMS",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = updateProjectTeamsPayload.safeParse(payload);
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -272,7 +361,7 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
 
             const label = pmUser?.name ?? `User ${pmUserId}`;
             throw new Error(
-              `Cannot remove the selected teams because it would leave the Project Manager (${label}) without any team in this project. Assign them to another team first.`,
+              `Cannot update project teams because it would leave the Project Manager (${label}) without any team in this project. Assign them to another team first.`,
             );
           }
         }
@@ -367,6 +456,49 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
       // REMOVE project_members for removed teams, then remove team associations via teams to projects
       let deletedMembers = 0;
       if (toRemove.length > 0) {
+        // Prevent team removal altogether if any member of the teams-to-remove still has ACTIVE tasks in this project
+        const removedTeamMemberRows = await tx
+          .select({ user_id: schema.project_members.user_id })
+          .from(schema.project_members)
+          .where(
+            and(eq(schema.project_members.project_id, project_id), inArray(schema.project_members.team_id, toRemove)),
+          );
+
+        const removedUserIds = Array.from(new Set(removedTeamMemberRows.map((r) => r.user_id)));
+
+        if (removedUserIds.length > 0) {
+          const activeAssignments = await tx
+            .select({
+              user_id: schema.users_to_tasks.user_id,
+              task_id: schema.users_to_tasks.task_id,
+            })
+            .from(schema.users_to_tasks)
+            .innerJoin(schema.tasks, eq(schema.tasks.id, schema.users_to_tasks.task_id))
+            .innerJoin(schema.lists, eq(schema.lists.id, schema.tasks.listId))
+            .where(
+              and(
+                inArray(schema.users_to_tasks.user_id, removedUserIds),
+                eq(schema.lists.projectId, project_id),
+                eq(schema.lists.isDone, false), // "active" = task in a non-done list
+              ),
+            );
+
+          if (activeAssignments.length > 0) {
+            const blockedUserIds = Array.from(new Set(activeAssignments.map((a) => a.user_id)));
+            const blockedUsers = await tx
+              .select({ id: schema.users.id, name: schema.users.name })
+              .from(schema.users)
+              .where(inArray(schema.users.id, blockedUserIds));
+
+            const names = blockedUsers.map((u) => u.name).join(", ") || `${blockedUserIds.length} user(s)`;
+
+            throw new Error(
+              `Cannot update project teams because the following member(s) still have active assigned tasks in this project: ${names}. ` +
+                `Complete/move to Done or reassign those tasks first.`,
+            );
+          }
+        }
+
         const deleted = await tx
           .delete(schema.project_members)
           .where(
@@ -423,6 +555,7 @@ export async function updateProjectTeamsAction(payload: types.UpdateProjectTeams
 
     return successResponse("Project teams updated.", result);
   } catch (e) {
-    return failResponse("Unable to update project teams.", e);
+    const msg = e instanceof Error && e.message ? e.message : "Cannot update project teams due to an unexpected error.";
+    return failResponse(msg, e);
   }
 }

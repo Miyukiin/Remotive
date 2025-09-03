@@ -172,15 +172,15 @@ export function useComments(task_id: number) {
     taskCommentsError: getCommentsByTask.isError,
 
     // Mutations
-    createComment: createComment.mutateAsync,
+    createComment: createComment.mutate,
     isCommentCreationLoading: createComment.isPending,
     commentCreationError: createComment.error,
 
-    deleteComment: deleteComment.mutateAsync,
+    deleteComment: deleteComment.mutate,
     isCommentDeletionLoading: deleteComment.isPending,
     commentDeletionError: deleteComment.error,
 
-    updateComment: updateComment.mutateAsync,
+    updateComment: updateComment.mutate,
     isCommentUpdateLoading: updateComment.isPending,
     commentUpdateError: updateComment.error,
   };

@@ -14,16 +14,20 @@ export async function GET(_req: Request, { params }: { params: { projectId: stri
   if (!userRes.success)
     return NextResponse.json({ success: false, message: "Unable to get user's id" }, { status: 404 });
 
-  const projectId = Number(params.projectId);
-  if (projectId <= 0) {
-    return NextResponse.json({ success: false, message: "Invalid project id" }, { status: 400 });
+  const { projectId } = await params;
+  if (Number(projectId) <= 0) {
+    return NextResponse.json({
+      success: true,
+      message: "OK",
+      data: { total: 0, done: 0, percent: 0 },
+    });
   }
 
   // get Lists for this project
   const lists = await db
     .select({ id: schema.lists.id, isDone: schema.lists.isDone })
     .from(schema.lists)
-    .where(eq(schema.lists.projectId, projectId));
+    .where(eq(schema.lists.projectId, Number(projectId)));
 
   if (lists.length === 0) {
     return NextResponse.json({

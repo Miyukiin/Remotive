@@ -11,7 +11,6 @@ import {
 import { Button } from "../ui/button";
 import { LoadingButtonContent } from "../ui/loading-button-content";
 import { useProjects } from "@/hooks/use-projects";
-import { redirect } from "next/navigation";
 
 type DeleteProjectModalProps = { project_id: number };
 
@@ -25,7 +24,6 @@ export function DeleteProjectModal({ project_id }: DeleteProjectModalProps) {
 
   async function onDeleteClick() {
     deleteProject(project_id);
-    redirect("/projects");
   }
   return (
     <AlertDialog open={isDeleteProjectModalOpen} onOpenChange={setDeleteProjectModalOpen}>

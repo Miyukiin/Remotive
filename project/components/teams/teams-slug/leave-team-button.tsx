@@ -32,7 +32,7 @@ const LeaveTeamButton: FC<LeaveTeamButtonProps> = ({ team_id }) => {
       className="inline-flex gap-4 items-center hover:bg-destructive/5 text-destructive hover:text-destructive transition-colors duration-150"
     >
       {isLeaveTeamLoading || isTeamLeaderCheckLoading ? (
-        <div className="flex gap-2 text-destructive">
+        <div className="flex gap-2 text-destructive items-center">
           <Loader2Icon className="animate-spin" /> Loading
         </div>
       ) : (

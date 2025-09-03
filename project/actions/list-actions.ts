@@ -6,11 +6,26 @@ import { idSchema, listSchemaDB, listSchemaForm, listsPositionsPayloadSchema } f
 import z from "zod";
 import { checkAuthenticationStatus } from "./actions-utils";
 import { failResponse } from "@/lib/db/queries/query_utils";
+import { getUserId } from "./user-actions";
+import { guardListAction } from "@/lib/rbac/permission-utils";
 
 // Fetches
 export async function getAllListsAction(project_id: number): Promise<ServerActionResponse<ListSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardListAction<ListSelect[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "READ",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: project_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -22,8 +37,21 @@ export async function createListAction(
   project_id: number,
   position: number,
 ): Promise<ServerActionResponse<ListSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardListAction<ListSelect>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "CREATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const listDBData: z.infer<typeof listSchemaDB> = {
     name: "New Board",
     projectId: project_id,
@@ -45,12 +73,25 @@ export async function updateListAction(
   list_id: number,
   listFormData: z.infer<typeof listSchemaForm>,
 ): Promise<ServerActionResponse<ListSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
+
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
 
   // Check if exists
   const res = await queries.lists.getById(list_id);
   if (!res.success) return res;
 
+  const guardResult = await guardListAction<ListSelect>({
+    actorUserId: userRes.data.id,
+    projectId: res.data.projectId,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const listDBData: z.infer<typeof listSchemaDB> = {
     ...res.data,
     name: listFormData.name,
@@ -65,8 +106,25 @@ export async function updateListAction(
 }
 
 export async function deleteListAction(list_id: number): Promise<ServerActionResponse<ListSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  // Check if exists
+  const res = await queries.lists.getById(list_id);
+  if (!res.success) return res;
+
+  const guardResult = await guardListAction<ListSelect>({
+    actorUserId: userRes.data.id,
+    projectId: res.data.projectId,
+    action: "DELETE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: list_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
   return await queries.lists.delete(list_id);
@@ -76,8 +134,21 @@ export async function updateListsPositionsAction(
   listsPayload: ListPositionPayload[],
   project_id: number,
 ): Promise<ServerActionResponse<ListSelect[]>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  const guardResult = await guardListAction<ListSelect[]>({
+    actorUserId: userRes.data.id,
+    projectId: project_id,
+    action: "MOVE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = listsPositionsPayloadSchema.safeParse(listsPayload);
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
@@ -88,8 +159,25 @@ export async function updateListsPositionsAction(
 }
 
 export async function updateListsStatusAction(new_done_list_id: number): Promise<ServerActionResponse<ListSelect>> {
+  // AUTH CHECK
   await checkAuthenticationStatus();
 
+  // PERMISSION CHECK
+  const userRes = await getUserId();
+  if (!userRes.success) return userRes;
+
+  // Check if exists
+  const res = await queries.lists.getById(new_done_list_id);
+  if (!res.success) return res;
+
+  const guardResult = await guardListAction<ListSelect>({
+    actorUserId: userRes.data.id,
+    projectId: res.data.projectId,
+    action: "UPDATE",
+  });
+  if (guardResult) return guardResult;
+
+  // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: new_done_list_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 

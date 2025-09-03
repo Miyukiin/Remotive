@@ -99,10 +99,10 @@ export function useTasks({
   const { mergeActiveTask, setActiveTask } = useTaskStore.getState();
 
   const getTaskByProject = useQuery({
-    queryKey: ["tasks", project_id],
+    queryKey: ["tasks_project", project_id],
     enabled: typeof project_id === "number",
     queryFn: async ({ queryKey }) => {
-      const [, project_id] = queryKey as ["tasks", number];
+      const [, project_id] = queryKey as ["tasks_project", number];
       const res = await getTasksByProjectAction(project_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
@@ -110,11 +110,11 @@ export function useTasks({
   });
 
   const getTaskByListId = useQuery({
-    queryKey: ["tasks", list_id],
+    queryKey: ["tasks_list", list_id],
 
     enabled: typeof list_id === "number",
     queryFn: async ({ queryKey }) => {
-      const [, list_id] = queryKey as ["tasks", number];
+      const [, list_id] = queryKey as ["tasks_list", number];
       const res = await getTasksByListIdAction(list_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
@@ -125,8 +125,8 @@ export function useTasks({
     queryKey: ["task", task_id],
     enabled: typeof task_id === "number",
     queryFn: async ({ queryKey }) => {
-      const [, project_id] = queryKey as ["task", number];
-      const res = await getTaskByIdAction(project_id);
+      const [, task_id] = queryKey as ["task", number];
+      const res = await getTaskByIdAction(task_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -136,7 +136,7 @@ export function useTasks({
     queryKey: ["task_members", task_id],
     enabled: typeof task_id === "number",
     queryFn: async ({ queryKey }) => {
-      const [, task_id] = queryKey as ["tasks_members", number];
+      const [, task_id] = queryKey as ["task_members", number];
       const res = await getTaskMembersAction(task_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
@@ -182,11 +182,11 @@ export function useTasks({
       return res.data;
     },
     onMutate: async ({ list_id, project_id, position, taskFormData }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks", list_id] });
-      await queryClient.cancelQueries({ queryKey: ["tasks", project_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_list", list_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_project", project_id] });
 
-      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", list_id]);
-      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", project_id]);
+      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_list", list_id]);
+      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_project", project_id]);
 
       const tempId = getTempId();
       const res = await getUserId();
@@ -211,8 +211,8 @@ export function useTasks({
       };
 
       // Tanstack Optimistic UI
-      queryClient.setQueryData<TaskSelect[]>(["tasks", list_id], (old) => (old ? [...old, optimisticTask] : old));
-      queryClient.setQueryData<TaskSelect[]>(["tasks", project_id], (old) => (old ? [...old, optimisticTask] : old));
+      queryClient.setQueryData<TaskSelect[]>(["tasks_list", list_id], (old) => (old ? [...old, optimisticTask] : old));
+      queryClient.setQueryData<TaskSelect[]>(["tasks_project", project_id], (old) => (old ? [...old, optimisticTask] : old));
 
       // Tanstack Optimistic UI for members
       const assigneeIds = taskFormData.assigneeIds as number[] | undefined;
@@ -238,7 +238,7 @@ export function useTasks({
 
       // We replace optimistic task with the tempId with the server-sourced task with actual id
       queryClient.setQueryData<TaskSelect[]>(
-        ["tasks", list_id],
+        ["tasks_list", list_id],
         (old) => old?.map((t) => (t.id === context.tempId ? createdTask : t)) ?? old,
       );
 
@@ -261,8 +261,8 @@ export function useTasks({
       toast.error("Error", { description: error.message });
 
       // Rollback
-      queryClient.setQueryData(["tasks", list_id], context?.previousListTasks);
-      queryClient.setQueryData(["tasks", project_id], context?.previousProjectTasks);
+      queryClient.setQueryData(["tasks_list", list_id], context?.previousListTasks);
+      queryClient.setQueryData(["tasks_project", project_id], context?.previousProjectTasks);
 
       // Rollback for optimistic ui members
       if (context?.previousTempMembers !== undefined) {
@@ -272,8 +272,8 @@ export function useTasks({
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", list_id] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_list", list_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_project", project_id] });
     },
   });
 
@@ -284,17 +284,17 @@ export function useTasks({
       return res.data;
     },
     onMutate: async ({ task_id, project_id }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks", list_id] });
-      await queryClient.cancelQueries({ queryKey: ["tasks", project_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_list", list_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_project", project_id] });
 
-      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", list_id]);
-      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", project_id]);
+      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_list", list_id]);
+      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_project", project_id]);
 
-      queryClient.setQueryData<TaskSelect[]>(["tasks", list_id], (old) =>
+      queryClient.setQueryData<TaskSelect[]>(["tasks_list", list_id], (old) =>
         old ? old.filter((t) => t.id != task_id) : old,
       );
 
-      queryClient.setQueryData<TaskSelect[]>(["tasks", project_id], (old) =>
+      queryClient.setQueryData<TaskSelect[]>(["tasks_project", project_id], (old) =>
         old ? old.filter((t) => t.id != task_id) : old,
       );
 
@@ -305,12 +305,12 @@ export function useTasks({
     },
     onError: (error, variables, context) => {
       toast.error("Error", { description: error.message });
-      queryClient.setQueryData(["tasks", list_id], context?.previousListTasks);
-      queryClient.setQueryData(["tasks", project_id], context?.previousProjectTasks);
+      queryClient.setQueryData(["tasks_list", list_id], context?.previousListTasks);
+      queryClient.setQueryData(["tasks_project", project_id], context?.previousProjectTasks);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", list_id] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_list", list_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_project", project_id] });
     },
   });
 
@@ -329,18 +329,18 @@ export function useTasks({
       return res.data;
     },
     onMutate: async ({ task_id, project_id, taskFormData }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks", list_id] });
-      await queryClient.cancelQueries({ queryKey: ["tasks", project_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_list", list_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_project", project_id] });
 
-      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", list_id]);
-      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", project_id]);
+      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_list", list_id]);
+      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_project", project_id]);
 
       // Optimistically update the task with the inputted taskFormData
-      queryClient.setQueryData<TaskSelect[]>(["tasks", list_id], (old) =>
+      queryClient.setQueryData<TaskSelect[]>(["tasks_list", list_id], (old) =>
         old ? old.map((p) => (p.id === task_id ? (p = { ...p, ...taskFormData }) : p)) : old,
       );
 
-      queryClient.setQueryData<TaskSelect[]>(["tasks", project_id], (old) =>
+      queryClient.setQueryData<TaskSelect[]>(["tasks_project", project_id], (old) =>
         old ? old.map((p) => (p.id === task_id ? (p = { ...p, ...taskFormData }) : p)) : old,
       );
 
@@ -351,13 +351,13 @@ export function useTasks({
     },
     onError: (error, variables, context) => {
       toast.error("Error", { description: error.message });
-      queryClient.setQueryData(["tasks", list_id], context?.previousListTasks);
-      queryClient.setQueryData(["tasks", project_id], context?.previousProjectTasks);
+      queryClient.setQueryData(["tasks_list", list_id], context?.previousListTasks);
+      queryClient.setQueryData(["tasks_project", project_id], context?.previousProjectTasks);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", list_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_list", list_id] });
       queryClient.invalidateQueries({ queryKey: ["task_members", task_id] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_project", project_id] });
     },
   });
 
@@ -377,11 +377,11 @@ export function useTasks({
       return res.data;
     },
     onMutate: async ({ task_id, project_id, taskFormData }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks", list_id] });
-      await queryClient.cancelQueries({ queryKey: ["tasks", project_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_list", list_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_project", project_id] });
 
-      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", list_id]);
-      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", project_id]);
+      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_list", list_id]);
+      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_project", project_id]);
       const previousActiveTask = useTaskStore.getState().activeTask;
 
       // React Query optimistic update
@@ -389,8 +389,8 @@ export function useTasks({
         arr ? arr.map((t) => (t.id === task_id ? { ...t, ...(taskFormData ?? {}) } : t)) : arr;
 
       // Optimistically update the task with the inputted taskFormData
-      queryClient.setQueryData<TaskSelect[]>(["tasks", list_id], patch);
-      queryClient.setQueryData<TaskSelect[]>(["tasks", project_id], patch);
+      queryClient.setQueryData<TaskSelect[]>(["tasks_list", list_id], patch);
+      queryClient.setQueryData<TaskSelect[]>(["tasks_project", project_id], patch);
 
       // Zustand optimistic update
       if (taskFormData && Object.keys(taskFormData).length > 0) {
@@ -405,16 +405,16 @@ export function useTasks({
     onError: (error, variables, context) => {
       toast.error("Error", { description: error.message });
       // React Query Rollback
-      queryClient.setQueryData(["tasks", list_id], context?.previousListTasks);
-      queryClient.setQueryData(["tasks", project_id], context?.previousProjectTasks);
+      queryClient.setQueryData(["tasks_list", list_id], context?.previousListTasks);
+      queryClient.setQueryData(["tasks_project", project_id], context?.previousProjectTasks);
 
       // Zustand Rollback
       if (context?.previousActiveTask) setActiveTask(context?.previousActiveTask);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", list_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_list", list_id] });
       queryClient.invalidateQueries({ queryKey: ["task_members", task_id] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_project", project_id] });
     },
   });
 
@@ -425,14 +425,14 @@ export function useTasks({
       return res.data;
     },
     onMutate: async ({ tasksPayload, project_id }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks", list_id] });
-      await queryClient.cancelQueries({ queryKey: ["tasks", project_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_list", list_id] });
+      await queryClient.cancelQueries({ queryKey: ["tasks_project", project_id] });
 
-      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", list_id]);
-      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks", project_id]);
+      const previousListTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_list", list_id]);
+      const previousProjectTasks = queryClient.getQueryData<TaskSelect[]>(["tasks_project", project_id]);
 
       // Optimistically update the task with the new positions
-      queryClient.setQueryData<TaskSelect[]>(["tasks", list_id], (old) =>
+      queryClient.setQueryData<TaskSelect[]>(["tasks_list", list_id], (old) =>
         old
           ? old.map((t) => {
               const payload = tasksPayload.find((p) => p.id === t.id);
@@ -446,7 +446,7 @@ export function useTasks({
           : old,
       );
 
-      queryClient.setQueryData<TaskSelect[]>(["tasks", project_id], (old) =>
+      queryClient.setQueryData<TaskSelect[]>(["tasks_project", project_id], (old) =>
         old
           ? old.map((t) => {
               const payload = tasksPayload.find((p) => p.id === t.id);
@@ -467,12 +467,12 @@ export function useTasks({
     },
     onError: (error, variables, context) => {
       toast.error("Error", { description: error.message });
-      queryClient.setQueryData(["tasks", list_id], context?.previousListTasks);
-      queryClient.setQueryData(["tasks", project_id], context?.previousProjectTasks);
+      queryClient.setQueryData(["tasks_list", list_id], context?.previousListTasks);
+      queryClient.setQueryData(["tasks_project", project_id], context?.previousProjectTasks);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks", list_id] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", project_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_list", list_id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks_project", project_id] });
     },
   });
 
@@ -523,7 +523,7 @@ export function useTasks({
     updateTaskError: updateTask.error,
 
     // Update Task (Notion/Github Style)
-    updateTaskNew: updateTaskNew.mutateAsync,
+    updateTaskNew: updateTaskNew.mutate,
     isUpdateTaskNewLoading: updateTaskNew.isPending,
     updateTaskNewError: updateTaskNew.error,
 
