@@ -225,7 +225,7 @@ export async function reassignProjectMemberRole({
       const [result2] = await db
         .select()
         .from(schema.project_members)
-        .where(and(eq(schema.project_members, userId), eq(schema.project_members.project_id, project_id)))
+        .where(and(eq(schema.project_members.user_id, userId), eq(schema.project_members.project_id, project_id)))
         .limit(1);
 
       const userRole = result2.role;
