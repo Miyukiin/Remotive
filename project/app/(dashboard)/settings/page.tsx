@@ -5,6 +5,7 @@ import { Palette, ShieldUser } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserProfile } from "@clerk/nextjs";
+import { Appearance } from "@/components/settings/appearance";
 
 type Section = "account" | "appearance";
 
@@ -20,16 +21,16 @@ export default function SettingsPage() {
       </div>
 
       {/* Nav */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <Card role="navigation" aria-label="Settings sections" className="flex w-full lg:max-w-[500px]">
+      <div className="flex flex-col xl:flex-row gap-6 items-start">
+        <Card role="navigation" aria-label="Settings sections" className="flex w-full xl:max-w-[500px]">
           <CardHeader>
             <CardTitle className="text-base">Settings</CardTitle>
             <CardDescription>Choose a section</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <Button
-              variant={section === "account" ? "secondary" : "ghost"}
-              className="justify-start gap-3"
+              variant="ghost"
+              className={`justify-start gap-3 ${section === "account" ? "bg-primary hover:bg-primary" : ""}`}
               onClick={() => setSection("account")}
               aria-current={section === "account" ? "page" : undefined}
             >
@@ -38,8 +39,8 @@ export default function SettingsPage() {
             </Button>
 
             <Button
-              variant={section === "appearance" ? "secondary" : "ghost"}
-              className="justify-start gap-3"
+              variant="ghost"
+              className={`justify-start gap-3 ${section === "appearance" ? "bg-primary hover:bg-primary" : ""}`}
               onClick={() => setSection("appearance")}
               aria-current={section === "appearance" ? "page" : undefined}
             >
@@ -52,9 +53,25 @@ export default function SettingsPage() {
         {/* Content */}
         <div className="w-full min-h-0">
           {section === "account" ? (
-            <UserProfile routing="hash"/>
+            <UserProfile
+              routing="hash"
+              appearance={{
+                elements: {
+                  // outer wrapper
+                  rootBox: "w-full",
+
+                  // card container
+                  card: "w-full md:max-w-none",
+                  cardBox: "w-full md:max-w-none",
+
+                  //  make inner scroll area also stretch
+                  scrollBox: "w-full md:max-w-none",
+                },
+              }}
+            />
           ) : (
-            <Card className="flex-1 w-full h-full max-w-[880px] max-h-[704px]"> {/* Same as clerk userprofile dimensions */}
+            <Card className="flex-1 w-full h-full max-h-[704px]">
+              {/* just copy userprofile component dimensions across diff views */}
               <CardHeader className="flex flex-row items-center gap-3">
                 <Palette className="h-5 w-5" />
                 <div>
@@ -62,7 +79,9 @@ export default function SettingsPage() {
                   <CardDescription>Theme & display preferences</CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">Coming soon.</CardContent>
+              <CardContent className="text-sm text-muted-foreground">
+                <Appearance />
+              </CardContent>
             </Card>
           )}
         </div>
