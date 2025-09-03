@@ -46,6 +46,7 @@ const ReassignProjectTeamsModal: FC<ReassignProjectTeamsModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReassignProjectTeamsModalOpen, currentTeamIds.join(",")]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const selectedTeamIds = form.watch("teamIds") ?? [];
 
   // Compute diffs, e.g which teams to add and teams to remove...

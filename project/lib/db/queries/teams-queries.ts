@@ -100,6 +100,7 @@ export const teams = {
       if (existingTeamData.description !== incomingTeamData.description)
         changed.description = incomingTeamData.description;
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...base } = existingTeamData;
       const finalUpdatedTeamData = {
         ...base,

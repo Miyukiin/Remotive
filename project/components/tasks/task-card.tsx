@@ -1,4 +1,3 @@
-// TODO: Task 5.6 - Create task detail modals and editing interfaces
 "use client";
 import { TaskSelect } from "@/types";
 import { Badge } from "../ui/badge";
@@ -35,7 +34,7 @@ export interface TaskDragData {
 const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   const { taskMembers, isTaskMembersLoading, getTaskMembersError } = useTasks({ task_id: task.id });
   const { taskLabels = [], isTaskLabelsLoading } = useLabels({ project_id, task_id: task.id });
-  const { taskComments, taskCommentsIsLoading } = useComments(task.id);
+  const { taskComments } = useComments(task.id);
   const { setTaskDetailsModalOpen } = useUIStore();
   const { setActiveTask } = useTaskStore();
 
