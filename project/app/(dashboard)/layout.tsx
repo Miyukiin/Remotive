@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: Props) {
   const [navItems, setNavItems] = useState(navigationItems);
 
   const screenWidth = useScreenWidth();
-  const isMobile = screenWidth ? (screenWidth <= 768 ? true : false) : false;
+  const isMobile = screenWidth ? (screenWidth <= 1024 ? true : false) : false; // Because this >1024 is when our sheet becomes a sidebar
 
   // Zustand for mobile sidebar
   const { isSideBarOpen, setSideBarOpen } = useUIStore();
