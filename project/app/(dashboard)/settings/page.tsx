@@ -62,7 +62,7 @@ export default function SettingsPage() {
 
                   // card container
                   card: "w-full md:max-w-none",
-                  cardBox: "w-full md:max-w-none",
+                  cardBox: "w-full md:max-w-none h-full",
 
                   //  make inner scroll area also stretch
                   scrollBox: "w-full md:max-w-none",
