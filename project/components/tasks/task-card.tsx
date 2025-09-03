@@ -38,7 +38,7 @@ const TaskCard: FC<TaskCardProps> = ({ task, list_id, project_id }) => {
   const { setTaskDetailsModalOpen } = useUIStore();
   const { setActiveTask } = useTaskStore();
 
-  const LABEL_LIMIT = 4;
+  const LABEL_LIMIT = 3;
   const displayedLabels = useMemo(() => taskLabels.slice(0, LABEL_LIMIT), [LABEL_LIMIT, taskLabels]);
 
   const { isOverdue, daysOverdue, isDueToday } = calculateOverdueInfo(task.dueDate);
