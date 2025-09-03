@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { BarChart3, Calendar, FolderOpen, Home, Settings, Users } from "lucide-react";
-import { ListSelect, ProjectRoles } from "@/types";
+import { ProjectRoles } from "@/types";
 
 export const projectStatusColor = {
   Completed: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
@@ -275,23 +275,3 @@ export const COLOR_TOKENS = [
   "var(--chart-14)",
   "var(--chart-15)",
 ];
-
-export function reorderListsByIdOrder(prev: ListSelect[], order: number[]): ListSelect[] {
-  const map = new Map(prev.map((l) => [l.id, l])); // Map lookup
-
-  // Create listarray in order of the ids
-  const inOrder = order
-    .map((id, idx) => {
-      const found = map.get(id);
-      return found ? { ...found, position: idx + 1 } : null;
-    })
-    .filter(Boolean) as ListSelect[]; // if there are unknowns drop them via filter boolean
-
-  // Append any lists that weren't included (defensive)
-  for (const l of prev) {
-    if (!order.includes(l.id)) inOrder.push(l);
-  }
-
-  // return ordered array
-  return inOrder;
-}

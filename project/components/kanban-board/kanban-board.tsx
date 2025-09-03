@@ -10,11 +10,9 @@ import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-
 import { ListPositionPayload, ListSelect, TaskPositionPayload, TaskSelect } from "@/types";
 import { createPortal } from "react-dom";
 import TaskCard from "../tasks/task-card";
-import { UseMutateFunction } from "@tanstack/react-query";
+import { UseMutateFunction, useQueryClient } from "@tanstack/react-query";
 import { DeleteKanbanModal } from "../modals/delete-list-modal.";
-import { useAuth } from "@clerk/nextjs";
-import { useProjectListRealtime } from "@/hooks/use-project-list-realtime";
-import { reorderListsByIdOrder } from "@/lib/utils";
+import { useRealtimeInvalidation } from "@/lib/pusher/pusher-realtime-invalidate";
 // https://github.com/Georgegriff/react-dnd-kit-tailwind-shadcn-ui/blob/main/
 
 type KanbanBoardProps = {
@@ -36,15 +34,13 @@ type KanbanBoardProps = {
 };
 
 export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, updateTasksPositions }: KanbanBoardProps) {
+  const queryClient = useQueryClient();
   const [kanbanLists, setKanbanLists] = useState<ListSelect[]>(lists);
   const [kanbanTasks, setKanbanTasks] = useState<TaskSelect[]>(tasks);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const { userId } = useAuth();
 
-  // Subscribe to realtime list reorders
-  useProjectListRealtime(projectId, userId, (ids) => {
-    setKanbanLists((prev) => reorderListsByIdOrder(prev, ids));
-  });
+  // Realtime
+  useRealtimeInvalidation(projectId);
 
   const listIds = useMemo(() => kanbanLists.map((l) => l.id), [kanbanLists]);
 
@@ -115,6 +111,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
       }));
 
       updateListsPositions({ listsPayload: listsPositionsPayload, project_id: projectId });
+      queryClient.invalidateQueries({ queryKey: ["tasks_project", projectId] });
 
       return newKanbanLists;
     });

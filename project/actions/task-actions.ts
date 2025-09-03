@@ -16,6 +16,7 @@ import { checkAuthenticationStatus } from "./actions-utils";
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { getUserId } from "./user-actions";
 import { guardProjectAction, guardTaskAction } from "@/lib/rbac/permission-utils";
+import { pusherServer } from "@/lib/pusher/pusher-server";
 
 // Fetches
 export async function getTaskMembersAction(task_id: number): Promise<ServerActionResponse<UserSelect[]>> {
@@ -195,7 +196,7 @@ export async function getTaskCreatorAction(task_id: number): Promise<ServerActio
 }
 
 // Mutations
-export async function deleteTaskAction(task_id: number): Promise<ServerActionResponse<TaskSelect>> {
+export async function deleteTaskAction(project_id: number, task_id: number): Promise<ServerActionResponse<TaskSelect>> {
   // AUTH CHECK
   await checkAuthenticationStatus();
 
@@ -214,10 +215,17 @@ export async function deleteTaskAction(task_id: number): Promise<ServerActionRes
   const parsed = idSchema.safeParse({ id: task_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
-  return await queries.tasks.delete(task_id);
+  const result = await queries.tasks.delete(task_id);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${project_id}`, "tasks-updated", {});
+
+  return result;
 }
 
 export async function createTaskAction(
+  project_id: number,
   list_id: number,
   position: number,
   taskFormData: z.infer<typeof taskSchemaForm>,
@@ -255,9 +263,16 @@ export async function createTaskAction(
 
   const assignedIds = taskFormData.assigneeIds;
 
-  return await queries.tasks.create(taskDBData, assignedIds);
+  const result = await queries.tasks.create(taskDBData, assignedIds);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${project_id}`, "tasks-updated", {});
+
+  return result;
 }
 
+// deprecated
 export async function updateTaskAction(
   task_id: number,
   taskFormData?: z.infer<typeof taskSchemaForm>,
@@ -294,6 +309,7 @@ export async function updateTaskAction(
 }
 
 export async function updateTaskNewAction(
+  project_id: number,
   task_id: number,
   taskFormData?: z.infer<typeof taskSchemaEditForm>,
 ): Promise<ServerActionResponse<TaskSelect>> {
@@ -325,7 +341,13 @@ export async function updateTaskNewAction(
 
   const assignedIds = taskFormData?.assigneeIds ? taskFormData.assigneeIds : null;
 
-  return await queries.tasks.update(task_id, taskDBData, assignedIds);
+  const result = await queries.tasks.update(task_id, taskDBData, assignedIds);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${project_id}`, "tasks-updated", {});
+
+  return result;
 }
 
 export async function updateTasksPositionsAction(
@@ -355,5 +377,11 @@ export async function updateTasksPositionsAction(
   const parsedId = idSchema.safeParse({ id: project_id });
   if (!parsedId.success) return failResponse(`Zod Validation Error`, z.flattenError(parsedId.error));
 
-  return await queries.tasks.updateTasksPositions(tasksPayload, project_id);
+  const result = await queries.tasks.updateTasksPositions(tasksPayload, project_id);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${project_id}`, "tasks-updated", {});
+
+  return result;
 }

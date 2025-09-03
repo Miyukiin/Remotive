@@ -13,7 +13,7 @@ type TaskOptionsProps = {
 };
 
 const TaskOptions: FC<TaskOptionsProps> = ({ task_id, list_id, project_id, className }) => {
-  const { deleteTask, isDeleteTaskLoading } = useTasks({ task_id, list_id });
+  const { deleteTask, isDeleteTaskLoading } = useTasks({ task_id, list_id, project_id });
 
   function onClick() {
     deleteTask({ task_id, project_id });

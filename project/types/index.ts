@@ -229,30 +229,3 @@ export type TasksCompletionChartPayload = {
   notCompleted: number;
   percentCompleted: number;
 };
-
-// RealTime
-export type TaskMovedEvent = {
-  actorClerkId: number;
-  projectId: number;
-  taskId: number;
-  fromListId: number | null;
-  toListId: number;
-  newIndex: number; // Of task
-  reorderedTaskIds?: number[]; // So that other people in the channel can update their tasks immediately
-};
-
-export type MoveTaskServerInput = {
-  projectId: number;
-  taskId: number;
-  fromListId: number | null;
-  toListId: number;
-  newIndex: number;
-  newOrder: Array<{ taskId: number; order: number }>; // Persisted order for *all* items in the destination column after the drop.
-};
-
-
-export type ListsReorderedEvent = {
-  actorClerkId: string;        // who triggered this event (so sender can ignore echo and the event does not affect him)
-  projectId: number;      // defensive; useful if handler is reused
-  reorderedListIds: number[]; // canonical order after commit
-};

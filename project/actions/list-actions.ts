@@ -1,5 +1,5 @@
 "use server";
-import { ListPositionPayload, ListSelect, ListsReorderedEvent } from "@/types";
+import { ListPositionPayload, ListSelect } from "@/types";
 import { ServerActionResponse } from "./actions-types";
 import { queries } from "@/lib/db/queries/queries";
 import { idSchema, listSchemaDB, listSchemaForm, listsPositionsPayloadSchema } from "@/lib/validations/validations";
@@ -9,6 +9,7 @@ import { failResponse } from "@/lib/db/queries/query_utils";
 import { getUserId } from "./user-actions";
 import { guardListAction } from "@/lib/rbac/permission-utils";
 import { pusherServer } from "@/lib/pusher/pusher-server";
+import { channelName, EVENTS } from "@/lib/pusher/pusher-utils";
 
 // Fetches
 export async function getAllListsAction(project_id: number): Promise<ServerActionResponse<ListSelect[]>> {
@@ -67,7 +68,12 @@ export async function createListAction(
   const parsed = listSchemaDB.safeParse(listDBData);
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
-  return await queries.lists.create(listDBData);
+  const result = await queries.lists.create(listDBData);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${result.data.projectId}`, "lists-updated", {});
+  return result;
 }
 
 export async function updateListAction(
@@ -103,7 +109,13 @@ export async function updateListAction(
   const parsed = listSchemaDB.safeParse(listDBData);
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
-  return await queries.lists.update(list_id, listDBData);
+  const result = await queries.lists.update(list_id, listDBData);
+
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${res.data.projectId}`, "lists-updated", {});
+  return result;
 }
 
 export async function deleteListAction(list_id: number): Promise<ServerActionResponse<ListSelect>> {
@@ -128,7 +140,13 @@ export async function deleteListAction(list_id: number): Promise<ServerActionRes
   // ZOD VALIDATION
   const parsed = idSchema.safeParse({ id: list_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
-  return await queries.lists.delete(list_id);
+
+  const result = await queries.lists.delete(list_id);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${res.data.projectId}`, "lists-updated", {});
+  return result;
 }
 
 export async function updateListsPositionsAction(
@@ -160,20 +178,7 @@ export async function updateListsPositionsAction(
   if (!result.success) return result;
 
   // PUSHER BROADCAST
-  try {
-    // Sort ascending
-    const reorderedListIds = [...listsPayload].sort((a, b) => a.position - b.position).map((l) => l.id);
-
-    const payload: ListsReorderedEvent = {
-      actorClerkId: userRes.data.clerkId,
-      projectId: project_id,
-      reorderedListIds,
-    };
-
-    await pusherServer.trigger(`presence-project-${project_id}`, "lists:reordered", payload);
-  } catch (err) {
-    console.error("PUSHER ERROR: List Movement Broadcast failed.", err);
-  }
+  await pusherServer.trigger(`presence-project-${project_id}`, "lists-updated", {});
 
   return result;
 }
@@ -201,5 +206,11 @@ export async function updateListsStatusAction(new_done_list_id: number): Promise
   const parsed = idSchema.safeParse({ id: new_done_list_id });
   if (!parsed.success) return failResponse(`Zod Validation Error`, z.flattenError(parsed.error));
 
-  return await queries.lists.updateListsDoneStatus(new_done_list_id);
+  const result = await queries.lists.updateListsDoneStatus(new_done_list_id);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  await pusherServer.trigger(`presence-project-${res.data.projectId}`, "lists-updated", {});
+
+  return result;
 }

@@ -112,7 +112,7 @@ export function useTasks({
       position: number;
       taskFormData: z.infer<typeof taskSchemaForm>;
     }) => {
-      const res = await createTaskAction(list_id, position, taskFormData);
+      const res = await createTaskAction(project_id, list_id, position, taskFormData);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -216,7 +216,7 @@ export function useTasks({
 
   const deleteTask = useMutation({
     mutationFn: async ({ task_id, project_id }: { task_id: number; project_id: number }) => {
-      const res = await deleteTaskAction(task_id);
+      const res = await deleteTaskAction(project_id, task_id);
       if (!res.success) throw new Error(res.message);
       return res.data;
     },
@@ -308,7 +308,7 @@ export function useTasks({
       project_id: number;
       taskFormData?: z.infer<typeof taskSchemaEditForm>;
     }) => {
-      const res = await updateTaskNewAction(task_id, taskFormData);
+      const res = await updateTaskNewAction(project_id, task_id, taskFormData);
       if (!res.success) throw new Error(res.message);
 
       return res.data;

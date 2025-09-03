@@ -13,6 +13,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Remotive | A Project Management Tool",
   description: "Remotive is the premier team collaboration and project management platform",
+  icons: {
+    icon: "/favicon.ico",
+  },
   generator: "v0.dev",
 };
 
