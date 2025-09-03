@@ -5,4 +5,5 @@ export const channelName = (projectId: number) => `presence-project-${projectId}
 export const EVENTS = {
   TASKS_UPDATED: "tasks-updated",
   LISTS_UPDATED: "lists-updated",
+  COMMENTS_UPDATED: "comments-updated",
 } as const;
