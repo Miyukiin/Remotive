@@ -10,14 +10,14 @@ export function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Top grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <h3 className="text-2xl font-bold tracking-tight">Remotive</h3>
             <p className="mt-2 text-muted-foreground">
-              The modern project management platform that helps teams collaborate and deliver results.
+              The modern project management platform that helps you deliver.
             </p>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <h4 className="font-semibold">Company</h4>
             <ul className="mt-4 space-y-2">
               <li>
@@ -33,7 +33,7 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <h4 className="font-semibold">Support</h4>
             <ul className="mt-4 space-y-2">
               <li>
@@ -49,7 +49,7 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <h4 className="font-semibold">Follow us</h4>
             <div className="mt-4 flex items-center gap-2">
               <Button asChild size="icon" variant="ghost" aria-label="Facebook">

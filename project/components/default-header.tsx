@@ -13,7 +13,7 @@ export function DefaultHeader() {
   const width = useScreenWidth();
   const isMobile = width ? width < 768 : false;
   return (
-    <header className="sticky top-0 z-30 border-b bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/75">
+    <header className="sticky top-0 z-30 border-b bg-primary/10 dark:bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-primary/10">
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center gap-3">
           <BrandLogo />
