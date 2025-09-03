@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: Props) {
   const [navItems, setNavItems] = useState(navigationItems);
 
   const screenWidth = useScreenWidth();
-  const isMobile = screenWidth ? (screenWidth < 768 ? true : false) : false;
+  const isMobile = screenWidth ? (screenWidth <= 768 ? true : false) : false;
 
   // Zustand for mobile sidebar
   const { isSideBarOpen, setSideBarOpen } = useUIStore();
