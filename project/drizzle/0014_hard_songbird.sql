@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "uxIsDone" ON "lists" USING btree ("projectId") WHERE "lists"."isDone" = true;

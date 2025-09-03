@@ -1,1 +1,0 @@
-DROP INDEX "ux_lists_project_pos";

@@ -1,1 +1,0 @@
-ALTER TABLE "users_to_teams" RENAME COLUMN "isCreator" TO "isLeader";
