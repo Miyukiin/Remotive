@@ -11,8 +11,10 @@ import { ListPositionPayload, ListSelect, TaskPositionPayload, TaskSelect } from
 import { createPortal } from "react-dom";
 import TaskCard from "../tasks/task-card";
 import { UseMutateFunction } from "@tanstack/react-query";
-import { debounce } from "lodash";
 import { DeleteKanbanModal } from "../modals/delete-list-modal.";
+import { useAuth } from "@clerk/nextjs";
+import { useProjectListRealtime } from "@/hooks/use-project-list-realtime";
+import { reorderListsByIdOrder } from "@/lib/utils";
 // https://github.com/Georgegriff/react-dnd-kit-tailwind-shadcn-ui/blob/main/
 
 type KanbanBoardProps = {
@@ -37,43 +39,41 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
   const [kanbanLists, setKanbanLists] = useState<ListSelect[]>(lists);
   const [kanbanTasks, setKanbanTasks] = useState<TaskSelect[]>(tasks);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const { userId } = useAuth();
+
+  // Subscribe to realtime list reorders
+  useProjectListRealtime(projectId, userId, (ids) => {
+    setKanbanLists((prev) => reorderListsByIdOrder(prev, ids));
+  });
 
   const listIds = useMemo(() => kanbanLists.map((l) => l.id), [kanbanLists]);
 
   useEffect(() => {
-    const updateLists = setTimeout(() => setKanbanLists(lists), 600);
-
-    return () => {
-      clearTimeout(updateLists);
-    };
+    setKanbanLists(lists);
   }, [lists]);
 
   useEffect(() => {
-    const updateTasks = setTimeout(() => setKanbanTasks(tasks), 600);
-
-    return () => {
-      clearTimeout(updateTasks);
-    };
+    setKanbanTasks(tasks);
   }, [tasks]);
 
   const [activeList, setActiveList] = useState<ListSelect | null>(null);
   const [activeTask, setActiveTask] = useState<TaskSelect | null>(null);
 
-  const debouncedListUpdate = useMemo(
-    () =>
-      debounce((listsPayload: ListPositionPayload[], project_id: number) => {
-        updateListsPositions({ listsPayload, project_id });
-      }, 300),
-    [updateListsPositions],
-  );
+  // const debouncedListUpdate = useMemo(
+  //   () =>
+  //     debounce((listsPayload: ListPositionPayload[], project_id: number) => {
+  //       updateListsPositions({ listsPayload, project_id });
+  //     }, 1),
+  //   [updateListsPositions],
+  // );
 
-  const debouncedTaskUpdate = useMemo(
-    () =>
-      debounce((tasksPayload: TaskPositionPayload[], project_id: number) => {
-        updateTasksPositions({ tasksPayload, project_id });
-      }, 300),
-    [updateTasksPositions],
-  );
+  // const debouncedTaskUpdate = useMemo(
+  //   () =>
+  //     debounce((tasksPayload: TaskPositionPayload[], project_id: number) => {
+  //       updateTasksPositions({ tasksPayload, project_id });
+  //     }, 1),
+  //   [updateTasksPositions],
+  // );
 
   function onDragStart(event: DragStartEvent) {
     if (event.active.data.current?.type === "list") {
@@ -113,7 +113,8 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
         id: l.id,
         position: newKanbanLists.indexOf(l) + 1, // Kanban List's New Position In Array + 1
       }));
-      debouncedListUpdate(listsPositionsPayload, projectId);
+
+      updateListsPositions({ listsPayload: listsPositionsPayload, project_id: projectId });
 
       return newKanbanLists;
     });
@@ -164,7 +165,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
             id: t.id,
             position: activeListTasks.indexOf(t), // The task's position in the same list.
           }));
-          debouncedTaskUpdate(tasksPositionsPayload, projectId);
+          updateTasksPositions({ tasksPayload: tasksPositionsPayload, project_id: projectId });
         }
 
         // We are dropping in a list that does have tasks.
@@ -196,7 +197,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
         ];
 
         // Update the database with debounce
-        debouncedTaskUpdate(tasksPositionsPayload, projectId);
+        updateTasksPositions({ tasksPayload: tasksPositionsPayload, project_id: projectId });
         return newKanbanTasks;
       });
     }
@@ -240,7 +241,7 @@ export function KanbanBoard({ lists, tasks, projectId, updateListsPositions, upd
         ];
 
         // Update the database with debounce
-        debouncedTaskUpdate(tasksPositionsPayload, projectId);
+        updateTasksPositions({ tasksPayload: tasksPositionsPayload, project_id: projectId });
         return newKanbanTasks;
       });
     }

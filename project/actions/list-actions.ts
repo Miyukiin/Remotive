@@ -1,5 +1,5 @@
 "use server";
-import { ListPositionPayload, ListSelect } from "@/types";
+import { ListPositionPayload, ListSelect, ListsReorderedEvent } from "@/types";
 import { ServerActionResponse } from "./actions-types";
 import { queries } from "@/lib/db/queries/queries";
 import { idSchema, listSchemaDB, listSchemaForm, listsPositionsPayloadSchema } from "@/lib/validations/validations";
@@ -8,6 +8,7 @@ import { checkAuthenticationStatus } from "./actions-utils";
 import { failResponse } from "@/lib/db/queries/query_utils";
 import { getUserId } from "./user-actions";
 import { guardListAction } from "@/lib/rbac/permission-utils";
+import { pusherServer } from "@/lib/pusher/pusher-server";
 
 // Fetches
 export async function getAllListsAction(project_id: number): Promise<ServerActionResponse<ListSelect[]>> {
@@ -155,7 +156,26 @@ export async function updateListsPositionsAction(
   const parsedId = idSchema.safeParse({ id: project_id });
   if (!parsedId.success) return failResponse(`Zod Validation Error`, z.flattenError(parsedId.error));
 
-  return await queries.lists.updateListsPositions(listsPayload, project_id);
+  const result = await queries.lists.updateListsPositions(listsPayload, project_id);
+  if (!result.success) return result;
+
+  // PUSHER BROADCAST
+  try {
+    // Sort ascending
+    const reorderedListIds = [...listsPayload].sort((a, b) => a.position - b.position).map((l) => l.id);
+
+    const payload: ListsReorderedEvent = {
+      actorClerkId: userRes.data.clerkId,
+      projectId: project_id,
+      reorderedListIds,
+    };
+
+    await pusherServer.trigger(`presence-project-${project_id}`, "lists:reordered", payload);
+  } catch (err) {
+    console.error("PUSHER ERROR: List Movement Broadcast failed.", err);
+  }
+
+  return result;
 }
 
 export async function updateListsStatusAction(new_done_list_id: number): Promise<ServerActionResponse<ListSelect>> {
