@@ -285,6 +285,7 @@ export function useProjectMembers(projectId: number) {
     },
 
     onError: (err, _vars, ctx) => {
+      console.log(err)
       toast.error("Error", { description: err.message });
       // rollback
       if (ctx?.previousProjectMemberTableData) {

@@ -214,6 +214,26 @@ export async function reassignProjectMemberRole({
 
     const now = new Date();
 
+    // Check if user is project manager, and updating himself to project member
+    if (role === "Project Member") {
+      const res = await getUserId();
+      if (!res.success) return res;
+
+      const userId = res.data.id;
+
+      // Only select one, that's all we need anyawy
+      const [result2] = await db
+        .select()
+        .from(schema.project_members)
+        .where(and(eq(schema.project_members, userId), eq(schema.project_members.project_id, project_id)))
+        .limit(1);
+
+      const userRole = result2.role;
+      // Check if we are updating self, if so, check if target role is project member, if so check if userRole currently is project manager, if so, return.
+      if (userId === member_id && role === "Project Member" && userRole === pmRole.id)
+        throw new Error("Cannot demote self to project member.");
+    }
+
     const result = await db.transaction(async (tx) => {
       let totalUpdated = 0;
 
