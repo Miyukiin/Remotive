@@ -1,11 +1,8 @@
 import Image from "next/image";
-import { FC } from "react";
-import { DefaultHeader } from "../default-header";
 
-const LoadingUI: FC = () => {
+export default function Loading() {
   return (
     <div className="min-h-[100vh]">
-      <DefaultHeader />
       <div className=" min-h-[80vh] flex flex-col justify-center items-center gap-4 p-3">
         <div className="relative w-full h-[150px] md:h-[300px]">
           <Image src={"/loading.svg"} fill alt="team" />
@@ -17,6 +14,4 @@ const LoadingUI: FC = () => {
       </div>
     </div>
   );
-};
-
-export default LoadingUI;
+}

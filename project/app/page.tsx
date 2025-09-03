@@ -12,6 +12,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <DefaultHeader />
+
       <div>
         {/* Banner*/}
         <div className="relative overflow-hidden px-4 sm:px-6 lg:px-8 bg-[linear-gradient(7deg,rgba(200,255,220,1)_0%,rgba(255,255,255,1)_100%)] dark:bg-[linear-gradient(180deg,rgba(18,_21,_18,_1)_0%,_rgba(41,_61,_55,_1)_100%)]">
