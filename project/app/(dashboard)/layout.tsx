@@ -19,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScreenWidth } from "@/lib/client-utils";
 import Image from "next/image";
+import { useTheme } from "@/components/theme-provider";
 
 type Props = { children: ReactNode };
 
@@ -26,6 +27,7 @@ export default function DashboardLayout({ children }: Props) {
   const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+  const { theme } = useTheme();
 
   const [count, setCount] = useState(3);
   const [navItems, setNavItems] = useState(navigationItems);
@@ -78,21 +80,26 @@ export default function DashboardLayout({ children }: Props) {
 
   // Logo
   const Brand = (
-    <Link href="/" className="group text-xl font-bold tracking-tight">
-      <Image
-        src={`/light-logo.png`}
-        width={150}
-        height={150}
-        alt="remotive-logo"
-        className="absolute transition-all opacity-100 dark:opacity-0 duration-300 group-hover:drop-shadow-[0_0_6px_var(--color-emerald-500)]"
-      />
-      <Image
-        src={`/dark-logo.png`}
-        width={150}
-        height={150}
-        alt="remotive-logo"
-        className="transition-all opacity-0 dark:opacity-100 duration-300 group-hover:drop-shadow-[0_0_6px_var(--color-emerald-500)]"
-      />
+    <Link href="/" aria-label="Remotive Home" className="group relative inline-flex h-8 w-[150px] items-center">
+      {theme === "light" ? (
+        <Image
+          src={`/light-logo.png`}
+          fill
+          sizes="150px"
+          alt="remotive-logo"
+          priority
+          className="transition-all object-contain duration-300 group-hover:drop-shadow-[0_0_6px_rgba(16,185,129,0.9)]"
+        />
+      ) : (
+        <Image
+          src={`/dark-logo.png`}
+          fill
+          sizes="150px"
+          alt="remotive-logo"
+          priority
+          className="transition-all object-contain duration-300 group-hover:drop-shadow-[0_0_6px_rgba(16,185,129,0.9)]"
+        />
+      )}
     </Link>
   );
 
