@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle, Users, Kanban } from "lucide-react";
 import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { DefaultHeader} from "@/components/default-header";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-platinum-900 to-platinum-800 dark:from-outer_space-500 dark:to-payne's_gray-500">
       {/* Header */}
-      <Header />
+      <DefaultHeader />
 
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
