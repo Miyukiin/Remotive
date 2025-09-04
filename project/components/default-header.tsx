@@ -30,9 +30,11 @@ export function DefaultHeader() {
 
               <div className="flex gap-2 items-center">
                 {isMobile && (
-                  <Button size="sm" variant="default">
-                    <LayoutDashboard />
-                  </Button>
+                  <Link href="/dashboard">
+                    <Button size="sm" variant="default">
+                      <LayoutDashboard />
+                    </Button>
+                  </Link>
                 )}
                 <UserButton />
                 <ThemeToggle />
